@@ -7,11 +7,11 @@
     <!-- PWA / Native App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CABGCU">
+    <meta name="apple-mobile-web-app-title" content="Commuter Life">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
 
-    <title>CABGCU</title>
+    <title>Commuter Life</title>
     <link id="dynamic-favicon" rel="icon" href="">
     <script>try{var _ci=localStorage.getItem('cachedAppIconUrl');if(_ci)document.getElementById('dynamic-favicon').href=_ci;}catch(e){}</script>
 
@@ -1388,7 +1388,7 @@
         <div class="brand">
             <div class="brand-text" onclick="switchView('board')" style="cursor: pointer; display: flex; align-items: center; gap: 12px;" title="Return to Board">
                 <img id="brand-logo" src="" style="height: 36px; width: auto; display: none; border-radius: 6px;" alt="Logo">
-                <h1>CAB Marketing</h1>
+                <h1>Commuter Life</h1>
             </div>
             <button id="workspacePill" onclick="openModal('workspaceModal')" style="
                 background: rgba(10,132,255,0.12); border: 1px solid rgba(10,132,255,0.3);
@@ -1604,7 +1604,7 @@
                 <label class="stat-label">Monday.com Board ID</label>
                 <input type="text" id="mondayBoardId" class="modern-input" placeholder="e.g. 1234567890" style="margin-bottom: 12px;">
                 <label class="stat-label">Team Name to Search For</label>
-                <input type="text" id="mondayTeamName" class="modern-input" placeholder="e.g. CAB" value="CAB" style="margin-bottom: 12px;">
+                <input type="text" id="mondayTeamName" class="modern-input" placeholder="e.g. Commuter Life" value="Commuter Life" style="margin-bottom: 12px;">
                 <label class="stat-label">Default List for New Cards</label>
                 <input type="text" id="mondayDefaultListId" class="modern-input" placeholder="e.g. group_name or list_1" value="group_1" style="margin-bottom: 20px;">
 
@@ -2143,8 +2143,8 @@
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://qcfntvqvcmshbbpcxmgo.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_cHrTtrkbSV3AtUD64tnRvA_Zd4iT_TK';
+    const SUPABASE_URL = 'https://jkcfpiuhbtbrgtrususe.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_wDyZ8w_AJv7Fvv1hjxWkSQ_biX3jRbB';
     // VAPID public key for Web Push — generate a key pair and put the public key here
     // Generate keys by running: npx web-push generate-vapid-keys
     // Store the private key as VAPID_PRIVATE_KEY secret in your Supabase Edge Function
@@ -2165,9 +2165,9 @@
             : '';
         
         const pwaManifest = {
-            "name": "CABGCU",
-            "short_name": "CABGCU",
-            "description": "CABGCU Project Management",
+            "name": "Commuter Life",
+            "short_name": "Commuter Life",
+            "description": "Commuter Life Project Management",
             "start_url": "./",
             "display": "standalone",
             "background_color": "#050505",
@@ -2347,7 +2347,7 @@
                     if (!board.settings) board.settings = {};
                     if (board.settings.mondayApiToken === undefined) board.settings.mondayApiToken = globalMondayToken || '';
                     if (board.settings.mondayBoardId === undefined) board.settings.mondayBoardId = globalMondayBoard || '';
-                    if (board.settings.mondayTeamName === undefined) board.settings.mondayTeamName = globalMondayTeam || 'CAB';
+                    if (board.settings.mondayTeamName === undefined) board.settings.mondayTeamName = globalMondayTeam || 'Commuter Life';
                     if (board.settings.mondayDefaultListId === undefined) board.settings.mondayDefaultListId = globalMondayList || 'group_1';
                     if (!board.settings.mondayImportedIds) board.settings.mondayImportedIds = globalMondayIds || [];
                     // Initialize field ID mappings with defaults
@@ -2460,7 +2460,7 @@
             settings: { password: 'Marketing49!', users: [] },
             notifications: {},
             notifPrefs: {},
-            boards: [{ id: defaultBoardId, year: '2026-2027', backgroundImage: '', settings: { mondayApiToken: '', mondayBoardId: '', mondayTeamName: 'CAB', mondayDefaultListId: 'group_1', mondayImportedIds: [], fieldEventName: 'text_mkv54kad', fieldDate: 'date_mkv5tftz', fieldTime: 'text_mkv8jajm', fieldDescription: 'long_text_mkv5467b', fieldLocation: 'text_mkv5brpa', fieldSubmittedBy: 'text_mkv8ebee', fieldEmail: 'email_mkv8x9x', fieldInspiration: 'file_mkv5hqye' } }],
+            boards: [{ id: defaultBoardId, year: '2026-2027', backgroundImage: '', settings: { mondayApiToken: '', mondayBoardId: '', mondayTeamName: 'Commuter Life', mondayDefaultListId: 'group_1', mondayImportedIds: [], fieldEventName: 'text_mkv54kad', fieldDate: 'date_mkv5tftz', fieldTime: 'text_mkv8jajm', fieldDescription: 'long_text_mkv5467b', fieldLocation: 'text_mkv5brpa', fieldSubmittedBy: 'text_mkv8ebee', fieldEmail: 'email_mkv8x9x', fieldInspiration: 'file_mkv5hqye' } }],
             columns: [
                 { id: colBacklog, boardId: defaultBoardId, title: 'Backlog', order: 0, assignedTo: '' },
                 { id: colInProgress, boardId: defaultBoardId, title: 'In Progress', order: 1, assignedTo: '' },
@@ -2489,7 +2489,7 @@
                 ],
                 attachments: [],
                 coverImage: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80",
-                members: ["Jane Doe"], labels: [{text: "CAB", color: "blue"}],
+                members: ["Jane Doe"], labels: [{text: "Commuter Life", color: "blue"}],
                 checklist: [
                     { id: generateId(), text: "Meet with Assistant Director", done: false },
                     { id: generateId(), text: "Schedule Photoshoot or Video shoot dates", done: false },
@@ -4230,7 +4230,7 @@
             const mondayBoardInput = document.getElementById('mondayBoardId');
             if (mondayBoardInput) mondayBoardInput.value = boardSettings.mondayBoardId || '';
             const mondayTeamInput = document.getElementById('mondayTeamName');
-            if (mondayTeamInput) mondayTeamInput.value = boardSettings.mondayTeamName || 'CAB';
+            if (mondayTeamInput) mondayTeamInput.value = boardSettings.mondayTeamName || 'Commuter Life';
             const mondayListInput = document.getElementById('mondayDefaultListId');
             if (mondayListInput) mondayListInput.value = boardSettings.mondayDefaultListId || 'group_1';
 
@@ -4521,7 +4521,7 @@
         if (!activeBoard.settings) activeBoard.settings = {};
         activeBoard.settings.mondayApiToken = (tokenInput.value || '').trim();
         activeBoard.settings.mondayBoardId = (boardInput.value || '').trim();
-        activeBoard.settings.mondayTeamName = (teamInput.value || '').trim() || 'CAB';
+        activeBoard.settings.mondayTeamName = (teamInput.value || '').trim() || 'Commuter Life';
         activeBoard.settings.mondayDefaultListId = (listInput.value || '').trim() || 'group_1';
 
         // Save field ID mappings
@@ -4634,7 +4634,7 @@
             }
 
             // Smart detection: Find the Team column by looking for team names in the data
-            const teamName = (activeBoard.settings?.mondayTeamName || 'CAB').toUpperCase();
+            const teamName = (activeBoard.settings?.mondayTeamName || 'Commuter Life').toUpperCase();
             const teamColumnId = findTeamColumnId(items, teamName);
 
             if (!teamColumnId) {
@@ -5183,7 +5183,7 @@
                 settings: {
                     mondayApiToken: '',
                     mondayBoardId: '',
-                    mondayTeamName: 'CAB',
+                    mondayTeamName: 'Commuter Life',
                     mondayDefaultListId: 'group_1',
                     mondayImportedIds: [],
                     fieldEventName: 'text_mkv54kad',
