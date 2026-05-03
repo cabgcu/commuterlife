@@ -21,6 +21,9 @@
     <!-- Confetti SDK -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
     <!-- Mobile Drag and Drop Polyfill -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
     <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
@@ -1284,6 +1287,84 @@
             overflow: hidden; position: relative;
         }
         .mention-dropdown .mention-item .mention-avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+
+        /* ── Storage Bins ── */
+        .storage-section-header {
+            font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 18px 4px 8px; margin: 0;
+        }
+        .storage-bins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px; margin-bottom: 24px;
+        }
+        .storage-bin-card {
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.18s, box-shadow 0.18s;
+            display: flex; flex-direction: column;
+        }
+        .storage-bin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+        .storage-bin-img {
+            width: 100%; height: 120px; object-fit: cover;
+            background: rgba(255,255,255,0.04);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; color: var(--text-muted);
+        }
+        .storage-bin-img img { width: 100%; height: 100%; object-fit: cover; }
+        .storage-bin-body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .storage-bin-label {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: #0A84FF;
+        }
+        .storage-bin-name { font-size: 0.95rem; font-weight: 700; line-height: 1.3; }
+        .storage-bin-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; flex: 1; }
+        .storage-bin-status {
+            margin-top: 8px; font-size: 0.75rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 100px; display: inline-block; width: fit-content;
+        }
+        .storage-bin-status.available { background: rgba(52,199,89,0.15); color: #34C759; }
+        .storage-bin-status.checked-out { background: rgba(255,59,48,0.15); color: #FF6B6B; }
+
+        /* QR Print Styles */
+        .bin-qr-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 0; }
+        .bin-qr-wrapper canvas, .bin-qr-wrapper img { border-radius: 12px; }
+        .bin-qr-label { font-size: 1rem; font-weight: 800; text-align: center; }
+        .bin-qr-sublabel { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+
+        /* Checkout history */
+        .checkout-history-item {
+            display: flex; flex-direction: column; gap: 2px;
+            padding: 10px 14px; border-radius: 12px;
+            background: rgba(255,255,255,0.04); margin-bottom: 8px;
+        }
+        .checkout-history-item.active { background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.15); }
+
+        /* Public Bin Card */
+        #publicBinOverlay {
+            position: fixed; inset: 0; z-index: 9999999;
+            background: #050505; display: none;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        .public-bin-card {
+            max-width: 480px; margin: 0 auto; padding: 30px 20px 80px;
+        }
+        .public-bin-hero {
+            width: 100%; height: 220px; border-radius: 20px; overflow: hidden;
+            background: rgba(255,255,255,0.05); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 4rem; margin-bottom: 20px;
+        }
+        .public-bin-hero img { width: 100%; height: 100%; object-fit: cover; }
+
+        @media (max-width: 600px) {
+            .storage-bins-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+            .storage-bin-img { height: 100px; }
+        }
     </style>
 </head>
 <body>
@@ -1416,6 +1497,7 @@
         <button class="nav-tab active" id="tab-board" onclick="switchView('board')">Home</button>
         <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">🗓 Calendar</button>
         <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')">⚡ Due</button>
+        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">📦 Storage</button>
         <button class="nav-tab" id="tab-events" onclick="switchView('events')" style="display:none;">📋 Events</button>
         <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;">🔔<span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
         <button class="nav-tab" id="tab-settings" onclick="switchView('settings')">⚙️ Settings</button>
@@ -1429,6 +1511,10 @@
 
     <div class="app-view" id="view-events" style="padding: 0 4px;">
         <div class="events-wrapper" id="events-content"></div>
+    </div>
+
+    <div class="app-view" id="view-storage" style="padding: 16px 4px 80px;">
+        <div id="storage-content"></div>
     </div>
 
     <!-- BULK ACTION BAR -->
@@ -2369,6 +2455,7 @@
                 delete appData.settings.mondayImportedIds;
                 if (!appData.notifications) appData.notifications = {};
                 if (!appData.notifPrefs) appData.notifPrefs = {};
+                if (!appData.storageBins) appData.storageBins = [];
 
                 appData.boards.forEach(b => {
                     if (b.backgroundImage === undefined) b.backgroundImage = '';
@@ -2460,6 +2547,7 @@
             settings: { password: 'Marketing49!', users: [] },
             notifications: {},
             notifPrefs: {},
+            storageBins: [],
             boards: [{ id: defaultBoardId, year: '2026-2027', backgroundImage: '', settings: { mondayApiToken: '', mondayBoardId: '', mondayTeamName: 'Commuter Life', mondayDefaultListId: 'group_1', mondayImportedIds: [], fieldEventName: 'text_mkv54kad', fieldDate: 'date_mkv5tftz', fieldTime: 'text_mkv8jajm', fieldDescription: 'long_text_mkv5467b', fieldLocation: 'text_mkv5brpa', fieldSubmittedBy: 'text_mkv8ebee', fieldEmail: 'email_mkv8x9x', fieldInspiration: 'file_mkv5hqye' } }],
             columns: [
                 { id: colBacklog, boardId: defaultBoardId, title: 'Backlog', order: 0, assignedTo: '' },
@@ -2924,6 +3012,7 @@
         if (viewName === 'settings') { renderSettings(); renderUserProfile(); }
         if (viewName === 'duesoon') renderDueSoon();
         if (viewName === 'events') renderEvents();
+        if (viewName === 'storage') renderStorage();
     }
 
     let searchQuery = '';
@@ -8397,7 +8486,7 @@
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            ['newBoardModal', 'taskModal', 'colModal', 'quickPostModal', 'automationsModal', 'editColModal', 'workspaceModal', 'importModal', 'importSummaryModal', 'attachmentStorageModal'].forEach(id => {
+            ['newBoardModal', 'taskModal', 'colModal', 'quickPostModal', 'automationsModal', 'editColModal', 'workspaceModal', 'importModal', 'importSummaryModal', 'attachmentStorageModal', 'storageBinModal', 'binQrModal', 'binCheckoutModal'].forEach(id => {
                 const m = document.getElementById(id);
                 if (m && m.classList.contains('show')) closeModal(null, id);
             });
@@ -8419,8 +8508,27 @@
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         await initData();
 
-        // Check for shared card preview mode
+        // Check for public bin card mode (?bin=ID)
         const shareParams = new URLSearchParams(window.location.search);
+        const publicBinId = shareParams.get('bin');
+        if (publicBinId) {
+            const bin = (appData.storageBins || []).find(b => b.id === publicBinId);
+            document.getElementById('login-overlay').style.display = 'none';
+            document.querySelector('.app-container').style.display = 'none';
+            document.getElementById('publicBinOverlay').style.display = 'block';
+            isAuthenticated = true;
+            applyBranding();
+            const logoUrl = (appData.settings && appData.settings.logoUrl) ? toDirectDriveUrl(appData.settings.logoUrl) : '';
+            if (logoUrl) { const el = document.getElementById('publicBinLogo'); if (el) { el.src = logoUrl; el.style.display = 'block'; } }
+            if (bin) {
+                renderPublicBinCard(bin);
+            } else {
+                document.getElementById('publicBinContent').innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--text-muted);font-weight:700;">Bin not found.</div>';
+            }
+            return;
+        }
+
+        // Check for shared card preview mode
         const sharedCardId = shareParams.get('card');
         if (sharedCardId) {
             const task = appData.tasks.find(t => t.id === sharedCardId);
@@ -8829,6 +8937,103 @@
         showToast('Event & card deleted.');
     }
 </script>
+<!-- ══════════════════════════════════════════
+     STORAGE BIN MODALS
+══════════════════════════════════════════ -->
+
+<!-- Bin Editor Modal -->
+<div id="storageBinModal" class="modal-overlay" onclick="closeModal(event, 'storageBinModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:520px;">
+        <button class="close-modal" onclick="closeModal(null,'storageBinModal')">&times;</button>
+        <h3 id="storageBinModalTitle" style="margin:0 0 20px; font-weight:800;">Add Storage Bin</h3>
+        <input type="hidden" id="storageBinId">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Section</label>
+                    <input id="storageBinSection" class="modern-input" placeholder="e.g. A" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Bin Label</label>
+                    <input id="storageBinLabel" class="modern-input" placeholder="e.g. A-01" style="width:100%;">
+                </div>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Bin Name</label>
+                <input id="storageBinName" class="modern-input" placeholder="e.g. Holiday Decorations" style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Description</label>
+                <textarea id="storageBinDesc" class="modern-input" placeholder="Describe what's inside..." rows="3" style="width:100%; resize:none; line-height:1.5;"></textarea>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Contents Photo</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img id="storageBinPicPreview" src="" alt="" style="width:64px; height:64px; object-fit:cover; border-radius:12px; display:none; background:rgba(255,255,255,0.05);">
+                    <label class="btn-outline" style="cursor:pointer; font-size:0.85rem; padding:8px 16px; margin:0;">
+                        📷 Upload Photo
+                        <input type="file" accept="image/*" onchange="handleBinPictureUpload(event)" style="display:none;">
+                    </label>
+                    <button id="storageBinPicRemove" onclick="removeBinPicture()" class="btn-outline" style="display:none; font-size:0.8rem; padding:6px 12px; color:#FF3B30; border-color:#FF3B30;">Remove</button>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:6px;">
+                <button onclick="saveBin()" class="btn-action" style="flex:1;">Save Bin</button>
+                <button id="storageBinDeleteBtn" onclick="deleteBinFromModal()" class="btn-action" style="background:var(--gradient-danger); display:none;">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bin QR Code Modal -->
+<div id="binQrModal" class="modal-overlay" onclick="closeModal(event,'binQrModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:380px;">
+        <button class="close-modal" onclick="closeModal(null,'binQrModal')">&times;</button>
+        <h3 id="binQrModalTitle" style="margin:0 0 4px; font-weight:800; text-align:center;"></h3>
+        <p id="binQrModalSub" style="margin:0 0 16px; font-size:0.8rem; color:var(--text-muted); text-align:center;"></p>
+        <div class="bin-qr-wrapper">
+            <div id="binQrCode" style="background:#fff; padding:12px; border-radius:12px; display:inline-block;"></div>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin:12px 0 0;">Scan to open the bin card and check in/out</p>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <button onclick="copyBinUrl()" class="btn-outline" style="flex:1;">🔗 Copy Link</button>
+            <button onclick="printBinQr()" class="btn-outline" style="flex:1;">🖨️ Print</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bin Checkout Modal -->
+<div id="binCheckoutModal" class="modal-overlay" onclick="closeModal(event,'binCheckoutModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:420px;">
+        <button class="close-modal" onclick="closeModal(null,'binCheckoutModal')">&times;</button>
+        <h3 id="binCheckoutModalTitle" style="margin:0 0 6px; font-weight:800;"></h3>
+        <p id="binCheckoutModalSub" style="margin:0 0 18px; font-size:0.85rem; color:var(--text-muted);"></p>
+        <input type="hidden" id="binCheckoutBinId">
+        <div id="binCheckoutForm" style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Your Name</label>
+                <input id="binCheckoutName" class="modern-input" placeholder="Enter your name" style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Notes (optional)</label>
+                <input id="binCheckoutNotes" class="modern-input" placeholder="e.g. Taking 3 items for event" style="width:100%;">
+            </div>
+            <button id="binCheckoutSubmitBtn" onclick="submitBinCheckout()" class="btn-action">Check Out</button>
+        </div>
+    </div>
+</div>
+
+<!-- PUBLIC BIN CARD (accessed via ?bin=ID) -->
+<div id="publicBinOverlay">
+    <div class="public-bin-card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+            <img id="publicBinLogo" src="" style="height:32px; width:auto; border-radius:6px; display:none;" alt="">
+            <span style="font-size:0.8rem; color:var(--text-muted);">Storage Bin</span>
+        </div>
+        <div id="publicBinContent"></div>
+    </div>
+</div>
+
 <!-- SHARED CARD PREVIEW -->
 <div id="sharedCardOverlay" style="
     position: fixed; inset: 0; z-index: 9999999;
@@ -9012,6 +9217,362 @@
 
         html += '</div>'; // close padding div
         container.innerHTML = html;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  STORAGE BINS
+    // ══════════════════════════════════════════════════════════
+
+    function renderStorage() {
+        const container = document.getElementById('storage-content');
+        if (!container) return;
+        const bins = appData.storageBins || [];
+
+        let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <h2 style="margin:0; font-weight:800; font-size:1.4rem;">Storage Bins</h2>
+            <button class="btn-action" onclick="openBinModal(null)" style="padding:9px 20px; font-size:0.88rem;">+ Add Bin</button>
+        </div>`;
+
+        if (bins.length === 0) {
+            html += `<div style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+                <div style="font-size:3rem; margin-bottom:12px;">📦</div>
+                <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">No storage bins yet</div>
+                <div style="font-size:0.85rem;">Add a bin to get started. Each bin gets its own QR code.</div>
+            </div>`;
+            container.innerHTML = html;
+            return;
+        }
+
+        // Group by section
+        const sections = {};
+        bins.forEach(bin => {
+            const sec = bin.section || 'General';
+            if (!sections[sec]) sections[sec] = [];
+            sections[sec].push(bin);
+        });
+
+        Object.keys(sections).sort().forEach(sec => {
+            html += `<div class="storage-section-header">Section ${escapeHtml(sec)}</div>`;
+            html += `<div class="storage-bins-grid">`;
+            sections[sec].sort((a, b) => (a.label || '').localeCompare(b.label || '')).forEach(bin => {
+                const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
+                const statusClass = activeCheckout ? 'checked-out' : 'available';
+                const statusText = activeCheckout ? `Out: ${escapeHtml(activeCheckout.user)}` : 'Available';
+                const imgHtml = bin.picture
+                    ? `<img src="${bin.picture}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+                    : `<span style="font-size:2.5rem;">📦</span>`;
+                html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
+                    <div class="storage-bin-img">${imgHtml}</div>
+                    <div class="storage-bin-body">
+                        <div class="storage-bin-label">${escapeHtml(bin.label || '')}</div>
+                        <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
+                        ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 80))}${bin.description.length > 80 ? '…' : ''}</div>` : ''}
+                        <div class="storage-bin-status ${statusClass}">${statusText}</div>
+                    </div>
+                    <div style="display:flex; gap:6px; padding:0 14px 12px;">
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.75rem; padding:5px 10px; flex:1;">QR</button>
+                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.75rem; padding:5px 10px; flex:1;">Edit</button>` : ''}
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // ── Bin Editor Modal ──
+
+    let _binPictureUrl = '';
+
+    function openBinModal(binId) {
+        const bin = binId ? (appData.storageBins || []).find(b => b.id === binId) : null;
+        document.getElementById('storageBinModalTitle').textContent = bin ? 'Edit Storage Bin' : 'Add Storage Bin';
+        document.getElementById('storageBinId').value = bin ? bin.id : '';
+        document.getElementById('storageBinSection').value = bin ? (bin.section || '') : '';
+        document.getElementById('storageBinLabel').value = bin ? (bin.label || '') : '';
+        document.getElementById('storageBinName').value = bin ? (bin.name || '') : '';
+        document.getElementById('storageBinDesc').value = bin ? (bin.description || '') : '';
+        _binPictureUrl = bin ? (bin.picture || '') : '';
+        const preview = document.getElementById('storageBinPicPreview');
+        const removeBtn = document.getElementById('storageBinPicRemove');
+        if (_binPictureUrl) {
+            preview.src = _binPictureUrl;
+            preview.style.display = 'block';
+            removeBtn.style.display = 'inline-flex';
+        } else {
+            preview.style.display = 'none';
+            removeBtn.style.display = 'none';
+        }
+        document.getElementById('storageBinDeleteBtn').style.display = bin ? 'block' : 'none';
+        openModal('storageBinModal');
+    }
+
+    async function handleBinPictureUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        showToast('Uploading photo...');
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64 = e.target.result.split(',')[1];
+            try {
+                const res = await fetch(GAS_UPLOAD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ filename: file.name, mimeType: file.type, base64 })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    _binPictureUrl = toDirectDriveUrl(result.url);
+                    const preview = document.getElementById('storageBinPicPreview');
+                    preview.src = _binPictureUrl;
+                    preview.style.display = 'block';
+                    document.getElementById('storageBinPicRemove').style.display = 'inline-flex';
+                    showToast('Photo uploaded!');
+                } else {
+                    showToast('Upload failed. Try again.');
+                }
+            } catch (err) {
+                showToast('Upload error. Check connection.');
+            }
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    }
+
+    function removeBinPicture() {
+        _binPictureUrl = '';
+        const preview = document.getElementById('storageBinPicPreview');
+        preview.src = '';
+        preview.style.display = 'none';
+        document.getElementById('storageBinPicRemove').style.display = 'none';
+    }
+
+    function saveBin() {
+        const section = document.getElementById('storageBinSection').value.trim();
+        const label = document.getElementById('storageBinLabel').value.trim();
+        const name = document.getElementById('storageBinName').value.trim();
+        const desc = document.getElementById('storageBinDesc').value.trim();
+        if (!name) { showToast('Bin name is required.'); return; }
+        if (!appData.storageBins) appData.storageBins = [];
+        const existingId = document.getElementById('storageBinId').value;
+        if (existingId) {
+            const idx = appData.storageBins.findIndex(b => b.id === existingId);
+            if (idx !== -1) {
+                appData.storageBins[idx].section = section;
+                appData.storageBins[idx].label = label;
+                appData.storageBins[idx].name = name;
+                appData.storageBins[idx].description = desc;
+                appData.storageBins[idx].picture = _binPictureUrl;
+            }
+        } else {
+            appData.storageBins.push({
+                id: 'bin_' + generateId(),
+                section, label, name,
+                description: desc,
+                picture: _binPictureUrl,
+                checkouts: []
+            });
+        }
+        saveData();
+        closeModal(null, 'storageBinModal');
+        renderStorage();
+        showToast('Bin saved.');
+    }
+
+    function deleteBinFromModal() {
+        const binId = document.getElementById('storageBinId').value;
+        if (!binId) return;
+        if (!confirm('Delete this storage bin and all its checkout history?')) return;
+        appData.storageBins = (appData.storageBins || []).filter(b => b.id !== binId);
+        saveData();
+        closeModal(null, 'storageBinModal');
+        renderStorage();
+        showToast('Bin deleted.');
+    }
+
+    // ── QR Code Modal ──
+
+    let _currentQrBinId = '';
+
+    function openBinQr(binId) {
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (!bin) return;
+        _currentQrBinId = binId;
+        document.getElementById('binQrModalTitle').textContent = bin.name || 'Unnamed Bin';
+        document.getElementById('binQrModalSub').textContent = [bin.section ? 'Section ' + bin.section : '', bin.label].filter(Boolean).join(' · ');
+        const qrContainer = document.getElementById('binQrCode');
+        qrContainer.innerHTML = '';
+        const url = window.location.origin + window.location.pathname + '?bin=' + binId;
+        new QRCode(qrContainer, { text: url, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+        openModal('binQrModal');
+    }
+
+    function copyBinUrl() {
+        const url = window.location.origin + window.location.pathname + '?bin=' + _currentQrBinId;
+        navigator.clipboard.writeText(url).then(() => showToast('Link copied!')).catch(() => showToast('Link: ' + url));
+    }
+
+    function printBinQr() {
+        const bin = (appData.storageBins || []).find(b => b.id === _currentQrBinId);
+        if (!bin) return;
+        const qrEl = document.getElementById('binQrCode');
+        const img = qrEl.querySelector('img');
+        const canvas = qrEl.querySelector('canvas');
+        const imgSrc = img ? img.src : (canvas ? canvas.toDataURL() : '');
+        const win = window.open('', '_blank');
+        win.document.write(`<!DOCTYPE html><html><head><title>${bin.name}</title><style>
+            body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #fff; color: #000; }
+            h2 { margin: 0 0 4px; font-size: 1.4rem; }
+            p { margin: 0 0 16px; color: #666; font-size: 0.9rem; }
+            img { width: 220px; height: 220px; }
+        </style></head><body>
+            <h2>${bin.name}</h2>
+            <p>${[bin.section ? 'Section ' + bin.section : '', bin.label].filter(Boolean).join(' · ')}</p>
+            <img src="${imgSrc}" alt="QR Code">
+            <p style="margin-top:12px; font-size:0.75rem; color:#999;">Scan to check in/out</p>
+        </body></html>`);
+        win.document.close();
+        win.print();
+    }
+
+    // ── Checkout Modal (admin/in-app) ──
+
+    function openPublicBinCardModal(binId) {
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (!bin) return;
+        const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
+        document.getElementById('binCheckoutBinId').value = binId;
+        document.getElementById('binCheckoutModalTitle').textContent = bin.name || 'Unnamed Bin';
+        const sub = [bin.section ? 'Section ' + bin.section : '', bin.label].filter(Boolean).join(' · ');
+        document.getElementById('binCheckoutModalSub').textContent = sub;
+        const submitBtn = document.getElementById('binCheckoutSubmitBtn');
+        const notesField = document.getElementById('binCheckoutNotes');
+        const nameField = document.getElementById('binCheckoutName');
+        document.getElementById('binCheckoutForm').style.display = 'flex';
+        nameField.value = currentUserName || '';
+
+        if (activeCheckout) {
+            submitBtn.textContent = `Check In (checked out by ${activeCheckout.user})`;
+            submitBtn.style.background = 'var(--gradient-success)';
+            notesField.placeholder = 'Notes on return (optional)';
+        } else {
+            submitBtn.textContent = 'Check Out';
+            submitBtn.style.background = '';
+            notesField.placeholder = 'e.g. Taking 3 items for event';
+        }
+        nameField.value = currentUserName || '';
+        notesField.value = '';
+        openModal('binCheckoutModal');
+
+        // Show checkout history below form
+        const histHtml = _renderCheckoutHistory(bin);
+        if (histHtml) {
+            document.getElementById('binCheckoutForm').insertAdjacentHTML('afterend', histHtml);
+        }
+    }
+
+    function submitBinCheckout() {
+        const binId = document.getElementById('binCheckoutBinId').value;
+        const name = document.getElementById('binCheckoutName').value.trim();
+        const notes = document.getElementById('binCheckoutNotes').value.trim();
+        if (!name) { showToast('Please enter your name.'); return; }
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (!bin) return;
+        if (!bin.checkouts) bin.checkouts = [];
+        const activeCheckout = bin.checkouts.find(c => !c.checkedInAt);
+        const now = new Date().toISOString();
+        if (activeCheckout) {
+            activeCheckout.checkedInAt = now;
+            if (notes) activeCheckout.notes += (activeCheckout.notes ? ' | Return: ' : 'Return: ') + notes;
+            showToast(`Checked in by ${name}.`);
+        } else {
+            bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes });
+            showToast(`Checked out by ${name}.`);
+        }
+        saveData();
+        closeModal(null, 'binCheckoutModal');
+        renderStorage();
+    }
+
+    function _renderCheckoutHistory(bin) {
+        const history = (bin.checkouts || []).slice().reverse().slice(0, 10);
+        if (history.length === 0) return '';
+        let h = `<div style="margin-top:20px;"><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">Checkout History</div>`;
+        history.forEach(c => {
+            const out = new Date(c.checkedOutAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            const inTime = c.checkedInAt ? new Date(c.checkedInAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+            h += `<div class="checkout-history-item ${!c.checkedInAt ? 'active' : ''}">
+                <div style="font-weight:700;font-size:0.88rem;">${escapeHtml(c.user)} ${!c.checkedInAt ? '<span style="color:#FF6B6B;font-size:0.75rem;">(out)</span>' : ''}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">Out: ${out}${inTime ? ' &nbsp;·&nbsp; In: ' + inTime : ''}</div>
+                ${c.notes ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${escapeHtml(c.notes)}</div>` : ''}
+            </div>`;
+        });
+        h += '</div>';
+        return h;
+    }
+
+    // ── Public Bin Card (no-auth QR landing page) ──
+
+    function renderPublicBinCard(bin) {
+        const container = document.getElementById('publicBinContent');
+        const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
+        const statusClass = activeCheckout ? 'checked-out' : 'available';
+        const statusText = activeCheckout ? `Checked out by ${escapeHtml(activeCheckout.user)}` : 'Available';
+
+        let html = `<div class="frosted" style="border-radius:var(--radius-card); overflow:hidden;">`;
+
+        if (bin.picture) {
+            html += `<div class="public-bin-hero" style="margin-bottom:0; border-radius:0;"><img src="${bin.picture}" alt=""></div>`;
+        } else {
+            html += `<div class="public-bin-hero" style="margin-bottom:0; border-radius:0;">📦</div>`;
+        }
+
+        html += `<div style="padding:24px;">
+            <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:4px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
+            <h2 style="margin:0 0 8px;font-size:1.4rem;font-weight:800;">${escapeHtml(bin.name || 'Unnamed Bin')}</h2>
+            ${bin.description ? `<p style="margin:0 0 16px;font-size:0.9rem;color:var(--text-muted);line-height:1.5;">${escapeHtml(bin.description)}</p>` : ''}
+            <div class="storage-bin-status ${statusClass}" style="margin-bottom:20px;font-size:0.85rem;padding:5px 14px;">${statusText}</div>
+        </div>`;
+
+        html += `</div>`;
+
+        // Checkout form
+        html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:14px;">
+            <h3 style="margin:0 0 16px;font-size:1rem;font-weight:800;">${activeCheckout ? 'Check In' : 'Check Out'}</h3>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <input id="publicBinUserName" class="modern-input" placeholder="Your name" style="width:100%;">
+                <input id="publicBinNotes" class="modern-input" placeholder="${activeCheckout ? 'Notes on return (optional)' : 'Notes (optional)'}" style="width:100%;">
+                <button onclick="submitPublicBinCheckout('${bin.id}')" class="btn-action" style="${activeCheckout ? 'background:var(--gradient-success);' : ''}">${activeCheckout ? 'Check In' : 'Check Out'}</button>
+            </div>
+        </div>`;
+
+        // History
+        const histHtml = _renderCheckoutHistory(bin);
+        if (histHtml) {
+            html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:14px;">${histHtml}</div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    async function submitPublicBinCheckout(binId) {
+        const name = (document.getElementById('publicBinUserName').value || '').trim();
+        const notes = (document.getElementById('publicBinNotes').value || '').trim();
+        if (!name) { alert('Please enter your name.'); return; }
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (!bin) return;
+        if (!bin.checkouts) bin.checkouts = [];
+        const activeCheckout = bin.checkouts.find(c => !c.checkedInAt);
+        const now = new Date().toISOString();
+        if (activeCheckout) {
+            activeCheckout.checkedInAt = now;
+            if (notes) activeCheckout.notes += (activeCheckout.notes ? ' | Return: ' : 'Return: ') + notes;
+        } else {
+            bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes });
+        }
+        await saveData();
+        renderPublicBinCard(bin);
     }
 </script>
 </body>
