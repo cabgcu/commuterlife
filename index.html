@@ -1290,51 +1290,81 @@
 
         /* ── Storage Bins ── */
         .storage-section-header {
-            font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em;
+            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.09em;
             text-transform: uppercase; color: var(--text-muted);
-            padding: 18px 4px 8px; margin: 0;
+            padding: 20px 2px 8px; margin: 0;
         }
-        .storage-bins-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 14px; margin-bottom: 24px;
-        }
+        .storage-bins-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
         .storage-bin-card {
-            background: var(--glass-surface);
-            border: 1px solid var(--glass-border);
+            background: linear-gradient(160deg, rgba(35,35,35,0.6) 0%, rgba(15,15,15,0.4) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.15);
             border-radius: 20px;
-            overflow: hidden;
             cursor: pointer;
-            transition: transform 0.18s, box-shadow 0.18s;
-            display: flex; flex-direction: column;
+            transition: all 0.15s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            overflow: hidden;
         }
-        .storage-bin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
-        .storage-bin-img {
-            width: 100%; height: 120px; object-fit: cover;
+        .storage-bin-card:hover {
+            background: linear-gradient(160deg, rgba(45,45,45,0.7) 0%, rgba(20,20,20,0.5) 100%);
+            border-color: rgba(255,255,255,0.18);
+            border-top-color: rgba(255,255,255,0.28);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1);
+        }
+        .storage-bin-inner { display: flex; gap: 0; }
+        .storage-bin-thumb {
+            width: 110px; flex-shrink: 0;
             background: rgba(255,255,255,0.04);
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; color: var(--text-muted);
+            font-size: 2.2rem;
         }
-        .storage-bin-img img { width: 100%; height: 100%; object-fit: cover; }
-        .storage-bin-body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .storage-bin-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .storage-bin-body { padding: 14px 16px; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+        .storage-bin-meta {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
         .storage-bin-label {
-            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
             text-transform: uppercase; color: #0A84FF;
         }
-        .storage-bin-name { font-size: 0.95rem; font-weight: 700; line-height: 1.3; }
-        .storage-bin-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; flex: 1; }
         .storage-bin-status {
-            margin-top: 8px; font-size: 0.75rem; font-weight: 700;
-            padding: 3px 10px; border-radius: 100px; display: inline-block; width: fit-content;
+            font-size: 0.7rem; font-weight: 700;
+            padding: 2px 9px; border-radius: 100px; display: inline-block;
         }
         .storage-bin-status.available { background: rgba(52,199,89,0.15); color: #34C759; }
         .storage-bin-status.checked-out { background: rgba(255,59,48,0.15); color: #FF6B6B; }
+        .storage-bin-name { font-size: 0.97rem; font-weight: 700; line-height: 1.3; }
+        .storage-bin-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
+        .storage-bin-items {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px;
+        }
+        .storage-item-chip {
+            font-size: 0.72rem; font-weight: 600;
+            padding: 3px 9px; border-radius: 100px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main); white-space: nowrap;
+        }
+        .storage-item-chip .chip-qty {
+            color: #0A84FF; font-weight: 800; margin-right: 3px;
+        }
+        .storage-bin-actions {
+            display: flex; gap: 6px; padding: 0 16px 12px;
+            border-top: 1px solid rgba(255,255,255,0.05); margin-top: 8px; padding-top: 10px;
+        }
 
-        /* QR Print Styles */
+        /* Bin Item Editor Row */
+        .bin-item-row {
+            display: grid; grid-template-columns: 1fr 80px auto;
+            gap: 8px; align-items: center;
+        }
+
+        /* QR wrapper */
         .bin-qr-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 0; }
         .bin-qr-wrapper canvas, .bin-qr-wrapper img { border-radius: 12px; }
-        .bin-qr-label { font-size: 1rem; font-weight: 800; text-align: center; }
-        .bin-qr-sublabel { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
 
         /* Checkout history */
         .checkout-history-item {
@@ -1350,20 +1380,16 @@
             background: #050505; display: none;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
-        .public-bin-card {
-            max-width: 480px; margin: 0 auto; padding: 30px 20px 80px;
-        }
+        .public-bin-card { max-width: 520px; margin: 0 auto; padding: 30px 20px 80px; }
         .public-bin-hero {
-            width: 100%; height: 220px; border-radius: 20px; overflow: hidden;
+            width: 100%; height: 200px; border-radius: 20px 20px 0 0; overflow: hidden;
             background: rgba(255,255,255,0.05); display: flex;
-            align-items: center; justify-content: center;
-            font-size: 4rem; margin-bottom: 20px;
+            align-items: center; justify-content: center; font-size: 4rem;
         }
         .public-bin-hero img { width: 100%; height: 100%; object-fit: cover; }
 
         @media (max-width: 600px) {
-            .storage-bins-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-            .storage-bin-img { height: 100px; }
+            .storage-bin-thumb { width: 88px; font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -1497,8 +1523,8 @@
         <button class="nav-tab active" id="tab-board" onclick="switchView('board')">Home</button>
         <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">🗓 Calendar</button>
         <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')">⚡ Due</button>
-        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">📦 Storage</button>
         <button class="nav-tab" id="tab-events" onclick="switchView('events')" style="display:none;">📋 Events</button>
+        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">📦 Storage</button>
         <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;">🔔<span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
         <button class="nav-tab" id="tab-settings" onclick="switchView('settings')">⚙️ Settings</button>
     </div>
@@ -8967,7 +8993,7 @@
                 <textarea id="storageBinDesc" class="modern-input" placeholder="Describe what's inside..." rows="3" style="width:100%; resize:none; line-height:1.5;"></textarea>
             </div>
             <div>
-                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Contents Photo</label>
+                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Cover Photo</label>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img id="storageBinPicPreview" src="" alt="" style="width:64px; height:64px; object-fit:cover; border-radius:12px; display:none; background:rgba(255,255,255,0.05);">
                     <label class="btn-outline" style="cursor:pointer; font-size:0.85rem; padding:8px 16px; margin:0;">
@@ -8977,6 +9003,16 @@
                     <button id="storageBinPicRemove" onclick="removeBinPicture()" class="btn-outline" style="display:none; font-size:0.8rem; padding:6px 12px; color:#FF3B30; border-color:#FF3B30;">Remove</button>
                 </div>
             </div>
+
+            <!-- Items List -->
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700;">Items in this bin</label>
+                    <button onclick="addBinItemRow()" class="btn-outline" style="font-size:0.78rem; padding:4px 12px;">+ Add Item</button>
+                </div>
+                <div id="storageBinItemsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+
             <div style="display:flex; gap:10px; margin-top:6px;">
                 <button onclick="saveBin()" class="btn-action" style="flex:1;">Save Bin</button>
                 <button id="storageBinDeleteBtn" onclick="deleteBinFromModal()" class="btn-action" style="background:var(--gradient-danger); display:none;">Delete</button>
@@ -9230,7 +9266,7 @@
 
         let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
             <h2 style="margin:0; font-weight:800; font-size:1.4rem;">Storage Bins</h2>
-            <button class="btn-action" onclick="openBinModal(null)" style="padding:9px 20px; font-size:0.88rem;">+ Add Bin</button>
+            ${currentUserRole === 'admin' ? `<button class="btn-action" onclick="openBinModal(null)" style="padding:9px 20px; font-size:0.88rem;">+ Add Bin</button>` : ''}
         </div>`;
 
         if (bins.length === 0) {
@@ -9253,25 +9289,36 @@
 
         Object.keys(sections).sort().forEach(sec => {
             html += `<div class="storage-section-header">Section ${escapeHtml(sec)}</div>`;
-            html += `<div class="storage-bins-grid">`;
+            html += `<div class="storage-bins-list">`;
             sections[sec].sort((a, b) => (a.label || '').localeCompare(b.label || '')).forEach(bin => {
                 const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
                 const statusClass = activeCheckout ? 'checked-out' : 'available';
                 const statusText = activeCheckout ? `Out: ${escapeHtml(activeCheckout.user)}` : 'Available';
-                const imgHtml = bin.picture
-                    ? `<img src="${bin.picture}" alt="" style="width:100%;height:100%;object-fit:cover;">`
-                    : `<span style="font-size:2.5rem;">📦</span>`;
+                const thumbHtml = bin.picture
+                    ? `<img src="${bin.picture}" alt="">`
+                    : `📦`;
+                const items = bin.items || [];
+                let itemChips = items.map(it =>
+                    `<span class="storage-item-chip">${it.qty ? `<span class="chip-qty">×${escapeHtml(it.qty)}</span>` : ''}${escapeHtml(it.name)}</span>`
+                ).join('');
+
                 html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
-                    <div class="storage-bin-img">${imgHtml}</div>
-                    <div class="storage-bin-body">
-                        <div class="storage-bin-label">${escapeHtml(bin.label || '')}</div>
-                        <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
-                        ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 80))}${bin.description.length > 80 ? '…' : ''}</div>` : ''}
-                        <div class="storage-bin-status ${statusClass}">${statusText}</div>
+                    <div class="storage-bin-inner">
+                        <div class="storage-bin-thumb">${thumbHtml}</div>
+                        <div class="storage-bin-body">
+                            <div class="storage-bin-meta">
+                                ${bin.label ? `<span class="storage-bin-label">${escapeHtml(bin.label)}</span>` : ''}
+                                <span class="storage-bin-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
+                            ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 100))}${bin.description.length > 100 ? '…' : ''}</div>` : ''}
+                            ${items.length ? `<div class="storage-bin-items">${itemChips}</div>` : ''}
+                        </div>
                     </div>
-                    <div style="display:flex; gap:6px; padding:0 14px 12px;">
-                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.75rem; padding:5px 10px; flex:1;">QR</button>
-                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.75rem; padding:5px 10px; flex:1;">Edit</button>` : ''}
+                    <div class="storage-bin-actions">
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">📱 QR Code</button>
+                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">✏️ Edit</button>` : ''}
+                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.78rem; padding:5px 14px;">${activeCheckout ? 'Check In' : 'Check Out'}</button>
                     </div>
                 </div>`;
             });
@@ -9284,6 +9331,7 @@
     // ── Bin Editor Modal ──
 
     let _binPictureUrl = '';
+    let _binItems = []; // working copy of items in the modal
 
     function openBinModal(binId) {
         const bin = binId ? (appData.storageBins || []).find(b => b.id === binId) : null;
@@ -9294,6 +9342,7 @@
         document.getElementById('storageBinName').value = bin ? (bin.name || '') : '';
         document.getElementById('storageBinDesc').value = bin ? (bin.description || '') : '';
         _binPictureUrl = bin ? (bin.picture || '') : '';
+        _binItems = bin ? JSON.parse(JSON.stringify(bin.items || [])) : [];
         const preview = document.getElementById('storageBinPicPreview');
         const removeBtn = document.getElementById('storageBinPicRemove');
         if (_binPictureUrl) {
@@ -9305,7 +9354,39 @@
             removeBtn.style.display = 'none';
         }
         document.getElementById('storageBinDeleteBtn').style.display = bin ? 'block' : 'none';
+        renderBinItemRows();
         openModal('storageBinModal');
+    }
+
+    function renderBinItemRows() {
+        const list = document.getElementById('storageBinItemsList');
+        if (!list) return;
+        if (_binItems.length === 0) {
+            list.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);padding:4px 0;">No items yet — click "+ Add Item" to start.</div>`;
+            return;
+        }
+        list.innerHTML = _binItems.map((item, i) => `
+            <div class="bin-item-row">
+                <input class="modern-input" placeholder="Item name" value="${escapeHtml(item.name || '')}"
+                    oninput="_binItems[${i}].name=this.value" style="min-width:0;">
+                <input class="modern-input" placeholder="Qty" value="${escapeHtml(item.qty || '')}"
+                    oninput="_binItems[${i}].qty=this.value" style="min-width:0; text-align:center;">
+                <button onclick="removeBinItemRow(${i})" style="background:none;border:none;color:#FF3B30;font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1;" title="Remove">×</button>
+            </div>
+        `).join('');
+    }
+
+    function addBinItemRow() {
+        _binItems.push({ id: generateId(), name: '', qty: '' });
+        renderBinItemRows();
+        // Focus the newly added name input
+        const rows = document.getElementById('storageBinItemsList').querySelectorAll('.modern-input');
+        if (rows.length) rows[rows.length - 2]?.focus();
+    }
+
+    function removeBinItemRow(index) {
+        _binItems.splice(index, 1);
+        renderBinItemRows();
     }
 
     async function handleBinPictureUpload(event) {
@@ -9354,6 +9435,12 @@
         const name = document.getElementById('storageBinName').value.trim();
         const desc = document.getElementById('storageBinDesc').value.trim();
         if (!name) { showToast('Bin name is required.'); return; }
+        // Collect items from _binItems (filter empty names)
+        const items = _binItems.filter(it => (it.name || '').trim()).map(it => ({
+            id: it.id || generateId(),
+            name: it.name.trim(),
+            qty: (it.qty || '').trim()
+        }));
         if (!appData.storageBins) appData.storageBins = [];
         const existingId = document.getElementById('storageBinId').value;
         if (existingId) {
@@ -9364,6 +9451,7 @@
                 appData.storageBins[idx].name = name;
                 appData.storageBins[idx].description = desc;
                 appData.storageBins[idx].picture = _binPictureUrl;
+                appData.storageBins[idx].items = items;
             }
         } else {
             appData.storageBins.push({
@@ -9371,6 +9459,7 @@
                 section, label, name,
                 description: desc,
                 picture: _binPictureUrl,
+                items,
                 checkouts: []
             });
         }
@@ -9446,30 +9535,49 @@
         document.getElementById('binCheckoutModalTitle').textContent = bin.name || 'Unnamed Bin';
         const sub = [bin.section ? 'Section ' + bin.section : '', bin.label].filter(Boolean).join(' · ');
         document.getElementById('binCheckoutModalSub').textContent = sub;
+
+        // Build items summary above the form
+        const items = bin.items || [];
+        let itemsHtml = '';
+        if (items.length) {
+            itemsHtml = `<div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px solid rgba(255,255,255,0.07);">
+                <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Contents</div>
+                <div style="display:flex;flex-direction:column;gap:0;">`;
+            items.forEach((it, idx) => {
+                itemsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : ''}">
+                    <span style="width:24px;height:24px;border-radius:7px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</span>
+                    <span style="font-size:0.88rem;font-weight:600;">${escapeHtml(it.name)}</span>
+                </div>`;
+            });
+            itemsHtml += `</div></div>`;
+        }
+
         const submitBtn = document.getElementById('binCheckoutSubmitBtn');
         const notesField = document.getElementById('binCheckoutNotes');
         const nameField = document.getElementById('binCheckoutName');
-        document.getElementById('binCheckoutForm').style.display = 'flex';
-        nameField.value = currentUserName || '';
+        const form = document.getElementById('binCheckoutForm');
+        form.style.display = 'flex';
 
         if (activeCheckout) {
-            submitBtn.textContent = `Check In (checked out by ${activeCheckout.user})`;
+            submitBtn.textContent = `Mark as Returned`;
             submitBtn.style.background = 'var(--gradient-success)';
-            notesField.placeholder = 'Notes on return (optional)';
+            notesField.placeholder = 'Return notes (optional)';
         } else {
             submitBtn.textContent = 'Check Out';
             submitBtn.style.background = '';
-            notesField.placeholder = 'e.g. Taking 3 items for event';
+            notesField.placeholder = 'Notes — e.g. taking for event (optional)';
         }
         nameField.value = currentUserName || '';
         notesField.value = '';
         openModal('binCheckoutModal');
 
-        // Show checkout history below form
-        const histHtml = _renderCheckoutHistory(bin);
-        if (histHtml) {
-            document.getElementById('binCheckoutForm').insertAdjacentHTML('afterend', histHtml);
-        }
+        // Inject items summary + history after form
+        const existing = form.nextElementSibling;
+        if (existing && existing.dataset.binExtra) existing.remove();
+        const extra = document.createElement('div');
+        extra.dataset.binExtra = '1';
+        extra.innerHTML = itemsHtml + (_renderCheckoutHistory(bin) || '');
+        if (extra.innerHTML) form.after(extra);
     }
 
     function submitBinCheckout() {
@@ -9519,38 +9627,51 @@
         const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
         const statusClass = activeCheckout ? 'checked-out' : 'available';
         const statusText = activeCheckout ? `Checked out by ${escapeHtml(activeCheckout.user)}` : 'Available';
+        const items = bin.items || [];
 
         let html = `<div class="frosted" style="border-radius:var(--radius-card); overflow:hidden;">`;
 
         if (bin.picture) {
-            html += `<div class="public-bin-hero" style="margin-bottom:0; border-radius:0;"><img src="${bin.picture}" alt=""></div>`;
+            html += `<div class="public-bin-hero""><img src="${bin.picture}" alt=""></div>`;
         } else {
-            html += `<div class="public-bin-hero" style="margin-bottom:0; border-radius:0;">📦</div>`;
+            html += `<div class="public-bin-hero">📦</div>`;
         }
 
-        html += `<div style="padding:24px;">
-            <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:4px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
-            <h2 style="margin:0 0 8px;font-size:1.4rem;font-weight:800;">${escapeHtml(bin.name || 'Unnamed Bin')}</h2>
-            ${bin.description ? `<p style="margin:0 0 16px;font-size:0.9rem;color:var(--text-muted);line-height:1.5;">${escapeHtml(bin.description)}</p>` : ''}
-            <div class="storage-bin-status ${statusClass}" style="margin-bottom:20px;font-size:0.85rem;padding:5px 14px;">${statusText}</div>
-        </div>`;
+        html += `<div style="padding:22px 24px 24px;">
+            <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:4px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
+            <h2 style="margin:0 0 6px;font-size:1.4rem;font-weight:800;">${escapeHtml(bin.name || 'Unnamed Bin')}</h2>
+            ${bin.description ? `<p style="margin:0 0 14px;font-size:0.9rem;color:var(--text-muted);line-height:1.5;">${escapeHtml(bin.description)}</p>` : ''}
+            <div class="storage-bin-status ${statusClass}" style="margin-bottom:${items.length ? '18px' : '0'};font-size:0.82rem;padding:4px 13px;">${statusText}</div>`;
 
-        html += `</div>`;
+        if (items.length) {
+            html += `<div style="margin-top:0;">
+                <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Contents</div>
+                <div style="display:flex;flex-direction:column;gap:0;">`;
+            items.forEach((it, idx) => {
+                html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
+                    <div style="width:28px;height:28px;border-radius:8px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</div>
+                    <span style="font-size:0.9rem;font-weight:600;">${escapeHtml(it.name)}</span>
+                </div>`;
+            });
+            html += `</div></div>`;
+        }
+
+        html += `</div></div>`;
 
         // Checkout form
-        html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:14px;">
-            <h3 style="margin:0 0 16px;font-size:1rem;font-weight:800;">${activeCheckout ? 'Check In' : 'Check Out'}</h3>
-            <div style="display:flex;flex-direction:column;gap:12px;">
+        html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:12px;">
+            <h3 style="margin:0 0 14px;font-size:1rem;font-weight:800;">${activeCheckout ? '↩️ Check In' : '↗️ Check Out'}</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
                 <input id="publicBinUserName" class="modern-input" placeholder="Your name" style="width:100%;">
-                <input id="publicBinNotes" class="modern-input" placeholder="${activeCheckout ? 'Notes on return (optional)' : 'Notes (optional)'}" style="width:100%;">
-                <button onclick="submitPublicBinCheckout('${bin.id}')" class="btn-action" style="${activeCheckout ? 'background:var(--gradient-success);' : ''}">${activeCheckout ? 'Check In' : 'Check Out'}</button>
+                <input id="publicBinNotes" class="modern-input" placeholder="${activeCheckout ? 'Return notes (optional)' : 'Notes — e.g. taking items for event (optional)'}" style="width:100%;">
+                <button onclick="submitPublicBinCheckout('${bin.id}')" class="btn-action" style="${activeCheckout ? 'background:var(--gradient-success);' : ''}">${activeCheckout ? 'Mark as Returned' : 'Check Out'}</button>
             </div>
         </div>`;
 
         // History
         const histHtml = _renderCheckoutHistory(bin);
         if (histHtml) {
-            html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:14px;">${histHtml}</div>`;
+            html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:12px;">${histHtml}</div>`;
         }
 
         container.innerHTML = html;
