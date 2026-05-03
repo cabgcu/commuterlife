@@ -1358,13 +1358,76 @@
 
         /* Bin Item Editor Row */
         .bin-item-row {
-            display: grid; grid-template-columns: 1fr 80px auto;
+            display: grid; grid-template-columns: 46px 1fr 70px auto;
             gap: 8px; align-items: center;
+        }
+        .bin-item-pic-btn {
+            width: 46px; height: 46px; border-radius: 10px;
+            overflow: hidden; cursor: pointer; flex-shrink: 0;
+            background: rgba(255,255,255,0.06); border: 1px dashed rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: 0.15s; position: relative;
+        }
+        .bin-item-pic-btn:hover { border-color: #0A84FF; background: rgba(10,132,255,0.08); }
+        .bin-item-pic-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Item strip on bin card */
+        .storage-item-strip { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0 2px; scrollbar-width: none; }
+        .storage-item-strip::-webkit-scrollbar { display: none; }
+        .storage-item-tile {
+            flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+            gap: 4px; width: 64px;
+        }
+        .storage-item-tile-img {
+            width: 60px; height: 60px; border-radius: 10px; overflow: hidden;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+        }
+        .storage-item-tile-img img { width: 100%; height: 100%; object-fit: cover; }
+        .storage-item-tile-label {
+            font-size: 0.65rem; font-weight: 600; text-align: center;
+            color: var(--text-muted); line-height: 1.2;
+            max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .storage-item-tile-qty {
+            font-size: 0.6rem; font-weight: 800; color: #0A84FF; text-align: center;
         }
 
         /* QR wrapper */
         .bin-qr-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 0; }
         .bin-qr-wrapper canvas, .bin-qr-wrapper img { border-radius: 12px; }
+
+        /* Item checkout selector row */
+        .checkout-item-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px; border-radius: 14px;
+            cursor: pointer; transition: background 0.12s;
+            border: 1.5px solid transparent; user-select: none;
+        }
+        .checkout-item-row:hover { background: rgba(255,255,255,0.05); }
+        .checkout-item-row.selected-out {
+            background: rgba(10,132,255,0.08);
+            border-color: rgba(10,132,255,0.35);
+        }
+        .checkout-item-row.selected-in {
+            background: rgba(52,199,89,0.08);
+            border-color: rgba(52,199,89,0.35);
+        }
+        .checkout-item-row.is-out { opacity: 0.9; }
+        .checkout-item-thumb {
+            width: 40px; height: 40px; border-radius: 9px; overflow: hidden; flex-shrink: 0;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+        .checkout-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .checkout-item-check {
+            width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+            transition: all 0.12s;
+        }
+        .selected-out .checkout-item-check { background: #0A84FF; border-color: #0A84FF; }
+        .selected-in  .checkout-item-check { background: #34C759; border-color: #34C759; }
 
         /* Checkout history */
         .checkout-history-item {
@@ -9040,22 +9103,12 @@
 
 <!-- Bin Checkout Modal -->
 <div id="binCheckoutModal" class="modal-overlay" onclick="closeModal(event,'binCheckoutModal')">
-    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:420px;">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:460px;">
         <button class="close-modal" onclick="closeModal(null,'binCheckoutModal')">&times;</button>
-        <h3 id="binCheckoutModalTitle" style="margin:0 0 6px; font-weight:800;"></h3>
-        <p id="binCheckoutModalSub" style="margin:0 0 18px; font-size:0.85rem; color:var(--text-muted);"></p>
+        <h3 id="binCheckoutModalTitle" style="margin:0 0 4px; font-weight:800;"></h3>
+        <p id="binCheckoutModalSub" style="margin:0 0 14px; font-size:0.85rem; color:var(--text-muted);"></p>
         <input type="hidden" id="binCheckoutBinId">
-        <div id="binCheckoutForm" style="display:flex; flex-direction:column; gap:12px;">
-            <div>
-                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Your Name</label>
-                <input id="binCheckoutName" class="modern-input" placeholder="Enter your name" style="width:100%;">
-            </div>
-            <div>
-                <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px;">Notes (optional)</label>
-                <input id="binCheckoutNotes" class="modern-input" placeholder="e.g. Taking 3 items for event" style="width:100%;">
-            </div>
-            <button id="binCheckoutSubmitBtn" onclick="submitBinCheckout()" class="btn-action">Check Out</button>
-        </div>
+        <div id="binCheckoutBody"></div>
     </div>
 </div>
 
@@ -9279,7 +9332,7 @@
             return;
         }
 
-        // Group by section
+        // Group by section, sorted by order field
         const sections = {};
         bins.forEach(bin => {
             const sec = bin.section || 'General';
@@ -9288,19 +9341,50 @@
         });
 
         Object.keys(sections).sort().forEach(sec => {
+            const secBins = sections[sec].slice().sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
             html += `<div class="storage-section-header">Section ${escapeHtml(sec)}</div>`;
             html += `<div class="storage-bins-list">`;
-            sections[sec].sort((a, b) => (a.label || '').localeCompare(b.label || '')).forEach(bin => {
-                const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
-                const statusClass = activeCheckout ? 'checked-out' : 'available';
-                const statusText = activeCheckout ? `Out: ${escapeHtml(activeCheckout.user)}` : 'Available';
-                const thumbHtml = bin.picture
-                    ? `<img src="${bin.picture}" alt="">`
-                    : `📦`;
+            secBins.forEach((bin, secIdx) => {
                 const items = bin.items || [];
-                let itemChips = items.map(it =>
-                    `<span class="storage-item-chip">${it.qty ? `<span class="chip-qty">×${escapeHtml(it.qty)}</span>` : ''}${escapeHtml(it.name)}</span>`
-                ).join('');
+                let statusClass, statusText;
+                if (items.length) {
+                    const outCount = items.filter(it => _itemActiveCheckout(bin, it.id)).length;
+                    statusClass = outCount > 0 ? 'checked-out' : 'available';
+                    statusText  = outCount > 0 ? `${outCount}/${items.length} out` : 'All available';
+                } else {
+                    const active = (bin.checkouts || []).find(c => !c.checkedInAt);
+                    statusClass = active ? 'checked-out' : 'available';
+                    statusText  = active ? `Out: ${escapeHtml(active.user)}` : 'Available';
+                }
+                const hasActive = _binHasActiveCheckouts(bin);
+                const thumbHtml = bin.picture ? `<img src="${bin.picture}" alt="">` : `📦`;
+                const items = bin.items || [];
+                const anyPic = items.some(it => it.picture);
+
+                let itemsHtml = '';
+                if (items.length) {
+                    if (anyPic) {
+                        // Visual tile strip when items have photos
+                        itemsHtml = `<div class="storage-item-strip">` +
+                            items.map(it => `<div class="storage-item-tile">
+                                <div class="storage-item-tile-img">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                                ${it.qty ? `<div class="storage-item-tile-qty">×${escapeHtml(it.qty)}</div>` : ''}
+                                <div class="storage-item-tile-label">${escapeHtml(it.name)}</div>
+                            </div>`).join('') +
+                        `</div>`;
+                    } else {
+                        itemsHtml = `<div class="storage-bin-items">` +
+                            items.map(it => `<span class="storage-item-chip">${it.qty ? `<span class="chip-qty">×${escapeHtml(it.qty)}</span>` : ''}${escapeHtml(it.name)}</span>`).join('') +
+                        `</div>`;
+                    }
+                }
+
+                const isFirst = secIdx === 0;
+                const isLast = secIdx === secBins.length - 1;
+                const moveButtons = currentUserRole === 'admin' ? `
+                    <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', -1)" class="btn-outline" style="font-size:0.78rem; padding:5px 8px;" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
+                    <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', 1)" class="btn-outline" style="font-size:0.78rem; padding:5px 8px;" ${isLast ? 'disabled' : ''} title="Move down">↓</button>
+                ` : '';
 
                 html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
                     <div class="storage-bin-inner">
@@ -9312,13 +9396,14 @@
                             </div>
                             <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
                             ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 100))}${bin.description.length > 100 ? '…' : ''}</div>` : ''}
-                            ${items.length ? `<div class="storage-bin-items">${itemChips}</div>` : ''}
+                            ${itemsHtml}
                         </div>
                     </div>
                     <div class="storage-bin-actions">
-                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">📱 QR Code</button>
+                        ${moveButtons}
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">📱 QR</button>
                         ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">✏️ Edit</button>` : ''}
-                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.78rem; padding:5px 14px;">${activeCheckout ? 'Check In' : 'Check Out'}</button>
+                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.78rem; padding:5px 14px;">${hasActive ? '↩ Check In' : '↗ Check Out'}</button>
                     </div>
                 </div>`;
             });
@@ -9365,22 +9450,55 @@
             list.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);padding:4px 0;">No items yet — click "+ Add Item" to start.</div>`;
             return;
         }
-        list.innerHTML = _binItems.map((item, i) => `
-            <div class="bin-item-row">
+        list.innerHTML = _binItems.map((item, i) => {
+            const picContent = item.picture
+                ? `<img src="${item.picture}" alt="">`
+                : `📷`;
+            return `<div class="bin-item-row">
+                <label class="bin-item-pic-btn" title="Add photo">
+                    ${picContent}
+                    <input type="file" accept="image/*" onchange="handleBinItemPictureUpload(${i}, event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+                </label>
                 <input class="modern-input" placeholder="Item name" value="${escapeHtml(item.name || '')}"
                     oninput="_binItems[${i}].name=this.value" style="min-width:0;">
                 <input class="modern-input" placeholder="Qty" value="${escapeHtml(item.qty || '')}"
                     oninput="_binItems[${i}].qty=this.value" style="min-width:0; text-align:center;">
                 <button onclick="removeBinItemRow(${i})" style="background:none;border:none;color:#FF3B30;font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1;" title="Remove">×</button>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
+    }
+
+    async function handleBinItemPictureUpload(index, event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        showToast('Uploading item photo...');
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64 = e.target.result.split(',')[1];
+            try {
+                const res = await fetch(GAS_UPLOAD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ filename: file.name, mimeType: file.type, base64 })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    _binItems[index].picture = toDirectDriveUrl(result.url);
+                    renderBinItemRows();
+                    showToast('Photo uploaded!');
+                } else {
+                    showToast('Upload failed.');
+                }
+            } catch { showToast('Upload error.'); }
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
     }
 
     function addBinItemRow() {
-        _binItems.push({ id: generateId(), name: '', qty: '' });
+        _binItems.push({ id: generateId(), name: '', qty: '', picture: '' });
         renderBinItemRows();
-        // Focus the newly added name input
-        const rows = document.getElementById('storageBinItemsList').querySelectorAll('.modern-input');
+        const rows = document.getElementById('storageBinItemsList').querySelectorAll('input.modern-input');
         if (rows.length) rows[rows.length - 2]?.focus();
     }
 
@@ -9439,7 +9557,8 @@
         const items = _binItems.filter(it => (it.name || '').trim()).map(it => ({
             id: it.id || generateId(),
             name: it.name.trim(),
-            qty: (it.qty || '').trim()
+            qty: (it.qty || '').trim(),
+            picture: it.picture || ''
         }));
         if (!appData.storageBins) appData.storageBins = [];
         const existingId = document.getElementById('storageBinId').value;
@@ -9454,12 +9573,16 @@
                 appData.storageBins[idx].items = items;
             }
         } else {
+            // New bin: order = max existing order in section + 1
+            const sectionBins = appData.storageBins.filter(b => (b.section || 'General') === (section || 'General'));
+            const maxOrder = sectionBins.reduce((m, b) => Math.max(m, b.order ?? 0), -1);
             appData.storageBins.push({
                 id: 'bin_' + generateId(),
                 section, label, name,
                 description: desc,
                 picture: _binPictureUrl,
                 items,
+                order: maxOrder + 1,
                 checkouts: []
             });
         }
@@ -9467,6 +9590,25 @@
         closeModal(null, 'storageBinModal');
         renderStorage();
         showToast('Bin saved.');
+    }
+
+    function moveBinInSection(binId, sec, dir) {
+        const bins = appData.storageBins || [];
+        const secBins = bins
+            .filter(b => (b.section || 'General') === sec)
+            .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        const idx = secBins.findIndex(b => b.id === binId);
+        const swapIdx = idx + dir;
+        if (swapIdx < 0 || swapIdx >= secBins.length) return;
+        // Swap order values
+        const a = secBins[idx], b = secBins[swapIdx];
+        const tmpOrder = a.order ?? idx;
+        a.order = b.order ?? swapIdx;
+        b.order = tmpOrder;
+        // Normalise so orders are clean 0,1,2…
+        secBins.sort((x, y) => (x.order ?? 9999) - (y.order ?? 9999)).forEach((b, i) => { b.order = i; });
+        saveData();
+        renderStorage();
     }
 
     function deleteBinFromModal() {
@@ -9527,76 +9669,180 @@
 
     // ── Checkout Modal (admin/in-app) ──
 
+    // Returns the active (not yet returned) checkout record that includes this itemId.
+    function _itemActiveCheckout(bin, itemId) {
+        return (bin.checkouts || []).find(c => !c.checkedInAt && (c.itemIds || []).includes(itemId));
+    }
+
+    // Returns true if the bin has ANY item currently checked out.
+    function _binHasActiveCheckouts(bin) {
+        const items = bin.items || [];
+        if (items.length) return items.some(it => _itemActiveCheckout(bin, it.id));
+        // Legacy bin-level checkout (no items list)
+        return !!(bin.checkouts || []).find(c => !c.checkedInAt);
+    }
+
+    // ─── In-app checkout modal ───────────────────────────────────────────
+
+    let _coSelectedIds = new Set(); // item IDs the user has tapped to select
+
     function openPublicBinCardModal(binId) {
         const bin = (appData.storageBins || []).find(b => b.id === binId);
         if (!bin) return;
-        const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
         document.getElementById('binCheckoutBinId').value = binId;
         document.getElementById('binCheckoutModalTitle').textContent = bin.name || 'Unnamed Bin';
-        const sub = [bin.section ? 'Section ' + bin.section : '', bin.label].filter(Boolean).join(' · ');
-        document.getElementById('binCheckoutModalSub').textContent = sub;
-
-        // Build items summary above the form
-        const items = bin.items || [];
-        let itemsHtml = '';
-        if (items.length) {
-            itemsHtml = `<div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px solid rgba(255,255,255,0.07);">
-                <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Contents</div>
-                <div style="display:flex;flex-direction:column;gap:0;">`;
-            items.forEach((it, idx) => {
-                itemsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : ''}">
-                    <span style="width:24px;height:24px;border-radius:7px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</span>
-                    <span style="font-size:0.88rem;font-weight:600;">${escapeHtml(it.name)}</span>
-                </div>`;
-            });
-            itemsHtml += `</div></div>`;
-        }
-
-        const submitBtn = document.getElementById('binCheckoutSubmitBtn');
-        const notesField = document.getElementById('binCheckoutNotes');
-        const nameField = document.getElementById('binCheckoutName');
-        const form = document.getElementById('binCheckoutForm');
-        form.style.display = 'flex';
-
-        if (activeCheckout) {
-            submitBtn.textContent = `Mark as Returned`;
-            submitBtn.style.background = 'var(--gradient-success)';
-            notesField.placeholder = 'Return notes (optional)';
-        } else {
-            submitBtn.textContent = 'Check Out';
-            submitBtn.style.background = '';
-            notesField.placeholder = 'Notes — e.g. taking for event (optional)';
-        }
-        nameField.value = currentUserName || '';
-        notesField.value = '';
+        document.getElementById('binCheckoutModalSub').textContent =
+            [bin.section ? 'Section ' + bin.section : '', bin.label].filter(Boolean).join(' · ');
+        _coSelectedIds = new Set();
+        _renderBinCheckoutBody(bin);
         openModal('binCheckoutModal');
+    }
 
-        // Inject items summary + history after form
-        const existing = form.nextElementSibling;
-        if (existing && existing.dataset.binExtra) existing.remove();
-        const extra = document.createElement('div');
-        extra.dataset.binExtra = '1';
-        extra.innerHTML = itemsHtml + (_renderCheckoutHistory(bin) || '');
-        if (extra.innerHTML) form.after(extra);
+    function _renderBinCheckoutBody(bin) {
+        const body = document.getElementById('binCheckoutBody');
+        if (!body) return;
+        const items = bin.items || [];
+
+        // No items defined — fall back to bin-level
+        if (!items.length) {
+            const legacy = (bin.checkouts || []).find(c => !c.checkedInAt);
+            body.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px;">
+                <div>
+                    <label style="font-size:0.8rem;color:var(--text-muted);font-weight:700;display:block;margin-bottom:6px;">Your Name</label>
+                    <input id="coName" class="modern-input" placeholder="Enter your name" value="${escapeHtml(currentUserName || '')}" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem;color:var(--text-muted);font-weight:700;display:block;margin-bottom:6px;">Notes (optional)</label>
+                    <input id="coNotes" class="modern-input" placeholder="e.g. For Friday event" style="width:100%;">
+                </div>
+                <button onclick="submitBinCheckout()" class="btn-action" style="${legacy ? 'background:var(--gradient-success);' : ''}">
+                    ${legacy ? `↩ Mark as Returned (out: ${escapeHtml(legacy.user)})` : '↗ Check Out'}
+                </button>
+                ${_renderCheckoutHistory(bin)}
+            </div>`;
+            return;
+        }
+
+        // ── Item list ──
+        let itemRows = '';
+        items.forEach(it => {
+            const active = _itemActiveCheckout(bin, it.id);
+            const isOut = !!active;
+            const sel = _coSelectedIds.has(it.id);
+            const selClass = sel ? (isOut ? 'selected-in' : 'selected-out') : (isOut ? 'is-out' : '');
+            const checkMark = sel ? '✓' : '';
+            const statusBadge = isOut
+                ? `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(255,59,48,0.15);color:#FF6B6B;white-space:nowrap;">Out: ${escapeHtml(active.user)}</span>`
+                : `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(52,199,89,0.15);color:#34C759;">Available</span>`;
+
+            itemRows += `<div class="checkout-item-row ${selClass}" onclick="_toggleCoItem('${bin.id}','${it.id}')">
+                <div class="checkout-item-check">${checkMark}</div>
+                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.9rem;font-weight:700;line-height:1.2;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;font-weight:600;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
+                    <div style="margin-top:3px;">${statusBadge}</div>
+                </div>
+            </div>`;
+        });
+
+        // Figure out what's selected
+        const selIds = [..._coSelectedIds];
+        const outSelected = selIds.filter(id => _itemActiveCheckout(bin, id));
+        const inSelected  = selIds.filter(id => !_itemActiveCheckout(bin, id));
+        const btnLabel = selIds.length === 0
+            ? 'Select items above'
+            : outSelected.length && inSelected.length
+                ? `↗ Check Out ${inSelected.length} · ↩ Check In ${outSelected.length}`
+                : inSelected.length
+                    ? `↗ Check Out ${inSelected.length} item${inSelected.length > 1 ? 's' : ''}`
+                    : `↩ Check In ${outSelected.length} item${outSelected.length > 1 ? 's' : ''}`;
+        const btnStyle = selIds.length === 0 ? 'opacity:0.5;cursor:not-allowed;' : (outSelected.length && !inSelected.length ? 'background:var(--gradient-success);' : '');
+
+        body.innerHTML = `
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:0.72rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);">Items</span>
+                    <button onclick="_selectAllCoItems('${bin.id}')" style="font-size:0.72rem;color:#0A84FF;background:none;border:none;cursor:pointer;font-weight:700;padding:0;">Select All</button>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">${itemRows}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <input id="coName" class="modern-input" placeholder="Your name" value="${escapeHtml(currentUserName || '')}" style="width:100%;">
+                <input id="coNotes" class="modern-input" placeholder="Notes (optional)" style="width:100%;">
+                <button onclick="submitBinCheckout()" class="btn-action" style="${btnStyle}" ${selIds.length === 0 ? 'disabled' : ''}>${btnLabel}</button>
+            </div>
+            ${_renderCheckoutHistory(bin)}`;
+    }
+
+    function _toggleCoItem(binId, itemId) {
+        if (_coSelectedIds.has(itemId)) _coSelectedIds.delete(itemId);
+        else _coSelectedIds.add(itemId);
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (bin) _renderBinCheckoutBody(bin);
+    }
+
+    function _selectAllCoItems(binId) {
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (!bin) return;
+        const items = bin.items || [];
+        if (_coSelectedIds.size === items.length) {
+            _coSelectedIds.clear();
+        } else {
+            items.forEach(it => _coSelectedIds.add(it.id));
+        }
+        _renderBinCheckoutBody(bin);
     }
 
     function submitBinCheckout() {
         const binId = document.getElementById('binCheckoutBinId').value;
-        const name = document.getElementById('binCheckoutName').value.trim();
-        const notes = document.getElementById('binCheckoutNotes').value.trim();
+        const name  = (document.getElementById('coName')?.value || '').trim();
+        const notes = (document.getElementById('coNotes')?.value || '').trim();
         if (!name) { showToast('Please enter your name.'); return; }
         const bin = (appData.storageBins || []).find(b => b.id === binId);
         if (!bin) return;
         if (!bin.checkouts) bin.checkouts = [];
-        const activeCheckout = bin.checkouts.find(c => !c.checkedInAt);
         const now = new Date().toISOString();
-        if (activeCheckout) {
-            activeCheckout.checkedInAt = now;
-            if (notes) activeCheckout.notes += (activeCheckout.notes ? ' | Return: ' : 'Return: ') + notes;
-            showToast(`Checked in by ${name}.`);
+        const items = bin.items || [];
+
+        if (!items.length) {
+            // Legacy bin-level behaviour
+            const active = bin.checkouts.find(c => !c.checkedInAt);
+            if (active) {
+                active.checkedInAt = now;
+                if (notes) active.notes += (active.notes ? ' | Return: ' : 'Return: ') + notes;
+                showToast('Checked in.');
+            } else {
+                bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes, itemIds: [] });
+                showToast('Checked out.');
+            }
         } else {
-            bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes });
-            showToast(`Checked out by ${name}.`);
+            const selIds = [..._coSelectedIds];
+            if (!selIds.length) { showToast('Select at least one item.'); return; }
+            const outSelected = selIds.filter(id => _itemActiveCheckout(bin, id));
+            const inSelected  = selIds.filter(id => !_itemActiveCheckout(bin, id));
+            // Check out available items
+            if (inSelected.length) {
+                bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes, itemIds: inSelected });
+                const names = inSelected.map(id => (items.find(i => i.id === id) || {}).name || id);
+                showToast(`Checked out: ${names.join(', ')}`);
+            }
+            // Check in items that are out
+            if (outSelected.length) {
+                outSelected.forEach(id => {
+                    const active = _itemActiveCheckout(bin, id);
+                    if (!active) return;
+                    // Only mark record as returned if ALL its items are now back
+                    active.itemIds = active.itemIds || [];
+                    if (!active._returnedIds) active._returnedIds = [];
+                    active._returnedIds.push(id);
+                    if (active._returnedIds.length >= active.itemIds.length) {
+                        active.checkedInAt = now;
+                        if (notes) active.notes += (active.notes ? ' | Return: ' : 'Return: ') + notes;
+                    }
+                });
+                const names = outSelected.map(id => (items.find(i => i.id === id) || {}).name || id);
+                showToast(`Checked in: ${names.join(', ')}`);
+            }
         }
         saveData();
         closeModal(null, 'binCheckoutModal');
@@ -9604,16 +9850,23 @@
     }
 
     function _renderCheckoutHistory(bin) {
+        const items = bin.items || [];
         const history = (bin.checkouts || []).slice().reverse().slice(0, 10);
         if (history.length === 0) return '';
-        let h = `<div style="margin-top:20px;"><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">Checkout History</div>`;
+        let h = `<div style="margin-top:18px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px;">
+            <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">History</div>`;
         history.forEach(c => {
             const out = new Date(c.checkedOutAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
             const inTime = c.checkedInAt ? new Date(c.checkedInAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+            const itemNames = (c.itemIds || []).map(id => (items.find(i => i.id === id) || {}).name).filter(Boolean).join(', ');
             h += `<div class="checkout-history-item ${!c.checkedInAt ? 'active' : ''}">
-                <div style="font-weight:700;font-size:0.88rem;">${escapeHtml(c.user)} ${!c.checkedInAt ? '<span style="color:#FF6B6B;font-size:0.75rem;">(out)</span>' : ''}</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);">Out: ${out}${inTime ? ' &nbsp;·&nbsp; In: ' + inTime : ''}</div>
-                ${c.notes ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${escapeHtml(c.notes)}</div>` : ''}
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-weight:700;font-size:0.88rem;">${escapeHtml(c.user)}</span>
+                    ${!c.checkedInAt ? '<span style="color:#FF6B6B;font-size:0.72rem;font-weight:700;">OUT</span>' : ''}
+                </div>
+                ${itemNames ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Items: ${escapeHtml(itemNames)}</div>` : ''}
+                <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Out: ${out}${inTime ? ' · In: ' + inTime : ''}</div>
+                ${c.notes ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;">${escapeHtml(c.notes)}</div>` : ''}
             </div>`;
         });
         h += '</div>';
@@ -9622,76 +9875,143 @@
 
     // ── Public Bin Card (no-auth QR landing page) ──
 
+    let _pubSelectedIds = new Set();
+
     function renderPublicBinCard(bin) {
         const container = document.getElementById('publicBinContent');
-        const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
-        const statusClass = activeCheckout ? 'checked-out' : 'available';
-        const statusText = activeCheckout ? `Checked out by ${escapeHtml(activeCheckout.user)}` : 'Available';
         const items = bin.items || [];
 
+        // Header card
         let html = `<div class="frosted" style="border-radius:var(--radius-card); overflow:hidden;">`;
-
-        if (bin.picture) {
-            html += `<div class="public-bin-hero""><img src="${bin.picture}" alt=""></div>`;
-        } else {
-            html += `<div class="public-bin-hero">📦</div>`;
-        }
-
-        html += `<div style="padding:22px 24px 24px;">
-            <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:4px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
+        html += bin.picture
+            ? `<div class="public-bin-hero"><img src="${bin.picture}" alt=""></div>`
+            : `<div class="public-bin-hero">📦</div>`;
+        html += `<div style="padding:20px 22px 22px;">
+            <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:3px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
             <h2 style="margin:0 0 6px;font-size:1.4rem;font-weight:800;">${escapeHtml(bin.name || 'Unnamed Bin')}</h2>
-            ${bin.description ? `<p style="margin:0 0 14px;font-size:0.9rem;color:var(--text-muted);line-height:1.5;">${escapeHtml(bin.description)}</p>` : ''}
-            <div class="storage-bin-status ${statusClass}" style="margin-bottom:${items.length ? '18px' : '0'};font-size:0.82rem;padding:4px 13px;">${statusText}</div>`;
+            ${bin.description ? `<p style="margin:0;font-size:0.88rem;color:var(--text-muted);line-height:1.5;">${escapeHtml(bin.description)}</p>` : ''}
+        </div></div>`;
 
-        if (items.length) {
-            html += `<div style="margin-top:0;">
-                <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Contents</div>
-                <div style="display:flex;flex-direction:column;gap:0;">`;
-            items.forEach((it, idx) => {
-                html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
-                    <div style="width:28px;height:28px;border-radius:8px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</div>
-                    <span style="font-size:0.9rem;font-weight:600;">${escapeHtml(it.name)}</span>
+        // Items selection or legacy form
+        if (!items.length) {
+            // No items — bin-level checkout
+            const active = (bin.checkouts || []).find(c => !c.checkedInAt);
+            html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">
+                <h3 style="margin:0 0 12px;font-size:1rem;font-weight:800;">${active ? '↩ Check In' : '↗ Check Out'}</h3>
+                ${active ? `<div style="margin-bottom:12px;font-size:0.85rem;color:var(--text-muted);">Currently out: <strong>${escapeHtml(active.user)}</strong></div>` : ''}
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <input id="pubName" class="modern-input" placeholder="Your name" style="width:100%;">
+                    <input id="pubNotes" class="modern-input" placeholder="Notes (optional)" style="width:100%;">
+                    <button onclick="submitPublicBinCheckout('${bin.id}')" class="btn-action" style="${active ? 'background:var(--gradient-success);' : ''}">
+                        ${active ? 'Mark as Returned' : 'Check Out'}
+                    </button>
+                </div>
+            </div>`;
+        } else {
+            // Item-level selection
+            let itemRows = '';
+            items.forEach(it => {
+                const active = _itemActiveCheckout(bin, it.id);
+                const isOut = !!active;
+                const sel = _pubSelectedIds.has(it.id);
+                const selClass = sel ? (isOut ? 'selected-in' : 'selected-out') : (isOut ? 'is-out' : '');
+                const checkMark = sel ? '✓' : '';
+                const badge = isOut
+                    ? `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(255,59,48,0.15);color:#FF6B6B;">Out: ${escapeHtml(active.user)}</span>`
+                    : `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(52,199,89,0.15);color:#34C759;">Available</span>`;
+                itemRows += `<div class="checkout-item-row ${selClass}" onclick="_togglePubItem('${bin.id}','${it.id}')">
+                    <div class="checkout-item-check">${checkMark}</div>
+                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.9rem;font-weight:700;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
+                        <div style="margin-top:3px;">${badge}</div>
+                    </div>
                 </div>`;
             });
-            html += `</div></div>`;
+
+            const selIds = [..._pubSelectedIds];
+            const outSel = selIds.filter(id => _itemActiveCheckout(bin, id));
+            const inSel  = selIds.filter(id => !_itemActiveCheckout(bin, id));
+            const btnLabel = selIds.length === 0 ? 'Select items above'
+                : outSel.length && inSel.length
+                    ? `Submit (↗${inSel.length} out · ↩${outSel.length} in)`
+                    : inSel.length
+                        ? `↗ Check Out ${inSel.length} item${inSel.length > 1 ? 's' : ''}`
+                        : `↩ Check In ${outSel.length} item${outSel.length > 1 ? 's' : ''}`;
+            const btnDisabled = selIds.length === 0 ? 'disabled style="opacity:0.5;"' : (outSel.length && !inSel.length ? 'style="background:var(--gradient-success);"' : '');
+
+            html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <span style="font-size:0.72rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);">Select Items</span>
+                    <button onclick="_toggleAllPubItems('${bin.id}')" style="font-size:0.72rem;color:#0A84FF;background:none;border:none;cursor:pointer;font-weight:700;">Select All</button>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;">${itemRows}</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <input id="pubName" class="modern-input" placeholder="Your name" style="width:100%;">
+                    <input id="pubNotes" class="modern-input" placeholder="Notes (optional)" style="width:100%;">
+                    <button onclick="submitPublicBinCheckout('${bin.id}')" class="btn-action" ${btnDisabled}>${btnLabel}</button>
+                </div>
+            </div>`;
         }
-
-        html += `</div></div>`;
-
-        // Checkout form
-        html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:12px;">
-            <h3 style="margin:0 0 14px;font-size:1rem;font-weight:800;">${activeCheckout ? '↩️ Check In' : '↗️ Check Out'}</h3>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-                <input id="publicBinUserName" class="modern-input" placeholder="Your name" style="width:100%;">
-                <input id="publicBinNotes" class="modern-input" placeholder="${activeCheckout ? 'Return notes (optional)' : 'Notes — e.g. taking items for event (optional)'}" style="width:100%;">
-                <button onclick="submitPublicBinCheckout('${bin.id}')" class="btn-action" style="${activeCheckout ? 'background:var(--gradient-success);' : ''}">${activeCheckout ? 'Mark as Returned' : 'Check Out'}</button>
-            </div>
-        </div>`;
 
         // History
-        const histHtml = _renderCheckoutHistory(bin);
-        if (histHtml) {
-            html += `<div class="frosted" style="border-radius:var(--radius-card); padding:20px; margin-top:12px;">${histHtml}</div>`;
-        }
+        const hist = _renderCheckoutHistory(bin);
+        if (hist) html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">${hist}</div>`;
 
         container.innerHTML = html;
     }
 
+    function _togglePubItem(binId, itemId) {
+        if (_pubSelectedIds.has(itemId)) _pubSelectedIds.delete(itemId);
+        else _pubSelectedIds.add(itemId);
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (bin) renderPublicBinCard(bin);
+    }
+
+    function _toggleAllPubItems(binId) {
+        const bin = (appData.storageBins || []).find(b => b.id === binId);
+        if (!bin) return;
+        const items = bin.items || [];
+        if (_pubSelectedIds.size === items.length) _pubSelectedIds.clear();
+        else items.forEach(it => _pubSelectedIds.add(it.id));
+        renderPublicBinCard(bin);
+    }
+
     async function submitPublicBinCheckout(binId) {
-        const name = (document.getElementById('publicBinUserName').value || '').trim();
-        const notes = (document.getElementById('publicBinNotes').value || '').trim();
+        const name  = (document.getElementById('pubName')?.value || '').trim();
+        const notes = (document.getElementById('pubNotes')?.value || '').trim();
         if (!name) { alert('Please enter your name.'); return; }
         const bin = (appData.storageBins || []).find(b => b.id === binId);
         if (!bin) return;
         if (!bin.checkouts) bin.checkouts = [];
-        const activeCheckout = bin.checkouts.find(c => !c.checkedInAt);
         const now = new Date().toISOString();
-        if (activeCheckout) {
-            activeCheckout.checkedInAt = now;
-            if (notes) activeCheckout.notes += (activeCheckout.notes ? ' | Return: ' : 'Return: ') + notes;
+        const items = bin.items || [];
+
+        if (!items.length) {
+            // Legacy bin-level
+            const active = bin.checkouts.find(c => !c.checkedInAt);
+            if (active) { active.checkedInAt = now; if (notes) active.notes += ' | Return: ' + notes; }
+            else bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes, itemIds: [] });
         } else {
-            bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes });
+            const selIds = [..._pubSelectedIds];
+            if (!selIds.length) { alert('Please select at least one item.'); return; }
+            const outSel = selIds.filter(id => _itemActiveCheckout(bin, id));
+            const inSel  = selIds.filter(id => !_itemActiveCheckout(bin, id));
+            if (inSel.length)  bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes, itemIds: inSel });
+            if (outSel.length) {
+                outSel.forEach(id => {
+                    const active = _itemActiveCheckout(bin, id);
+                    if (!active) return;
+                    if (!active._returnedIds) active._returnedIds = [];
+                    active._returnedIds.push(id);
+                    if (active._returnedIds.length >= (active.itemIds || []).length) {
+                        active.checkedInAt = now;
+                        if (notes) active.notes += ' | Return: ' + notes;
+                    }
+                });
+            }
         }
+        _pubSelectedIds.clear();
         await saveData();
         renderPublicBinCard(bin);
     }
