@@ -1358,8 +1358,39 @@
 
         /* Bin Item Editor Row */
         .bin-item-row {
-            display: grid; grid-template-columns: 1fr 80px auto;
+            display: grid; grid-template-columns: 46px 1fr 70px auto;
             gap: 8px; align-items: center;
+        }
+        .bin-item-pic-btn {
+            width: 46px; height: 46px; border-radius: 10px;
+            overflow: hidden; cursor: pointer; flex-shrink: 0;
+            background: rgba(255,255,255,0.06); border: 1px dashed rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: 0.15s; position: relative;
+        }
+        .bin-item-pic-btn:hover { border-color: #0A84FF; background: rgba(10,132,255,0.08); }
+        .bin-item-pic-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Item strip on bin card */
+        .storage-item-strip { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0 2px; scrollbar-width: none; }
+        .storage-item-strip::-webkit-scrollbar { display: none; }
+        .storage-item-tile {
+            flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+            gap: 4px; width: 64px;
+        }
+        .storage-item-tile-img {
+            width: 60px; height: 60px; border-radius: 10px; overflow: hidden;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+        }
+        .storage-item-tile-img img { width: 100%; height: 100%; object-fit: cover; }
+        .storage-item-tile-label {
+            font-size: 0.65rem; font-weight: 600; text-align: center;
+            color: var(--text-muted); line-height: 1.2;
+            max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .storage-item-tile-qty {
+            font-size: 0.6rem; font-weight: 800; color: #0A84FF; text-align: center;
         }
 
         /* QR wrapper */
@@ -9279,7 +9310,7 @@
             return;
         }
 
-        // Group by section
+        // Group by section, sorted by order field
         const sections = {};
         bins.forEach(bin => {
             const sec = bin.section || 'General';
@@ -9288,19 +9319,41 @@
         });
 
         Object.keys(sections).sort().forEach(sec => {
+            const secBins = sections[sec].slice().sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
             html += `<div class="storage-section-header">Section ${escapeHtml(sec)}</div>`;
             html += `<div class="storage-bins-list">`;
-            sections[sec].sort((a, b) => (a.label || '').localeCompare(b.label || '')).forEach(bin => {
+            secBins.forEach((bin, secIdx) => {
                 const activeCheckout = (bin.checkouts || []).find(c => !c.checkedInAt);
                 const statusClass = activeCheckout ? 'checked-out' : 'available';
                 const statusText = activeCheckout ? `Out: ${escapeHtml(activeCheckout.user)}` : 'Available';
-                const thumbHtml = bin.picture
-                    ? `<img src="${bin.picture}" alt="">`
-                    : `📦`;
+                const thumbHtml = bin.picture ? `<img src="${bin.picture}" alt="">` : `📦`;
                 const items = bin.items || [];
-                let itemChips = items.map(it =>
-                    `<span class="storage-item-chip">${it.qty ? `<span class="chip-qty">×${escapeHtml(it.qty)}</span>` : ''}${escapeHtml(it.name)}</span>`
-                ).join('');
+                const anyPic = items.some(it => it.picture);
+
+                let itemsHtml = '';
+                if (items.length) {
+                    if (anyPic) {
+                        // Visual tile strip when items have photos
+                        itemsHtml = `<div class="storage-item-strip">` +
+                            items.map(it => `<div class="storage-item-tile">
+                                <div class="storage-item-tile-img">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                                ${it.qty ? `<div class="storage-item-tile-qty">×${escapeHtml(it.qty)}</div>` : ''}
+                                <div class="storage-item-tile-label">${escapeHtml(it.name)}</div>
+                            </div>`).join('') +
+                        `</div>`;
+                    } else {
+                        itemsHtml = `<div class="storage-bin-items">` +
+                            items.map(it => `<span class="storage-item-chip">${it.qty ? `<span class="chip-qty">×${escapeHtml(it.qty)}</span>` : ''}${escapeHtml(it.name)}</span>`).join('') +
+                        `</div>`;
+                    }
+                }
+
+                const isFirst = secIdx === 0;
+                const isLast = secIdx === secBins.length - 1;
+                const moveButtons = currentUserRole === 'admin' ? `
+                    <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', -1)" class="btn-outline" style="font-size:0.78rem; padding:5px 8px;" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
+                    <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', 1)" class="btn-outline" style="font-size:0.78rem; padding:5px 8px;" ${isLast ? 'disabled' : ''} title="Move down">↓</button>
+                ` : '';
 
                 html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
                     <div class="storage-bin-inner">
@@ -9312,11 +9365,12 @@
                             </div>
                             <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
                             ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 100))}${bin.description.length > 100 ? '…' : ''}</div>` : ''}
-                            ${items.length ? `<div class="storage-bin-items">${itemChips}</div>` : ''}
+                            ${itemsHtml}
                         </div>
                     </div>
                     <div class="storage-bin-actions">
-                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">📱 QR Code</button>
+                        ${moveButtons}
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">📱 QR</button>
                         ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">✏️ Edit</button>` : ''}
                         <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.78rem; padding:5px 14px;">${activeCheckout ? 'Check In' : 'Check Out'}</button>
                     </div>
@@ -9365,22 +9419,55 @@
             list.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);padding:4px 0;">No items yet — click "+ Add Item" to start.</div>`;
             return;
         }
-        list.innerHTML = _binItems.map((item, i) => `
-            <div class="bin-item-row">
+        list.innerHTML = _binItems.map((item, i) => {
+            const picContent = item.picture
+                ? `<img src="${item.picture}" alt="">`
+                : `📷`;
+            return `<div class="bin-item-row">
+                <label class="bin-item-pic-btn" title="Add photo">
+                    ${picContent}
+                    <input type="file" accept="image/*" onchange="handleBinItemPictureUpload(${i}, event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+                </label>
                 <input class="modern-input" placeholder="Item name" value="${escapeHtml(item.name || '')}"
                     oninput="_binItems[${i}].name=this.value" style="min-width:0;">
                 <input class="modern-input" placeholder="Qty" value="${escapeHtml(item.qty || '')}"
                     oninput="_binItems[${i}].qty=this.value" style="min-width:0; text-align:center;">
                 <button onclick="removeBinItemRow(${i})" style="background:none;border:none;color:#FF3B30;font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1;" title="Remove">×</button>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
+    }
+
+    async function handleBinItemPictureUpload(index, event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        showToast('Uploading item photo...');
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64 = e.target.result.split(',')[1];
+            try {
+                const res = await fetch(GAS_UPLOAD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ filename: file.name, mimeType: file.type, base64 })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    _binItems[index].picture = toDirectDriveUrl(result.url);
+                    renderBinItemRows();
+                    showToast('Photo uploaded!');
+                } else {
+                    showToast('Upload failed.');
+                }
+            } catch { showToast('Upload error.'); }
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
     }
 
     function addBinItemRow() {
-        _binItems.push({ id: generateId(), name: '', qty: '' });
+        _binItems.push({ id: generateId(), name: '', qty: '', picture: '' });
         renderBinItemRows();
-        // Focus the newly added name input
-        const rows = document.getElementById('storageBinItemsList').querySelectorAll('.modern-input');
+        const rows = document.getElementById('storageBinItemsList').querySelectorAll('input.modern-input');
         if (rows.length) rows[rows.length - 2]?.focus();
     }
 
@@ -9439,7 +9526,8 @@
         const items = _binItems.filter(it => (it.name || '').trim()).map(it => ({
             id: it.id || generateId(),
             name: it.name.trim(),
-            qty: (it.qty || '').trim()
+            qty: (it.qty || '').trim(),
+            picture: it.picture || ''
         }));
         if (!appData.storageBins) appData.storageBins = [];
         const existingId = document.getElementById('storageBinId').value;
@@ -9454,12 +9542,16 @@
                 appData.storageBins[idx].items = items;
             }
         } else {
+            // New bin: order = max existing order in section + 1
+            const sectionBins = appData.storageBins.filter(b => (b.section || 'General') === (section || 'General'));
+            const maxOrder = sectionBins.reduce((m, b) => Math.max(m, b.order ?? 0), -1);
             appData.storageBins.push({
                 id: 'bin_' + generateId(),
                 section, label, name,
                 description: desc,
                 picture: _binPictureUrl,
                 items,
+                order: maxOrder + 1,
                 checkouts: []
             });
         }
@@ -9467,6 +9559,25 @@
         closeModal(null, 'storageBinModal');
         renderStorage();
         showToast('Bin saved.');
+    }
+
+    function moveBinInSection(binId, sec, dir) {
+        const bins = appData.storageBins || [];
+        const secBins = bins
+            .filter(b => (b.section || 'General') === sec)
+            .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        const idx = secBins.findIndex(b => b.id === binId);
+        const swapIdx = idx + dir;
+        if (swapIdx < 0 || swapIdx >= secBins.length) return;
+        // Swap order values
+        const a = secBins[idx], b = secBins[swapIdx];
+        const tmpOrder = a.order ?? idx;
+        a.order = b.order ?? swapIdx;
+        b.order = tmpOrder;
+        // Normalise so orders are clean 0,1,2…
+        secBins.sort((x, y) => (x.order ?? 9999) - (y.order ?? 9999)).forEach((b, i) => { b.order = i; });
+        saveData();
+        renderStorage();
     }
 
     function deleteBinFromModal() {
@@ -9540,16 +9651,33 @@
         const items = bin.items || [];
         let itemsHtml = '';
         if (items.length) {
-            itemsHtml = `<div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px solid rgba(255,255,255,0.07);">
-                <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Contents</div>
-                <div style="display:flex;flex-direction:column;gap:0;">`;
-            items.forEach((it, idx) => {
-                itemsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : ''}">
-                    <span style="width:24px;height:24px;border-radius:7px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</span>
-                    <span style="font-size:0.88rem;font-weight:600;">${escapeHtml(it.name)}</span>
-                </div>`;
-            });
-            itemsHtml += `</div></div>`;
+            const anyPic = items.some(it => it.picture);
+            if (anyPic) {
+                itemsHtml = `<div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px solid rgba(255,255,255,0.07);">
+                    <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Contents</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;">`;
+                items.forEach(it => {
+                    itemsHtml += `<div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+                        <div style="width:100%;aspect-ratio:1;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                            ${it.picture ? `<img src="${it.picture}" style="width:100%;height:100%;object-fit:cover;" alt="">` : '📦'}
+                        </div>
+                        ${it.qty ? `<div style="font-size:0.62rem;font-weight:800;color:#0A84FF;">×${escapeHtml(it.qty)}</div>` : ''}
+                        <div style="font-size:0.68rem;font-weight:600;text-align:center;line-height:1.2;color:var(--text-main);">${escapeHtml(it.name)}</div>
+                    </div>`;
+                });
+                itemsHtml += `</div></div>`;
+            } else {
+                itemsHtml = `<div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px solid rgba(255,255,255,0.07);">
+                    <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Contents</div>
+                    <div style="display:flex;flex-direction:column;gap:0;">`;
+                items.forEach((it, idx) => {
+                    itemsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : ''}">
+                        <span style="width:24px;height:24px;border-radius:7px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</span>
+                        <span style="font-size:0.88rem;font-weight:600;">${escapeHtml(it.name)}</span>
+                    </div>`;
+                });
+                itemsHtml += `</div></div>`;
+            }
         }
 
         const submitBtn = document.getElementById('binCheckoutSubmitBtn');
@@ -9644,16 +9772,34 @@
             <div class="storage-bin-status ${statusClass}" style="margin-bottom:${items.length ? '18px' : '0'};font-size:0.82rem;padding:4px 13px;">${statusText}</div>`;
 
         if (items.length) {
-            html += `<div style="margin-top:0;">
-                <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Contents</div>
-                <div style="display:flex;flex-direction:column;gap:0;">`;
-            items.forEach((it, idx) => {
-                html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
-                    <div style="width:28px;height:28px;border-radius:8px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</div>
-                    <span style="font-size:0.9rem;font-weight:600;">${escapeHtml(it.name)}</span>
-                </div>`;
-            });
-            html += `</div></div>`;
+            const anyPic = items.some(it => it.picture);
+            html += `<div style="margin-top:4px;">
+                <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Contents</div>`;
+            if (anyPic) {
+                // Grid of photo tiles
+                html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;">`;
+                items.forEach(it => {
+                    html += `<div style="display:flex;flex-direction:column;gap:5px;align-items:center;">
+                        <div style="width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                            ${it.picture ? `<img src="${it.picture}" style="width:100%;height:100%;object-fit:cover;" alt="">` : '📦'}
+                        </div>
+                        ${it.qty ? `<div style="font-size:0.65rem;font-weight:800;color:#0A84FF;">×${escapeHtml(it.qty)}</div>` : ''}
+                        <div style="font-size:0.75rem;font-weight:600;text-align:center;line-height:1.2;">${escapeHtml(it.name)}</div>
+                    </div>`;
+                });
+                html += `</div>`;
+            } else {
+                // List rows for text-only items
+                html += `<div style="display:flex;flex-direction:column;gap:0;">`;
+                items.forEach((it, idx) => {
+                    html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;${idx < items.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
+                        <div style="width:26px;height:26px;border-radius:7px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;color:#0A84FF;flex-shrink:0;">${it.qty ? escapeHtml(it.qty) : '•'}</div>
+                        <span style="font-size:0.88rem;font-weight:600;">${escapeHtml(it.name)}</span>
+                    </div>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
         }
 
         html += `</div></div>`;
