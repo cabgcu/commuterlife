@@ -9378,7 +9378,6 @@
                 }
                 const hasActive = _binHasActiveCheckouts(bin);
                 const thumbHtml = bin.picture ? `<img src="${bin.picture}" alt="">` : `📦`;
-                const items = bin.items || [];
                 const anyPic = items.some(it => it.picture);
 
                 let itemsHtml = '';
