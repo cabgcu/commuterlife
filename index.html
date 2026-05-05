@@ -1280,9 +1280,10 @@
             .workers-grid { grid-template-columns: 1fr; }
             .avail-time-inputs input[type="time"] { width: 90px; }
             .public-avail-card { padding: 30px 14px calc(40px + env(safe-area-inset-bottom)); }
-            .schedule-month-cell { min-height: 56px; padding: 5px 4px 4px; border-radius: 8px; }
-            .schedule-month-chip { font-size: 0.55rem; padding: 1px 3px; }
-            .month-cell-num { font-size: 0.72rem; }
+            .schedule-month-grid { grid-template-columns: repeat(7, minmax(90px,1fr)); min-width: 560px; }
+            .schedule-month-cell { min-height: 90px; padding: 6px 5px 5px; border-radius: 8px; }
+            .schedule-month-chip { font-size: 0.6rem; padding: 2px 4px; }
+            .month-cell-num { font-size: 0.75rem; }
         }
         /* @mention autocomplete dropdown */
         .mention-dropdown {
@@ -1638,12 +1639,12 @@
         }
         .workers-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 10px; margin-top: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px; margin-top: 12px;
         }
         .worker-card {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; border-radius: 16px;
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 14px 16px; border-radius: 16px;
             background: linear-gradient(160deg, rgba(35,35,35,0.7), rgba(15,15,15,0.55));
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1674,10 +1675,14 @@
             padding: 6px 8px; width: 110px;
         }
         /* Month grid */
+        .schedule-month-scroll {
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+            margin-bottom: 24px;
+        }
         .schedule-month-grid {
             display: grid;
-            grid-template-columns: repeat(7, minmax(0,1fr));
-            gap: 4px; margin-bottom: 24px;
+            grid-template-columns: repeat(7, minmax(120px,1fr));
+            gap: 5px; min-width: 700px;
         }
         .schedule-month-dow {
             text-align: center; font-size: 0.65rem; font-weight: 800;
@@ -1685,14 +1690,14 @@
             color: var(--text-muted); padding: 6px 2px;
         }
         .schedule-month-cell {
-            min-height: 80px; border-radius: 12px; padding: 8px 6px 6px;
+            min-height: 140px; border-radius: 12px; padding: 10px 8px 8px;
             background: linear-gradient(160deg, rgba(35,35,35,0.72), rgba(18,18,18,0.65));
             backdrop-filter: blur(14px) saturate(150%);
             -webkit-backdrop-filter: blur(14px) saturate(150%);
             border: 1px solid rgba(255,255,255,0.08);
             border-top: 1px solid rgba(255,255,255,0.14);
             box-shadow: 0 4px 12px rgba(0,0,0,0.22);
-            cursor: pointer; display: flex; flex-direction: column; gap: 3px;
+            cursor: pointer; display: flex; flex-direction: column; gap: 4px;
             transition: transform 0.12s;
         }
         .schedule-month-cell:hover { transform: translateY(-1px); }
@@ -1707,9 +1712,10 @@
         }
         .schedule-month-cell.today .month-cell-num { color: #0A84FF; }
         .schedule-month-chip {
-            font-size: 0.62rem; font-weight: 700; padding: 2px 5px; border-radius: 6px;
-            border: 1px solid transparent; display: flex; align-items: center; gap: 3px;
-            cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-size: 0.68rem; font-weight: 700; padding: 3px 7px; border-radius: 8px;
+            border: 1px solid transparent; display: flex; align-items: center; gap: 4px;
+            cursor: pointer; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; line-height: 1.3;
             transition: opacity 0.12s;
         }
         .schedule-month-chip:hover { opacity: 0.75; }
@@ -10640,7 +10646,7 @@
         const startOffset = (firstDay.getDay() + 6) % 7; // Mon=0
         const totalCells  = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
 
-        let html = `<div class="schedule-month-grid" id="schedGrid">`;
+        let html = `<div class="schedule-month-scroll"><div class="schedule-month-grid" id="schedGrid">`;
         // Day-of-week headers
         ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(n => {
             html += `<div class="schedule-month-dow">${n}</div>`;
@@ -10674,7 +10680,7 @@
 
             html += `</div>`;
         }
-        return html + `</div>`;
+        return html + `</div></div>`;
     }
 
     function _renderWorkersPanel(isAdmin, days) {
@@ -10695,13 +10701,27 @@
                 const weekShifts = days
                     ? days.reduce((n,d) => n + shifts.filter(s => s.date===_fmtDate(d) && s.workerId===w.id).length, 0)
                     : shifts.filter(s => s.workerId===w.id && s.date.startsWith(`${_schedMonthDate.getFullYear()}-${String(_schedMonthDate.getMonth()+1).padStart(2,'0')}`)).length;
-                const availDays = (w.availability||[]).map(a=>DAY_NAMES[a.day]).join(', ') || 'No availability set';
-                html += `<div class="worker-card" style="cursor:${isAdmin?'pointer':'default'};" ${isAdmin?`onclick="openWorkerModal('${w.id}')"`:''}>
-                    <div class="worker-avatar" style="background:${color};">${initials}</div>
-                    <div class="worker-info">
-                        <div class="worker-name">${escapeHtml(w.name)}</div>
-                        <div class="worker-sub">${weekShifts} shift${weekShifts!==1?'s':''} ${days?'this week':'this month'}</div>
-                        <div class="worker-sub" style="margin-top:2px;">Avail: ${availDays}</div>
+                const avail = w.availability || [];
+                const availText = avail.length
+                    ? avail.sort((a,b)=>a.day-b.day).map(a=>`${DAY_NAMES[a.day]} ${_fmtTime(a.startTime)}–${_fmtTime(a.endTime)}`).join(' · ')
+                    : 'No availability set';
+                html += `<div class="worker-card" style="cursor:${isAdmin?'pointer':'default'}; flex-direction:column; align-items:flex-start; gap:10px;" ${isAdmin?`onclick="openWorkerModal('${w.id}')"`:''}>
+                    <div style="display:flex; align-items:center; gap:12px; width:100%;">
+                        <div class="worker-avatar" style="background:${color};">${initials}</div>
+                        <div class="worker-info">
+                            <div class="worker-name">${escapeHtml(w.name)}</div>
+                            ${w.email ? `<div class="worker-sub">${escapeHtml(w.email)}</div>` : ''}
+                            <div class="worker-sub">${weekShifts} shift${weekShifts!==1?'s':''} ${days?'this week':'this month'}</div>
+                        </div>
+                    </div>
+                    <div style="width:100%; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                        <div style="font-size:0.65rem; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Availability</div>
+                        ${avail.length ? avail.sort((a,b)=>a.day-b.day).map(a=>`
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); width:32px;">${DAY_NAMES[a.day]}</span>
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-main);">${_fmtTime(a.startTime)} – ${_fmtTime(a.endTime)}</span>
+                            </div>`).join('')
+                        : `<div style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Not submitted yet</div>`}
                     </div>
                 </div>`;
             });
