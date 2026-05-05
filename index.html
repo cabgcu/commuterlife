@@ -1054,7 +1054,7 @@
         }
 
         /* DUE SOON VIEW */
-        .due-soon-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 0; overflow-y: auto; }
+        .due-soon-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 8px 20px; box-sizing: border-box; }
         .due-section-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 18px 4px 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 10px; }
         .due-row {
             background: linear-gradient(145deg, rgba(10,132,255,0.06) 0%, rgba(191,90,242,0.06) 100%);
@@ -1189,7 +1189,7 @@
                 border-radius: 28px 28px 0 0;
                 padding: 24px 20px calc(40px + env(safe-area-inset-bottom)) 20px;
                 max-height: 96dvh !important;
-                min-height: 85dvh;
+                min-height: 60dvh;
                 height: auto;
                 margin-top: auto; width: 100%; max-width: 100%; 
                 overflow-x: hidden; 
@@ -1285,6 +1285,54 @@
             .schedule-month-chip .chip-dot { display: inline-block; }
             .schedule-month-chip .chip-label { display: none; }
             .month-cell-num { font-size: 0.78rem; }
+
+            /* Schedule top-bar: wrap onto two lines on mobile */
+            .schedule-top-bar { gap: 8px; margin-bottom: 12px; }
+            .schedule-top-bar > * { flex-shrink: 0; }
+            .schedule-week-nav { flex: 1; min-width: 0; }
+            .schedule-week-label { font-size: 0.78rem; }
+
+            /* Due-soon: bigger touch targets, readable text */
+            .due-row { min-height: 52px; padding: 12px 14px; gap: 12px; border-radius: 16px; }
+            .due-countdown { font-size: 0.78rem; padding: 5px 10px; }
+            .due-section-header { font-size: 0.78rem; padding: 14px 4px 8px; }
+            .due-soon-wrapper { padding: 0 4px 20px; }
+
+            /* Events table → card layout on mobile */
+            .events-table, .events-table thead, .events-table tbody,
+            .events-table th, .events-table td, .events-table tr { display: block; }
+            .events-table thead tr { display: none; }
+            .events-table tbody tr {
+                background: rgba(30,30,30,0.95) !important;
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 14px; margin-bottom: 10px;
+                padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
+            }
+            .events-table td { padding: 0; border: none; }
+            .events-table .ev-input { font-size: 0.9rem; padding: 8px 10px; min-height: 40px; }
+            .events-table select.ev-input { min-height: 44px; }
+            .ev-delete-btn { align-self: flex-end; min-height: 44px; min-width: 44px; font-size: 1.1rem; }
+            .ev-add-row { min-height: 48px; font-size: 0.9rem; }
+            .events-header { flex-wrap: wrap; gap: 10px; }
+            .events-header button { min-height: 44px; }
+
+            /* Modals: reduce min-height for short modals, keep comfortable */
+            .modal-content { min-height: 40dvh; }
+
+            /* Bin lightbox close button safe position */
+            .bin-lightbox-close { top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; }
+
+            /* Settings inputs full-width */
+            .settings-input-row { flex-direction: column; gap: 8px; }
+            .settings-input-row input,
+            .settings-input-row select,
+            .settings-input-row button { width: 100%; box-sizing: border-box; min-height: 44px; }
+
+            /* Worker modal availability link */
+            #workerAvailLink { font-size: 0.7rem; word-break: break-all; }
+
+            /* Checkout item rows bigger on mobile */
+            .checkout-item-row { min-height: 56px; padding: 12px 10px; border-radius: 16px; }
         }
         /* @mention autocomplete dropdown */
         .mention-dropdown {
