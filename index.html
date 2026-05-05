@@ -1556,14 +1556,18 @@
         }
         .schedule-week-nav {
             display: flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px;
+            background: linear-gradient(160deg, rgba(35,35,35,0.7), rgba(15,15,15,0.6));
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 4px;
         }
         .schedule-week-nav button {
             background: none; border: none; color: var(--text-main); cursor: pointer;
             font-size: 1.1rem; padding: 6px 10px; border-radius: 8px; transition: background 0.12s;
             min-height: 36px;
         }
-        .schedule-week-nav button:hover { background: rgba(255,255,255,0.08); }
+        .schedule-week-nav button:hover { background: rgba(255,255,255,0.1); }
         .schedule-week-label {
             font-size: 0.88rem; font-weight: 700; color: var(--text-main);
             white-space: nowrap; padding: 0 4px;
@@ -1580,8 +1584,12 @@
         .schedule-day-header {
             text-align: center; padding: 8px 4px;
             border-radius: 10px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: linear-gradient(160deg, rgba(40,40,40,0.75), rgba(20,20,20,0.65));
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
         .schedule-day-header .day-name {
             font-size: 0.65rem; font-weight: 800; letter-spacing: 0.07em;
@@ -1590,28 +1598,31 @@
         .schedule-day-header .day-num {
             font-size: 1.2rem; font-weight: 800; line-height: 1.2;
         }
-        .schedule-day-header.today { background: rgba(10,132,255,0.12); border-color: rgba(10,132,255,0.3); }
+        .schedule-day-header.today {
+            background: linear-gradient(160deg, rgba(10,132,255,0.25), rgba(10,132,255,0.12));
+            border-color: rgba(10,132,255,0.4);
+            border-top-color: rgba(10,132,255,0.6);
+        }
         .schedule-day-header.today .day-num { color: #0A84FF; }
         .schedule-shift-card {
-            border-radius: 12px; padding: 8px 10px;
+            border-radius: 12px; padding: 9px 11px;
             display: flex; flex-direction: column; gap: 3px;
-            cursor: pointer; transition: opacity 0.12s, transform 0.12s;
-            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer; transition: transform 0.12s, box-shadow 0.12s;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
             position: relative;
         }
-        .schedule-shift-card:hover { opacity: 0.85; transform: translateY(-1px); }
-        .schedule-shift-card .shift-time {
-            font-size: 0.65rem; font-weight: 700; opacity: 0.8;
-        }
-        .schedule-shift-card .shift-worker {
-            font-size: 0.78rem; font-weight: 800; line-height: 1.2;
-        }
-        .schedule-shift-card .shift-role {
-            font-size: 0.65rem; opacity: 0.75; line-height: 1.2;
-        }
+        .schedule-shift-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .schedule-shift-card .shift-time { font-size: 0.65rem; font-weight: 700; }
+        .schedule-shift-card .shift-worker { font-size: 0.8rem; font-weight: 800; line-height: 1.2; }
+        .schedule-shift-card .shift-role { font-size: 0.65rem; opacity: 0.8; line-height: 1.2; }
         .schedule-add-shift-btn {
             opacity: 0; transition: opacity 0.15s;
-            background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04);
+            border: 1px dashed rgba(255,255,255,0.15);
             border-radius: 10px; padding: 6px; text-align: center;
             cursor: pointer; font-size: 0.75rem; color: var(--text-muted);
             min-height: 36px; display: flex; align-items: center; justify-content: center;
@@ -1629,10 +1640,16 @@
         }
         .worker-card {
             display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; border-radius: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
+            padding: 12px 14px; border-radius: 16px;
+            background: linear-gradient(160deg, rgba(35,35,35,0.7), rgba(15,15,15,0.55));
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06);
+            transition: transform 0.12s, box-shadow 0.12s;
         }
+        .worker-card:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.38); }
         .worker-avatar {
             width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
@@ -10497,7 +10514,7 @@
                 const color  = worker ? worker.color || '#0A84FF' : '#636366';
                 const wName  = worker ? worker.name.split(' ')[0] : 'Unknown';
                 html += `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
-                    style="background:${color}22; border-color:${color}44; color:var(--text-main);">
+                    style="background:linear-gradient(160deg, rgba(35,35,35,0.82), rgba(18,18,18,0.75)); border-color:${color}66; border-top-color:${color}99; box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35); color:var(--text-main);">
                     <div class="shift-time" style="color:${color};">${_fmtTime(shift.startTime)}${shift.endTime ? ` – ${_fmtTime(shift.endTime)}` : ''}</div>
                     <div class="shift-worker">${escapeHtml(wName)}</div>
                     ${shift.role ? `<div class="shift-role">${escapeHtml(shift.role)}</div>` : ''}
