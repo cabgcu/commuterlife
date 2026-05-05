@@ -1280,6 +1280,9 @@
             .workers-grid { grid-template-columns: 1fr; }
             .avail-time-inputs input[type="time"] { width: 90px; }
             .public-avail-card { padding: 30px 14px calc(40px + env(safe-area-inset-bottom)); }
+            .schedule-month-cell { min-height: 56px; padding: 5px 4px 4px; border-radius: 8px; }
+            .schedule-month-chip { font-size: 0.55rem; padding: 1px 3px; }
+            .month-cell-num { font-size: 0.72rem; }
         }
         /* @mention autocomplete dropdown */
         .mention-dropdown {
@@ -1670,6 +1673,47 @@
             border-radius: 8px; color: var(--text-main); font-size: 0.82rem;
             padding: 6px 8px; width: 110px;
         }
+        /* Month grid */
+        .schedule-month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0,1fr));
+            gap: 4px; margin-bottom: 24px;
+        }
+        .schedule-month-dow {
+            text-align: center; font-size: 0.65rem; font-weight: 800;
+            letter-spacing: 0.07em; text-transform: uppercase;
+            color: var(--text-muted); padding: 6px 2px;
+        }
+        .schedule-month-cell {
+            min-height: 80px; border-radius: 12px; padding: 8px 6px 6px;
+            background: linear-gradient(160deg, rgba(35,35,35,0.72), rgba(18,18,18,0.65));
+            backdrop-filter: blur(14px) saturate(150%);
+            -webkit-backdrop-filter: blur(14px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+            cursor: pointer; display: flex; flex-direction: column; gap: 3px;
+            transition: transform 0.12s;
+        }
+        .schedule-month-cell:hover { transform: translateY(-1px); }
+        .schedule-month-cell.empty { background: none; border: none; box-shadow: none; cursor: default; }
+        .schedule-month-cell.today {
+            background: linear-gradient(160deg, rgba(10,132,255,0.22), rgba(10,132,255,0.1));
+            border-color: rgba(10,132,255,0.4); border-top-color: rgba(10,132,255,0.6);
+        }
+        .month-cell-num {
+            font-size: 0.82rem; font-weight: 800; line-height: 1;
+            margin-bottom: 3px;
+        }
+        .schedule-month-cell.today .month-cell-num { color: #0A84FF; }
+        .schedule-month-chip {
+            font-size: 0.62rem; font-weight: 700; padding: 2px 5px; border-radius: 6px;
+            border: 1px solid transparent; display: flex; align-items: center; gap: 3px;
+            cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            transition: opacity 0.12s;
+        }
+        .schedule-month-chip:hover { opacity: 0.75; }
+
         /* Public availability page */
         #publicAvailOverlay {
             position: fixed; inset: 0; z-index: 9999999;
@@ -10425,20 +10469,20 @@
     const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const DAY_FULL  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-    let _schedWeekStart = null; // Monday of displayed week
+    let _schedWeekStart = null;
+    let _schedView = 'week'; // 'week' | 'month'
+    let _schedMonthDate = null;
 
     function _getWeekStart(date) {
         const d = new Date(date);
-        const day = d.getDay(); // 0=Sun
-        const diff = (day === 0) ? -6 : 1 - day; // shift to Monday
+        const day = d.getDay();
+        const diff = (day === 0) ? -6 : 1 - day;
         d.setDate(d.getDate() + diff);
         d.setHours(0,0,0,0);
         return d;
     }
 
-    function _fmtDate(d) {
-        return d.toISOString().slice(0,10);
-    }
+    function _fmtDate(d) { return d.toISOString().slice(0,10); }
 
     function _fmtTime(t) {
         if (!t) return '';
@@ -10447,61 +10491,104 @@
         return `${hr % 12 || 12}:${m}${hr < 12 ? 'am' : 'pm'}`;
     }
 
+    function _shiftsOverlap(a, b) {
+        if (a.date !== b.date) return false;
+        const aS = a.startTime || '00:00', aE = a.endTime || '23:59';
+        const bS = b.startTime || '00:00', bE = b.endTime || '23:59';
+        return aS < bE && bS < aE;
+    }
+
     function renderSchedule() {
         if (!_schedWeekStart) _schedWeekStart = _getWeekStart(new Date());
+        if (!_schedMonthDate) _schedMonthDate = new Date();
         const container = document.getElementById('schedule-content');
         if (!container) return;
-
-        const workers = appData.workers || [];
-        const shifts  = appData.shifts  || [];
         const isAdmin = currentUserRole === 'admin';
 
-        // Build 7 days Mon-Sun
+        // View toggle + nav bar
+        const isWeek = _schedView === 'week';
+        let navLabel, prevFn, nextFn;
+        if (isWeek) {
+            const days = _getWeekDays();
+            navLabel = `${days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${days[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+            prevFn = 'schedChangeWeek(-1)'; nextFn = 'schedChangeWeek(1)';
+        } else {
+            navLabel = _schedMonthDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+            prevFn = 'schedChangeMonth(-1)'; nextFn = 'schedChangeMonth(1)';
+        }
+
+        let html = `<div class="schedule-top-bar">
+            <div class="schedule-week-nav">
+                <button onclick="${prevFn}" title="Previous">&#8249;</button>
+                <span class="schedule-week-label">${navLabel}</span>
+                <button onclick="${nextFn}" title="Next">&#8250;</button>
+            </div>
+            <button class="btn-outline" onclick="schedGoToday()" style="font-size:0.8rem; padding:6px 14px;">Today</button>
+            <div style="display:flex; gap:4px; background:rgba(255,255,255,0.06); border-radius:10px; padding:3px; border:1px solid rgba(255,255,255,0.1);">
+                <button onclick="schedSetView('week')" style="padding:5px 14px; border-radius:8px; font-size:0.78rem; font-weight:700; border:none; cursor:pointer; transition:0.12s;
+                    background:${isWeek ? 'rgba(10,132,255,0.25)' : 'none'}; color:${isWeek ? '#0A84FF' : 'var(--text-muted)'};">Week</button>
+                <button onclick="schedSetView('month')" style="padding:5px 14px; border-radius:8px; font-size:0.78rem; font-weight:700; border:none; cursor:pointer; transition:0.12s;
+                    background:${!isWeek ? 'rgba(10,132,255,0.25)' : 'none'}; color:${!isWeek ? '#0A84FF' : 'var(--text-muted)'};">Month</button>
+            </div>
+            <div style="flex:1;"></div>
+            ${isAdmin ? `<button class="btn-action" onclick="openShiftModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Add Shift</button>` : ''}
+            <button class="btn-outline" onclick="printSchedule()" style="font-size:0.8rem; padding:6px 14px;" title="Print / Save PDF">🖨 Print</button>
+        </div>`;
+
+        html += isWeek ? _renderWeekGrid(isAdmin) : _renderMonthGrid(isAdmin);
+        html += _renderWorkersPanel(isAdmin, isWeek ? _getWeekDays() : null);
+
+        container.innerHTML = html;
+        _applyScheduleMobileMode();
+    }
+
+    function _getWeekDays() {
         const days = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(_schedWeekStart);
             d.setDate(d.getDate() + i);
             days.push(d);
         }
+        return days;
+    }
 
-        const weekLabel = `${days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${days[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
-        const todayStr  = _fmtDate(new Date());
-
-        // Determine which day is "active" on mobile (default = today if in week, else Monday)
+    function _renderWeekGrid(isAdmin) {
+        const days = _getWeekDays();
+        const todayStr = _fmtDate(new Date());
+        const shifts = appData.shifts || [];
+        const workers = appData.workers || [];
         const todayInWeek = days.find(d => _fmtDate(d) === todayStr);
         const activeDayIdx = todayInWeek ? days.indexOf(todayInWeek) : 0;
 
-        let html = `<div class="schedule-top-bar">
-            <div class="schedule-week-nav">
-                <button onclick="schedChangeWeek(-1)" title="Previous week">&#8249;</button>
-                <span class="schedule-week-label">${weekLabel}</span>
-                <button onclick="schedChangeWeek(1)" title="Next week">&#8250;</button>
-            </div>
-            <button class="btn-outline" onclick="schedGoToday()" style="font-size:0.8rem; padding:6px 14px;">Today</button>
-            ${isAdmin ? `<button class="btn-action" onclick="openShiftModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Add Shift</button>` : ''}
-        </div>`;
-
-        // Mobile day picker (shown only on mobile via JS-applied class)
-        html += `<div id="schedMobileDayPicker" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none; margin-bottom:12px;">`;
+        let html = `<div id="schedMobileDayPicker" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none; margin-bottom:12px;">`;
         days.forEach((d, i) => {
             const isToday = _fmtDate(d) === todayStr;
             html += `<button onclick="schedSetActiveDay(${i})" id="schedDayPill_${i}"
                 style="flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; cursor:pointer; transition:0.12s;
                 background:${i===activeDayIdx ? 'rgba(10,132,255,0.2)' : 'rgba(255,255,255,0.05)'};
                 border:1px solid ${i===activeDayIdx ? 'rgba(10,132,255,0.4)' : 'rgba(255,255,255,0.08)'};
-                color:${isToday ? '#0A84FF' : 'var(--text-main)'}; min-height:36px;">
-                ${DAY_NAMES[d.getDay()]} ${d.getDate()}
-            </button>`;
+                color:${isToday ? '#0A84FF' : 'var(--text-main)'}; min-height:36px;">${DAY_NAMES[d.getDay()]} ${d.getDate()}</button>`;
         });
-        html += `</div>`;
+        html += `</div><div class="schedule-grid" id="schedGrid">`;
 
-        html += `<div class="schedule-grid" id="schedGrid">`;
         days.forEach((d, i) => {
-            const dateStr  = _fmtDate(d);
-            const isToday  = dateStr === todayStr;
+            const dateStr = _fmtDate(d);
+            const isToday = dateStr === todayStr;
+            const isActive = i === activeDayIdx;
             const dayShifts = shifts.filter(s => s.date === dateStr)
                 .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-            const isActive = i === activeDayIdx;
+
+            // Group overlapping shifts into rows
+            const rows = []; // each row = array of shifts that all overlap with each other
+            dayShifts.forEach(shift => {
+                let placed = false;
+                for (const row of rows) {
+                    if (row.every(s => _shiftsOverlap(s, shift))) {
+                        row.push(shift); placed = true; break;
+                    }
+                }
+                if (!placed) rows.push([shift]);
+            });
 
             html += `<div class="schedule-day-col${isActive ? ' active-day' : ''}" id="schedCol_${i}">
                 <div class="schedule-day-header${isToday ? ' today' : ''}">
@@ -10509,56 +10596,117 @@
                     <div class="day-num">${d.getDate()}</div>
                 </div>`;
 
+            rows.forEach(row => {
+                if (row.length === 1) {
+                    html += _shiftCard(row[0], workers, isAdmin);
+                } else {
+                    // Side-by-side overlapping workers
+                    html += `<div style="display:grid; grid-template-columns:repeat(${row.length},1fr); gap:4px;">`;
+                    row.forEach(s => { html += _shiftCard(s, workers, isAdmin, true); });
+                    html += `</div>`;
+                }
+            });
+
+            if (isAdmin) html += `<div class="schedule-add-shift-btn" onclick="openShiftModal(null,'${dateStr}')">+ shift</div>`;
+            html += `</div>`;
+        });
+        return html + `</div>`;
+    }
+
+    function _shiftCard(shift, workers, isAdmin, compact = false) {
+        const worker = workers.find(w => w.id === shift.workerId);
+        const color  = worker ? (worker.color || '#0A84FF') : '#636366';
+        const wName  = worker ? (compact ? worker.name.split(' ')[0][0] + (worker.name.split(' ')[1]?.[0]||'') : worker.name.split(' ')[0]) : '?';
+        return `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
+            style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
+            border-color:${color}66; border-top-color:${color}99;
+            box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);">
+            <div class="shift-time" style="color:${color}; font-size:${compact?'0.58':'0.65'}rem;">${_fmtTime(shift.startTime)}${!compact && shift.endTime ? ` – ${_fmtTime(shift.endTime)}` : ''}</div>
+            <div class="shift-worker" style="font-size:${compact?'0.7':'0.8'}rem;">${escapeHtml(wName)}</div>
+            ${!compact && shift.role ? `<div class="shift-role">${escapeHtml(shift.role)}</div>` : ''}
+        </div>`;
+    }
+
+    function _renderMonthGrid(isAdmin) {
+        const shifts  = appData.shifts  || [];
+        const workers = appData.workers || [];
+        const todayStr = _fmtDate(new Date());
+        const yr = _schedMonthDate.getFullYear();
+        const mo = _schedMonthDate.getMonth();
+
+        const firstDay = new Date(yr, mo, 1);
+        const lastDay  = new Date(yr, mo + 1, 0);
+        // Start grid on Monday
+        const startOffset = (firstDay.getDay() + 6) % 7; // Mon=0
+        const totalCells  = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
+
+        let html = `<div class="schedule-month-grid" id="schedGrid">`;
+        // Day-of-week headers
+        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(n => {
+            html += `<div class="schedule-month-dow">${n}</div>`;
+        });
+
+        for (let i = 0; i < totalCells; i++) {
+            const dayNum = i - startOffset + 1;
+            if (dayNum < 1 || dayNum > lastDay.getDate()) {
+                html += `<div class="schedule-month-cell empty"></div>`;
+                continue;
+            }
+            const d = new Date(yr, mo, dayNum);
+            const dateStr = _fmtDate(d);
+            const isToday = dateStr === todayStr;
+            const dayShifts = shifts.filter(s => s.date === dateStr)
+                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+
+            html += `<div class="schedule-month-cell${isToday ? ' today' : ''}" onclick="${isAdmin ? `openShiftModal(null,'${dateStr}')` : ''}">
+                <div class="month-cell-num">${dayNum}</div>`;
+
             dayShifts.forEach(shift => {
                 const worker = workers.find(w => w.id === shift.workerId);
-                const color  = worker ? worker.color || '#0A84FF' : '#636366';
-                const wName  = worker ? worker.name.split(' ')[0] : 'Unknown';
-                html += `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
-                    style="background:linear-gradient(160deg, rgba(35,35,35,0.82), rgba(18,18,18,0.75)); border-color:${color}66; border-top-color:${color}99; box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35); color:var(--text-main);">
-                    <div class="shift-time" style="color:${color};">${_fmtTime(shift.startTime)}${shift.endTime ? ` – ${_fmtTime(shift.endTime)}` : ''}</div>
-                    <div class="shift-worker">${escapeHtml(wName)}</div>
-                    ${shift.role ? `<div class="shift-role">${escapeHtml(shift.role)}</div>` : ''}
+                const color  = worker ? (worker.color || '#0A84FF') : '#636366';
+                const wName  = worker ? worker.name.split(' ')[0] : '?';
+                html += `<div class="schedule-month-chip" onclick="event.stopPropagation();${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
+                    style="background:${color}33; border-color:${color}66; color:var(--text-main);">
+                    <span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+                    ${escapeHtml(wName)} ${_fmtTime(shift.startTime)}
                 </div>`;
             });
 
-            if (isAdmin) {
-                html += `<div class="schedule-add-shift-btn" onclick="openShiftModal(null, '${dateStr}')">+ shift</div>`;
-            }
-
             html += `</div>`;
-        });
-        html += `</div>`;
+        }
+        return html + `</div>`;
+    }
 
-        // Workers roster
-        html += `<div class="workers-panel">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                <div style="font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted);">Student Workers</div>
-                ${isAdmin ? `<button class="btn-outline" onclick="openWorkerModal(null)" style="font-size:0.78rem; padding:5px 14px;">+ Add Worker</button>` : ''}
+    function _renderWorkersPanel(isAdmin, days) {
+        const workers = appData.workers || [];
+        const shifts  = appData.shifts  || [];
+        let html = `<div class="workers-panel">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                <div style="font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);">Student Workers</div>
+                ${isAdmin ? `<button class="btn-outline" onclick="openWorkerModal(null)" style="font-size:0.78rem;padding:5px 14px;">+ Add Worker</button>` : ''}
             </div>
             <div class="workers-grid" style="margin-top:12px;">`;
-
-        if (workers.length === 0) {
-            html += `<div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--text-muted); font-size:0.88rem;">No workers yet. Add a worker to get started.</div>`;
+        if (!workers.length) {
+            html += `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);font-size:0.88rem;">No workers yet.</div>`;
         } else {
             workers.forEach(w => {
-                const initials = w.name.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
+                const initials = w.name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
                 const color = w.color || '#0A84FF';
-                const weekShifts = days.reduce((n, d) => n + shifts.filter(s => s.date === _fmtDate(d) && s.workerId === w.id).length, 0);
-                const availDays = (w.availability || []).map(a => DAY_NAMES[a.day]).join(', ') || 'No availability set';
-                html += `<div class="worker-card" style="cursor:${isAdmin ? 'pointer' : 'default'};" ${isAdmin ? `onclick="openWorkerModal('${w.id}')"` : ''}>
+                const weekShifts = days
+                    ? days.reduce((n,d) => n + shifts.filter(s => s.date===_fmtDate(d) && s.workerId===w.id).length, 0)
+                    : shifts.filter(s => s.workerId===w.id && s.date.startsWith(`${_schedMonthDate.getFullYear()}-${String(_schedMonthDate.getMonth()+1).padStart(2,'0')}`)).length;
+                const availDays = (w.availability||[]).map(a=>DAY_NAMES[a.day]).join(', ') || 'No availability set';
+                html += `<div class="worker-card" style="cursor:${isAdmin?'pointer':'default'};" ${isAdmin?`onclick="openWorkerModal('${w.id}')"`:''}>
                     <div class="worker-avatar" style="background:${color};">${initials}</div>
                     <div class="worker-info">
                         <div class="worker-name">${escapeHtml(w.name)}</div>
-                        <div class="worker-sub">${weekShifts} shift${weekShifts !== 1 ? 's' : ''} this week</div>
+                        <div class="worker-sub">${weekShifts} shift${weekShifts!==1?'s':''} ${days?'this week':'this month'}</div>
                         <div class="worker-sub" style="margin-top:2px;">Avail: ${availDays}</div>
                     </div>
                 </div>`;
             });
         }
-
-        html += `</div></div>`;
-        container.innerHTML = html;
-        _applyScheduleMobileMode();
+        return html + `</div></div>`;
     }
 
     function _applyScheduleMobileMode() {
@@ -10567,14 +10715,23 @@
         if (picker) picker.style.display = isMobile ? 'flex' : 'none';
     }
 
+    function schedSetView(v) { _schedView = v; renderSchedule(); }
+
     function schedChangeWeek(dir) {
         _schedWeekStart = _schedWeekStart || _getWeekStart(new Date());
         _schedWeekStart.setDate(_schedWeekStart.getDate() + dir * 7);
         renderSchedule();
     }
 
+    function schedChangeMonth(dir) {
+        if (!_schedMonthDate) _schedMonthDate = new Date();
+        _schedMonthDate.setMonth(_schedMonthDate.getMonth() + dir);
+        renderSchedule();
+    }
+
     function schedGoToday() {
         _schedWeekStart = _getWeekStart(new Date());
+        _schedMonthDate = new Date();
         renderSchedule();
     }
 
@@ -10583,9 +10740,78 @@
             col.classList.toggle('active-day', i === idx);
         });
         document.querySelectorAll('[id^="schedDayPill_"]').forEach((btn, i) => {
-            btn.style.background = i === idx ? 'rgba(10,132,255,0.2)' : 'rgba(255,255,255,0.05)';
-            btn.style.borderColor = i === idx ? 'rgba(10,132,255,0.4)' : 'rgba(255,255,255,0.08)';
+            btn.style.background = i===idx ? 'rgba(10,132,255,0.2)' : 'rgba(255,255,255,0.05)';
+            btn.style.borderColor = i===idx ? 'rgba(10,132,255,0.4)' : 'rgba(255,255,255,0.08)';
         });
+    }
+
+    function printSchedule() {
+        const isWeek = _schedView === 'week';
+        const workers = appData.workers || [];
+        const shifts = appData.shifts || [];
+        const todayStr = _fmtDate(new Date());
+
+        let title, rows = [];
+        if (isWeek) {
+            const days = _getWeekDays();
+            title = `Schedule: ${days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${days[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+            days.forEach(d => {
+                const dateStr = _fmtDate(d);
+                const dayShifts = shifts.filter(s => s.date === dateStr).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
+                if (dayShifts.length) {
+                    rows.push(`<tr><td colspan="4" style="background:#1a1a1a;padding:8px 10px;font-weight:800;font-size:0.85rem;color:#aaa;">${d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}${dateStr===todayStr?' (Today)':''}</td></tr>`);
+                    dayShifts.forEach(s => {
+                        const w = workers.find(x=>x.id===s.workerId);
+                        rows.push(`<tr>
+                            <td>${w?escapeHtml(w.name):'-'}</td>
+                            <td>${_fmtTime(s.startTime)}${s.endTime?' – '+_fmtTime(s.endTime):''}</td>
+                            <td>${escapeHtml(s.role||'')}</td>
+                            <td>${escapeHtml(s.notes||'')}</td>
+                        </tr>`);
+                    });
+                }
+            });
+        } else {
+            const yr = _schedMonthDate.getFullYear(), mo = _schedMonthDate.getMonth();
+            title = _schedMonthDate.toLocaleDateString('en-US',{month:'long',year:'numeric'}) + ' Schedule';
+            const monthShifts = shifts.filter(s => {
+                const d = new Date(s.date);
+                return d.getFullYear()===yr && d.getMonth()===mo;
+            }).sort((a,b) => a.date===b.date ? (a.startTime||'').localeCompare(b.startTime||'') : a.date.localeCompare(b.date));
+            let lastDate = '';
+            monthShifts.forEach(s => {
+                if (s.date !== lastDate) {
+                    const d = new Date(s.date+'T12:00:00');
+                    rows.push(`<tr><td colspan="4" style="background:#1a1a1a;padding:8px 10px;font-weight:800;font-size:0.85rem;color:#aaa;">${d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}</td></tr>`);
+                    lastDate = s.date;
+                }
+                const w = workers.find(x=>x.id===s.workerId);
+                rows.push(`<tr>
+                    <td>${w?escapeHtml(w.name):'-'}</td>
+                    <td>${_fmtTime(s.startTime)}${s.endTime?' – '+_fmtTime(s.endTime):''}</td>
+                    <td>${escapeHtml(s.role||'')}</td>
+                    <td>${escapeHtml(s.notes||'')}</td>
+                </tr>`);
+            });
+        }
+
+        const win = window.open('','_blank');
+        win.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
+        <style>
+            body{font-family:-apple-system,sans-serif;background:#111;color:#eee;margin:0;padding:24px;}
+            h1{font-size:1.3rem;margin:0 0 20px;font-weight:800;}
+            table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+            th{text-align:left;padding:8px 10px;border-bottom:2px solid #333;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;}
+            td{padding:9px 10px;border-bottom:1px solid #222;vertical-align:top;}
+            tr:last-child td{border-bottom:none;}
+            @media print{body{background:#fff;color:#000;} td,th{border-color:#ccc;} h1{color:#000;}}
+        </style></head><body>
+        <h1>${title}</h1>
+        <table><thead><tr><th>Worker</th><th>Time</th><th>Role</th><th>Notes</th></tr></thead>
+        <tbody>${rows.join('')}</tbody></table>
+        <script>window.onload=()=>window.print();<\/script>
+        </body></html>`);
+        win.document.close();
     }
 
     // ── Worker CRUD ──
@@ -10762,29 +10988,59 @@
 
     async function submitPublicAvailability() {
         const token = new URLSearchParams(window.location.search).get('avail');
-        const worker = (appData.workers || []).find(w => w.token === token);
-        if (!worker) return;
-
-        const dayOrder = [1,2,3,4,5,6,0];
-        const availability = [];
-        dayOrder.forEach(dayIdx => {
-            const chk = document.getElementById(`avail_chk_${dayIdx}`);
-            if (chk && chk.checked) {
-                availability.push({
-                    day:       dayIdx,
-                    startTime: document.getElementById(`avail_start_${dayIdx}`).value || '09:00',
-                    endTime:   document.getElementById(`avail_end_${dayIdx}`).value   || '17:00'
-                });
-            }
-        });
-
-        worker.availability = availability;
-        await saveData();
-
+        const btn = document.querySelector('#publicAvailOverlay .btn-action');
         const msg = document.getElementById('publicAvailMsg');
-        msg.textContent = '✓ Availability saved! Thank you.';
-        msg.style.display = 'block';
-        document.querySelector('#publicAvailOverlay .btn-action').disabled = true;
+
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+        msg.style.display = 'none';
+
+        try {
+            // Fresh fetch to avoid overwriting concurrent changes
+            const { data, error: fetchErr } = await _supabase.from('app_state').select('data').eq('id', 1).single();
+            if (fetchErr) throw fetchErr;
+
+            const freshData = data.data;
+            if (!freshData.workers) freshData.workers = [];
+            const worker = freshData.workers.find(w => w.token === token);
+            if (!worker) throw new Error('This availability link is no longer valid.');
+
+            const dayOrder = [1,2,3,4,5,6,0];
+            worker.availability = [];
+            dayOrder.forEach(dayIdx => {
+                const chk = document.getElementById(`avail_chk_${dayIdx}`);
+                if (chk && chk.checked) {
+                    worker.availability.push({
+                        day:       dayIdx,
+                        startTime: document.getElementById(`avail_start_${dayIdx}`).value || '09:00',
+                        endTime:   document.getElementById(`avail_end_${dayIdx}`).value   || '17:00'
+                    });
+                }
+            });
+
+            const { error: saveErr } = await _supabase.from('app_state').upsert({ id: 1, data: freshData });
+            if (saveErr) throw saveErr;
+
+            // Keep local appData in sync
+            const localWorker = (appData.workers || []).find(w => w.token === token);
+            if (localWorker) localWorker.availability = worker.availability;
+
+            msg.textContent = '✓ Availability saved! Thank you.';
+            msg.style.background = 'rgba(52,199,89,0.1)';
+            msg.style.borderColor = 'rgba(52,199,89,0.2)';
+            msg.style.color = '#34C759';
+            msg.style.display = 'block';
+            btn.textContent = 'Saved ✓';
+        } catch (e) {
+            console.error('Availability save failed:', e);
+            msg.textContent = `✗ Save failed: ${e.message || 'Please try again.'}`;
+            msg.style.background = 'rgba(255,59,48,0.1)';
+            msg.style.borderColor = 'rgba(255,59,48,0.2)';
+            msg.style.color = '#FF6B6B';
+            msg.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Submit Availability';
+        }
     }
 </script>
 </body>
