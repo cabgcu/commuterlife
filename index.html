@@ -1280,10 +1280,11 @@
             .workers-grid { grid-template-columns: 1fr; }
             .avail-time-inputs input[type="time"] { width: 90px; }
             .public-avail-card { padding: 30px 14px calc(40px + env(safe-area-inset-bottom)); }
-            .schedule-month-grid { grid-template-columns: repeat(7, minmax(90px,1fr)); min-width: 560px; }
-            .schedule-month-cell { min-height: 90px; padding: 6px 5px 5px; border-radius: 8px; }
-            .schedule-month-chip { font-size: 0.6rem; padding: 2px 4px; }
-            .month-cell-num { font-size: 0.75rem; }
+            .schedule-month-cell { min-height: 72px; padding: 5px 4px 4px; border-radius: 8px; }
+            .schedule-month-chip { font-size: 0; padding: 3px 4px; gap: 2px; }
+            .schedule-month-chip .chip-dot { display: inline-block; }
+            .schedule-month-chip .chip-label { display: none; }
+            .month-cell-num { font-size: 0.78rem; }
         }
         /* @mention autocomplete dropdown */
         .mention-dropdown {
@@ -1674,15 +1675,12 @@
             border-radius: 8px; color: var(--text-main); font-size: 0.82rem;
             padding: 6px 8px; width: 110px;
         }
-        /* Month grid */
-        .schedule-month-scroll {
-            overflow-x: auto; -webkit-overflow-scrolling: touch;
-            margin-bottom: 24px;
-        }
+        /* Month grid — fills full width, no scroll */
         .schedule-month-grid {
             display: grid;
-            grid-template-columns: repeat(7, minmax(120px,1fr));
-            gap: 5px; min-width: 700px;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 5px; margin-bottom: 24px;
+            width: 100%;
         }
         .schedule-month-dow {
             text-align: center; font-size: 0.65rem; font-weight: 800;
@@ -1718,6 +1716,7 @@
             white-space: nowrap; line-height: 1.3;
             transition: opacity 0.12s;
         }
+        .schedule-month-chip .chip-label { font-size: 0.68rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .schedule-month-chip:hover { opacity: 0.75; }
 
         /* Public availability page */
@@ -10646,7 +10645,7 @@
         const startOffset = (firstDay.getDay() + 6) % 7; // Mon=0
         const totalCells  = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
 
-        let html = `<div class="schedule-month-scroll"><div class="schedule-month-grid" id="schedGrid">`;
+        let html = `<div class="schedule-month-grid" id="schedGrid">`;
         // Day-of-week headers
         ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(n => {
             html += `<div class="schedule-month-dow">${n}</div>`;
@@ -10673,14 +10672,14 @@
                 const wName  = worker ? worker.name.split(' ')[0] : '?';
                 html += `<div class="schedule-month-chip" onclick="event.stopPropagation();${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
                     style="background:${color}33; border-color:${color}66; color:var(--text-main);">
-                    <span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
-                    ${escapeHtml(wName)} ${_fmtTime(shift.startTime)}
+                    <span class="chip-dot" style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+                    <span class="chip-label">${escapeHtml(wName)} ${_fmtTime(shift.startTime)}</span>
                 </div>`;
             });
 
             html += `</div>`;
         }
-        return html + `</div></div>`;
+        return html + `</div>`;
     }
 
     function _renderWorkersPanel(isAdmin, days) {
