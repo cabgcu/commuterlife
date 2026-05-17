@@ -1456,9 +1456,9 @@
             display: flex; align-items: center; justify-content: center;
         }
         .storage-bin-hero-overlay span {
-            font-size: 1.4rem; opacity: 0; transition: opacity 0.15s;
-            background: rgba(0,0,0,0.5); border-radius: 50%; width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; opacity: 0; transition: opacity 0.15s;
+            background: rgba(0,0,0,0.6); border-radius: 100px; padding: 5px 12px;
+            color: rgba(255,255,255,0.9); text-transform: uppercase;
         }
         .storage-bin-hero:hover .storage-bin-hero-overlay { background: rgba(0,0,0,0.25); }
         .storage-bin-hero:hover .storage-bin-hero-overlay span { opacity: 1; }
@@ -10230,7 +10230,6 @@
 
         if (bins.length === 0) {
             html += `<div class="frosted" style="text-align:center; padding:48px 24px; border-radius:16px; color:var(--text-muted);">
-                <div style="font-size:3rem; margin-bottom:12px;">📦</div>
                 <div style="font-weight:700; font-size:1rem; margin-bottom:6px; color:var(--text-main);">No storage bins yet</div>
                 <div style="font-size:0.85rem;">Add a bin to get started. Each bin gets its own QR code.</div>
             </div>`;
@@ -10273,7 +10272,7 @@
                     if (anyPic) {
                         itemsHtml = `<div class="storage-item-strip">` +
                             items.map(it => `<div class="storage-item-tile">
-                                <div class="storage-item-tile-img">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                                <div class="storage-item-tile-img">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                                 ${it.qty ? `<div class="storage-item-tile-qty">×${escapeHtml(it.qty)}</div>` : ''}
                                 <div class="storage-item-tile-label">${escapeHtml(it.name)}</div>
                             </div>`).join('') +
@@ -10296,10 +10295,10 @@
                 const heroHtml = bin.picture ? `
                     <div class="storage-bin-hero" onclick="event.stopPropagation(); openBinPhotoViewer('${bin.id}')">
                         <img src="${bin.picture}" alt="">
-                        <div class="storage-bin-hero-overlay"><span>🔍</span></div>
+                        <div class="storage-bin-hero-overlay"><span>View</span></div>
                     </div>` : '';
 
-                const iconHtml = !bin.picture ? `<div class="storage-bin-icon">📦</div>` : '';
+                const iconHtml = '';
 
                 html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
                     ${heroHtml}
@@ -10319,9 +10318,9 @@
                         ${itemsHtml ? `<div style="margin-top:6px;">${itemsHtml}</div>` : ''}
                     </div>
                     <div class="storage-bin-actions">
-                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">📱 QR</button>
-                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">✏️ Edit</button>` : ''}
-                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.8rem; padding:6px 16px; margin-left:auto;">${hasActive ? '↩ Check In' : '↗ Check Out'}</button>
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">QR</button>
+                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">Edit</button>` : ''}
+                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.8rem; padding:6px 16px; margin-left:auto;">${hasActive ? 'Check In' : 'Check Out'}</button>
                     </div>
                 </div>`;
             });
@@ -10342,7 +10341,7 @@
         if (bin.picture) {
             html += `<div class="bin-lightbox-img"><img src="${bin.picture}" alt="${escapeHtml(bin.name || '')}"></div>`;
         } else {
-            html += `<div class="bin-lightbox-img">📦</div>`;
+            html += `<div class="bin-lightbox-img"></div>`;
         }
 
         html += `<div>
@@ -10362,7 +10361,7 @@
                     const statusClass = co ? 'out' : 'available';
                     const statusText  = co ? `Out: ${escapeHtml(co.user)}` : 'Available';
                     return `<div class="bin-lightbox-item">
-                        <div class="bin-lightbox-item-img">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                        <div class="bin-lightbox-item-img">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                         <div class="bin-lightbox-item-name">${escapeHtml(it.name)}</div>
                         ${it.qty ? `<div class="bin-lightbox-item-qty">×${escapeHtml(it.qty)}</div>` : ''}
                         <div class="bin-lightbox-item-status ${statusClass}">${statusText}</div>
@@ -10375,7 +10374,7 @@
 
         html += `<div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); margin-top:4px;">
             <button class="btn-action" onclick="closeBinPhotoLightbox(); openPublicBinCardModal('${bin.id}')" style="flex:1; min-height:52px; font-size:1rem;">
-                ${_binHasActiveCheckouts(bin) ? '↩ Check In' : '↗ Check Out'}
+                ${_binHasActiveCheckouts(bin) ? 'Check In' : 'Check Out'}
             </button>
         </div>`;
 
@@ -10691,7 +10690,7 @@
                     <input id="coNotes" class="modern-input" placeholder="e.g. For Friday event" style="width:100%;">
                 </div>
                 <button onclick="submitBinCheckout()" class="btn-action" style="${legacy ? 'background:var(--gradient-success);' : ''}">
-                    ${legacy ? `↩ Mark as Returned (out: ${escapeHtml(legacy.user)})` : '↗ Check Out'}
+                    ${legacy ? `Mark as Returned (out: ${escapeHtml(legacy.user)})` : 'Check Out'}
                 </button>
                 ${_renderCheckoutHistory(bin)}
             </div>`;
@@ -10712,7 +10711,7 @@
 
             itemRows += `<div class="checkout-item-row ${selClass}" onclick="_toggleCoItem('${bin.id}','${it.id}')">
                 <div class="checkout-item-check">${checkMark}</div>
-                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-size:0.9rem;font-weight:700;line-height:1.2;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;font-weight:600;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
                     <div style="margin-top:3px;">${statusBadge}</div>
@@ -10727,10 +10726,10 @@
         const btnLabel = selIds.length === 0
             ? 'Select items above'
             : outSelected.length && inSelected.length
-                ? `↗ Check Out ${inSelected.length} · ↩ Check In ${outSelected.length}`
+                ? `Check Out ${inSelected.length} · Check In ${outSelected.length}`
                 : inSelected.length
-                    ? `↗ Check Out ${inSelected.length} item${inSelected.length > 1 ? 's' : ''}`
-                    : `↩ Check In ${outSelected.length} item${outSelected.length > 1 ? 's' : ''}`;
+                    ? `Check Out ${inSelected.length} item${inSelected.length > 1 ? 's' : ''}`
+                    : `Check In ${outSelected.length} item${outSelected.length > 1 ? 's' : ''}`;
         const btnStyle = selIds.length === 0 ? 'opacity:0.5;cursor:not-allowed;' : (outSelected.length && !inSelected.length ? 'background:var(--gradient-success);' : '');
 
         body.innerHTML = `
@@ -10860,7 +10859,7 @@
         let html = `<div class="frosted" style="border-radius:var(--radius-card); overflow:hidden;">`;
         html += bin.picture
             ? `<div class="public-bin-hero"><img src="${bin.picture}" alt=""></div>`
-            : `<div class="public-bin-hero">📦</div>`;
+            : `<div class="public-bin-hero"></div>`;
         html += `<div style="padding:20px 22px 22px;">
             <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:3px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
             <h2 style="margin:0 0 6px;font-size:1.4rem;font-weight:800;">${escapeHtml(bin.name || 'Unnamed Bin')}</h2>
@@ -10872,7 +10871,7 @@
             // No items — bin-level checkout
             const active = (bin.checkouts || []).find(c => !c.checkedInAt);
             html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">
-                <h3 style="margin:0 0 12px;font-size:1rem;font-weight:800;">${active ? '↩ Check In' : '↗ Check Out'}</h3>
+                <h3 style="margin:0 0 12px;font-size:1rem;font-weight:800;">${active ? 'Check In' : 'Check Out'}</h3>
                 ${active ? `<div style="margin-bottom:12px;font-size:0.85rem;color:var(--text-muted);">Currently out: <strong>${escapeHtml(active.user)}</strong></div>` : ''}
                 <div style="display:flex;flex-direction:column;gap:10px;">
                     <input id="pubName" class="modern-input" placeholder="Your name" style="width:100%;">
@@ -10896,7 +10895,7 @@
                     : `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(52,199,89,0.15);color:#34C759;">Available</span>`;
                 itemRows += `<div class="checkout-item-row ${selClass}" onclick="_togglePubItem('${bin.id}','${it.id}')">
                     <div class="checkout-item-check">${checkMark}</div>
-                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:0.9rem;font-weight:700;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
                         <div style="margin-top:3px;">${badge}</div>
@@ -10909,10 +10908,10 @@
             const inSel  = selIds.filter(id => !_itemActiveCheckout(bin, id));
             const btnLabel = selIds.length === 0 ? 'Select items above'
                 : outSel.length && inSel.length
-                    ? `Submit (↗${inSel.length} out · ↩${outSel.length} in)`
+                    ? `Submit (${inSel.length} out · ${outSel.length} in)`
                     : inSel.length
-                        ? `↗ Check Out ${inSel.length} item${inSel.length > 1 ? 's' : ''}`
-                        : `↩ Check In ${outSel.length} item${outSel.length > 1 ? 's' : ''}`;
+                        ? `Check Out ${inSel.length} item${inSel.length > 1 ? 's' : ''}`
+                        : `Check In ${outSel.length} item${outSel.length > 1 ? 's' : ''}`;
             const btnDisabled = selIds.length === 0 ? 'disabled style="opacity:0.5;"' : (outSel.length && !inSel.length ? 'style="background:var(--gradient-success);"' : '');
 
             html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">
