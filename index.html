@@ -2029,7 +2029,6 @@
         <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')"><span class="nav-icon">⚡</span><span class="nav-label">Due</span></button>
         <button class="nav-tab" id="tab-storage" onclick="switchView('storage')"><span class="nav-icon">📦</span><span class="nav-label">Storage</span></button>
         <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')"><span class="nav-icon">👥</span><span class="nav-label">Schedule</span></button>
-        <button class="nav-tab" id="tab-swaps" onclick="switchView('swaps')"><span class="nav-icon">🔄</span><span class="nav-label">Swaps</span></button>
         <button class="nav-tab" id="tab-manager" onclick="switchView('manager')"><span class="nav-icon">📋</span><span class="nav-label">Manager</span></button>
         <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;"><span class="nav-icon">🔔</span><span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
         <button class="nav-tab" id="tab-settings" onclick="switchView('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
@@ -3696,7 +3695,6 @@
         if (viewName === 'events') renderEvents();
         if (viewName === 'storage') renderStorage();
         if (viewName === 'schedule') renderSchedule();
-        if (viewName === 'swaps') renderSwapRequests();
         if (viewName === 'manager') renderManager();
     }
 
@@ -3739,7 +3737,7 @@
             .filter(({ date }) => date < now)
             .sort((a, b) => b.date - a.date);
         if (upcoming.length === 0 && overdue.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:var(--text-muted); margin-top:60px; font-size:1rem;">No upcoming events in the next 30 days 🎉</div>';
+            container.innerHTML = '<div class="frosted" style="text-align:center; color:var(--text-muted); padding:48px 24px; border-radius:16px; margin-top:20px; font-size:1rem;">No upcoming events in the next 30 days 🎉</div>';
             return;
         }
         function countdownBadge(date) {
@@ -5033,10 +5031,10 @@
 
     const SECTION_LABELS = {
         board: 'Home / Board', calendar: 'Calendar', duesoon: 'Due Soon',
-        storage: 'Storage', schedule: 'Schedule', swaps: 'Swap Requests', manager: 'Manager'
+        storage: 'Storage', schedule: 'Schedule & Swaps', manager: 'Manager'
     };
     const DEFAULT_SECTION_PERMISSIONS = {
-        board: true, calendar: true, duesoon: true, storage: true, schedule: true, swaps: true, manager: true
+        board: true, calendar: true, duesoon: true, storage: true, schedule: true, manager: true
     };
 
     function applyUserPermissions() {
@@ -5046,7 +5044,7 @@
         }
         const user = (appData.settings.users || []).find(u => u.email === currentUserEmail);
         const perms = { ...DEFAULT_SECTION_PERMISSIONS, ...(user?.sectionPermissions || {}) };
-        const tabMap = { board:'tab-board', calendar:'tab-calendar', duesoon:'tab-duesoon', storage:'tab-storage', schedule:'tab-schedule', swaps:'tab-swaps', manager:'tab-manager' };
+        const tabMap = { board:'tab-board', calendar:'tab-calendar', duesoon:'tab-duesoon', storage:'tab-storage', schedule:'tab-schedule', manager:'tab-manager' };
         let firstVisible = null;
         Object.entries(tabMap).forEach(([section, tabId]) => {
             const tab = document.getElementById(tabId);
@@ -11550,6 +11548,7 @@
         html += `<div style="display:flex; gap:4px; background:rgba(255,255,255,0.06); border-radius:10px; padding:3px; border:1px solid rgba(255,255,255,0.1);">
             <button onclick="schedSetMode('week')" style="${mTab('week')}">Week</button>
             <button onclick="schedSetMode('month')" style="${mTab('month')}">Month</button>
+            <button onclick="schedSetMode('swaps')" style="${mTab('swaps')}" id="sched-swaps-btn">Swaps</button>
             ${isAdmin ? `<button onclick="schedSetMode('template')" style="${mTab('template')}">Template</button>
             <button onclick="schedSetMode('semesters')" style="${mTab('semesters')}">Semesters</button>` : ''}
         </div>
@@ -11561,6 +11560,8 @@
             html += `<button class="btn-action" onclick="openSemesterModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Semester</button>`;
         if (isAdmin && _schedMode === 'week')
             html += `<button class="btn-outline" onclick="printSchedule()" style="font-size:0.8rem; padding:6px 14px;">🖨 Print</button>`;
+        if (_schedMode === 'swaps' && (isAdmin || currentWorker))
+            html += `<button class="btn-action" onclick="openSwapRequestModal(null,null)" style="font-size:0.8rem; padding:6px 16px;">+ Request Swap</button>`;
 
         html += `</div>`; // close schedule-top-bar
 
@@ -11580,10 +11581,11 @@
         }
 
         // Content
-        if (_schedMode === 'week')      html += _renderTemplatizedWeekGrid(isAdmin, currentWorker);
-        else if (_schedMode === 'month') html += _renderMonthGrid(isAdmin);
-        else if (_schedMode === 'template') html += _renderTemplateEditor(isAdmin);
-        else if (_schedMode === 'semesters') html += _renderSemesterManager(isAdmin);
+        if (_schedMode === 'week')           html += _renderTemplatizedWeekGrid(isAdmin, currentWorker);
+        else if (_schedMode === 'month')      html += _renderMonthGrid(isAdmin);
+        else if (_schedMode === 'template')   html += _renderTemplateEditor(isAdmin);
+        else if (_schedMode === 'semesters')  html += _renderSemesterManager(isAdmin);
+        else if (_schedMode === 'swaps')      html += _renderSwapsInline(isAdmin, currentWorker);
 
         if (_schedMode === 'week' || _schedMode === 'month')
             html += _renderWorkersPanel(isAdmin, _schedMode === 'week' ? _getWeekDays() : null);
@@ -11781,6 +11783,10 @@
     // ── Swap Requests View ──
 
     function renderSwapRequests() {
+        // Swaps are now embedded in the Schedule view under the Swaps mode tab.
+        // If schedule is active, refresh it; otherwise just update the badge.
+        _updateSwapBadge();
+        if (currentView === 'schedule') { renderSchedule(); return; }
         const container = document.getElementById('swaps-content');
         if (!container) return;
         const isAdmin = currentUserRole === 'admin';
@@ -11862,6 +11868,42 @@
         </div>`;
     }
 
+    function _renderSwapsInline(isAdmin, currentWorker) {
+        const workers = appData.workers || [];
+        const templateShifts = appData.templateShifts || [];
+        const swapRequests = appData.swapRequests || [];
+        let requests;
+        if (isAdmin) {
+            requests = [...swapRequests].sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+        } else if (currentWorker) {
+            requests = swapRequests
+                .filter(r => r.requesterId === currentWorker.id || r.targetId === currentWorker.id)
+                .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+        } else {
+            requests = [];
+        }
+        const pending  = requests.filter(r => r.status === 'pending');
+        const resolved = requests.filter(r => r.status !== 'pending');
+        if (!requests.length) {
+            return `<div class="frosted" style="text-align:center;padding:48px 24px;border-radius:16px;margin-top:4px;">
+                <div style="font-size:2rem;margin-bottom:12px;">🔄</div>
+                <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">No Swap Requests</div>
+                <div style="font-size:0.85rem;color:var(--text-muted);">Swap requests will appear here once submitted.</div>
+            </div>`;
+        }
+        let html = '<div style="display:flex;flex-direction:column;gap:16px;margin-top:4px;">';
+        if (pending.length) {
+            html += `<div style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:-6px;">Pending (${pending.length})</div>`;
+            pending.forEach(r => { html += _renderSwapCard(r, workers, templateShifts, isAdmin, currentWorker); });
+        }
+        if (resolved.length) {
+            html += `<div style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-top:4px;margin-bottom:-6px;">Resolved</div>`;
+            resolved.forEach(r => { html += _renderSwapCard(r, workers, templateShifts, isAdmin, currentWorker); });
+        }
+        html += '</div>';
+        return html;
+    }
+
     function _updateSwapBadge() {
         const currentWorker = _getCurrentWorker();
         const pendingCount = (appData.swapRequests || []).filter(r => {
@@ -11869,20 +11911,29 @@
             if (currentUserRole === 'admin') return true;
             return currentWorker && (r.requesterId === currentWorker.id || r.targetId === currentWorker.id);
         }).length;
-        const swapsTab = document.getElementById('tab-swaps');
-        if (!swapsTab) return;
-        let badge = swapsTab.querySelector('.swap-count-badge');
-        if (pendingCount > 0) {
-            if (!badge) {
-                badge = document.createElement('span');
-                badge.className = 'swap-count-badge notif-badge';
-                badge.style.cssText = 'display:inline-flex;position:absolute;top:2px;right:2px;';
-                swapsTab.style.position = 'relative';
-                swapsTab.appendChild(badge);
+        // Badge on the Schedule nav tab
+        const schedTab = document.getElementById('tab-schedule');
+        if (schedTab) {
+            let badge = schedTab.querySelector('.swap-count-badge');
+            if (pendingCount > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'swap-count-badge notif-badge';
+                    badge.style.cssText = 'display:inline-flex;position:absolute;top:2px;right:2px;';
+                    schedTab.style.position = 'relative';
+                    schedTab.appendChild(badge);
+                }
+                badge.textContent = pendingCount;
+            } else {
+                if (badge) badge.remove();
             }
-            badge.textContent = pendingCount;
-        } else {
-            if (badge) badge.remove();
+        }
+        // Also update the inline Swaps button label if visible
+        const swapsBtn = document.getElementById('sched-swaps-btn');
+        if (swapsBtn && pendingCount > 0) {
+            swapsBtn.textContent = `Swaps (${pendingCount})`;
+        } else if (swapsBtn) {
+            swapsBtn.textContent = 'Swaps';
         }
     }
 
