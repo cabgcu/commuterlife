@@ -1768,6 +1768,19 @@
         .schedule-month-chip .chip-label { font-size: 0.68rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .schedule-month-chip:hover { opacity: 0.75; }
 
+        /* ── Override badge on shift cards ── */
+        .schedule-shift-card.is-overridden {
+            border-left-width: 3px !important;
+        }
+
+        /* ── Semester info banner ── */
+        .semester-banner {
+            display:flex; align-items:center; gap:10px;
+            padding:8px 14px;
+            background:rgba(10,132,255,0.08); border:1px solid rgba(10,132,255,0.2);
+            border-radius:10px; font-size:0.82rem; flex-wrap:wrap;
+        }
+
         /* Public availability page */
         #publicAvailOverlay {
             position: fixed; inset: 0; z-index: 9999999;
@@ -1910,6 +1923,7 @@
         <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')"><span class="nav-icon">⚡</span><span class="nav-label">Due</span></button>
         <button class="nav-tab" id="tab-storage" onclick="switchView('storage')"><span class="nav-icon">📦</span><span class="nav-label">Storage</span></button>
         <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')"><span class="nav-icon">👥</span><span class="nav-label">Schedule</span></button>
+        <button class="nav-tab" id="tab-swaps" onclick="switchView('swaps')"><span class="nav-icon">🔄</span><span class="nav-label">Swaps</span></button>
         <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;"><span class="nav-icon">🔔</span><span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
         <button class="nav-tab" id="tab-settings" onclick="switchView('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
     </div>
@@ -1930,6 +1944,10 @@
 
     <div class="app-view" id="view-schedule" style="padding: 0 4px;">
         <div class="schedule-wrapper" id="schedule-content"></div>
+    </div>
+
+    <div class="app-view" id="view-swaps" style="padding: 0 4px; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <div id="swaps-content" style="max-width:800px; margin:0 auto; padding:16px 4px 40px;"></div>
     </div>
 
     <!-- BULK ACTION BAR -->
@@ -2873,6 +2891,10 @@
                 if (!appData.storageBins) appData.storageBins = [];
                 if (!appData.workers) appData.workers = [];
                 if (!appData.shifts) appData.shifts = [];
+                if (!appData.semesters) appData.semesters = [];
+                if (!appData.templateShifts) appData.templateShifts = [];
+                if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+                if (!appData.swapRequests) appData.swapRequests = [];
 
                 appData.boards.forEach(b => {
                     if (b.backgroundImage === undefined) b.backgroundImage = '';
@@ -3101,6 +3123,7 @@
         setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; }, 500);
         // Reload cleared notification IDs for the now-logged-in user
         _loadClearedIds();
+        applyUserPermissions();
         renderApp();
         // Re-subscribe to Web Push on each login (subscriptions can expire)
         ensurePushSubscription();
@@ -3431,6 +3454,7 @@
         if (viewName === 'events') renderEvents();
         if (viewName === 'storage') renderStorage();
         if (viewName === 'schedule') renderSchedule();
+        if (viewName === 'swaps') renderSwapRequests();
     }
 
     let searchQuery = '';
@@ -4764,6 +4788,44 @@
         initializeSettingsUI();
     }
 
+    const SECTION_LABELS = {
+        board: 'Home / Board', calendar: 'Calendar', duesoon: 'Due Soon',
+        storage: 'Storage', schedule: 'Schedule', swaps: 'Swap Requests'
+    };
+    const DEFAULT_SECTION_PERMISSIONS = {
+        board: true, calendar: true, duesoon: true, storage: true, schedule: true, swaps: true
+    };
+
+    function applyUserPermissions() {
+        if (currentUserRole === 'admin') {
+            document.querySelectorAll('.nav-tab').forEach(t => t.style.display = '');
+            return;
+        }
+        const user = (appData.settings.users || []).find(u => u.email === currentUserEmail);
+        const perms = { ...DEFAULT_SECTION_PERMISSIONS, ...(user?.sectionPermissions || {}) };
+        const tabMap = { board:'tab-board', calendar:'tab-calendar', duesoon:'tab-duesoon', storage:'tab-storage', schedule:'tab-schedule', swaps:'tab-swaps' };
+        let firstVisible = null;
+        Object.entries(tabMap).forEach(([section, tabId]) => {
+            const tab = document.getElementById(tabId);
+            if (!tab) return;
+            const visible = perms[section] !== false;
+            tab.style.display = visible ? '' : 'none';
+            if (visible && !firstVisible) firstVisible = section;
+        });
+        if (currentView && tabMap[currentView] && perms[currentView] === false && firstVisible) {
+            switchView(firstVisible);
+        }
+    }
+
+    function toggleUserSectionPermission(email, section, enabled) {
+        const user = (appData.settings.users || []).find(u => u.email === email);
+        if (!user) return;
+        if (!user.sectionPermissions) user.sectionPermissions = {};
+        user.sectionPermissions[section] = enabled;
+        saveData();
+        showToast(`${SECTION_LABELS[section]} ${enabled ? 'enabled' : 'disabled'} for ${email.split('@')[0]}`);
+    }
+
     function renderUserList() {
         const container = document.getElementById('userListContainer');
         if (!container) return;
@@ -4771,18 +4833,33 @@
             container.innerHTML = '<div style="color:var(--text-muted); font-style:italic;">No additional users added.</div>';
             return;
         }
-        container.innerHTML = appData.settings.users.map(u => `
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-weight: bold; margin-bottom: 4px;">${u.name ? u.name + ' <span style="font-weight:normal;color:var(--text-muted);">(' + u.email + ')</span>' : u.email}</div>
-                    <div style="font-size: 0.75rem; color: ${u.password ? '#34C759' : '#FF9500'};">${u.password ? 'Active' : 'Awaiting Setup'}</div>
+        container.innerHTML = appData.settings.users.map(u => {
+            const perms = { ...DEFAULT_SECTION_PERMISSIONS, ...(u.sectionPermissions || {}) };
+            return `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <div style="font-weight:bold;">${u.name ? escapeHtml(u.name) + ' <span style="font-weight:normal;color:var(--text-muted);">(' + escapeHtml(u.email) + ')</span>' : escapeHtml(u.email)}</div>
+                        <div style="font-size:0.75rem; color:${u.password ? '#34C759' : '#FF9500'}; margin-top:2px;">${u.password ? 'Active' : 'Awaiting Setup'}</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        ${u.password ? `<button class="btn-outline" style="padding:6px 12px; font-size:0.75rem;" onclick="resetUserPassword('${u.email}')">Reset Pass</button>` : ''}
+                        <button class="btn-outline" style="padding:6px 12px; font-size:0.75rem; border-color:rgba(255,59,48,0.4); color:#FF3B30;" onclick="removeUser('${u.email}')">Remove</button>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    ${u.password ? `<button class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem;" onclick="resetUserPassword('${u.email}')">Reset Pass</button>` : ''}
-                    <button class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-color: rgba(255,59,48,0.4); color: #FF3B30;" onclick="removeUser('${u.email}')">Remove</button>
+                <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                    <div style="font-size:0.72rem; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Section Access</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:6px;">
+                        ${Object.entries(SECTION_LABELS).map(([section, label]) => `
+                            <label style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; cursor:pointer;">
+                                <input type="checkbox" ${perms[section] !== false ? 'checked' : ''}
+                                    onchange="toggleUserSectionPermission('${u.email}', '${section}', this.checked)"
+                                    style="width:16px; height:16px; accent-color:#0A84FF; cursor:pointer; flex-shrink:0;">
+                                <span style="font-size:0.78rem; font-weight:600;">${label}</span>
+                            </label>`).join('')}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
     }
 
     function addUser() {
@@ -9523,6 +9600,122 @@
     </div>
 </div>
 
+<!-- SEMESTER MODAL -->
+<div id="semesterModal" class="modal-overlay" onclick="closeModal(event,'semesterModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:420px;">
+        <button class="close-modal" onclick="closeModal(null,'semesterModal')">&times;</button>
+        <h3 id="semesterModalTitle" style="margin:0 0 20px; font-weight:800;">Add Semester</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <input class="modern-input" id="semesterModalName" placeholder="e.g. Fall 2025" style="width:100%;">
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Start Date *</label>
+                <input class="modern-input" type="date" id="semesterModalStart" style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">End Date *</label>
+                <input class="modern-input" type="date" id="semesterModalEnd" style="width:100%;">
+            </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+            <button class="btn-action" onclick="saveSemester()" style="flex:1; min-height:44px;">Save Semester</button>
+            <button class="btn-outline" id="semesterDeleteBtn" onclick="deleteSemester()" style="color:#FF6B6B; border-color:rgba(255,107,107,0.3); display:none;">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- TEMPLATE SHIFT MODAL -->
+<div id="templateShiftModal" class="modal-overlay" onclick="closeModal(event,'templateShiftModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:420px;">
+        <button class="close-modal" onclick="closeModal(null,'templateShiftModal')">&times;</button>
+        <h3 id="tsModalTitle" style="margin:0 0 6px; font-weight:800;">Add Template Shift</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 18px;">Repeats every week within the semester's date range.</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Day of Week *</label>
+                <select class="modern-input" id="tsModalDay" style="width:100%;">
+                    <option value="1">Monday</option><option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option><option value="4">Thursday</option>
+                    <option value="5">Friday</option><option value="6">Saturday</option>
+                    <option value="0">Sunday</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Worker *</label>
+                <select class="modern-input" id="tsModalWorker" style="width:100%;"></select>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Start *</label><input class="modern-input" type="time" id="tsModalStart" style="width:100%;"></div>
+                <div style="flex:1;"><label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">End</label><input class="modern-input" type="time" id="tsModalEnd" style="width:100%;"></div>
+            </div>
+            <input class="modern-input" id="tsModalRole" placeholder="Role / Position (e.g. Front Desk)" style="width:100%;">
+            <input class="modern-input" id="tsModalNotes" placeholder="Notes" style="width:100%;">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+            <button class="btn-action" onclick="saveTemplateShift()" style="flex:1; min-height:44px;">Save</button>
+            <button class="btn-outline" id="tsDeleteBtn" onclick="deleteTemplateShift()" style="color:#FF6B6B; border-color:rgba(255,107,107,0.3); display:none;">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- WEEK OVERRIDE MODAL -->
+<div id="weekOverrideModal" class="modal-overlay" onclick="closeModal(event,'weekOverrideModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:420px;">
+        <button class="close-modal" onclick="closeModal(null,'weekOverrideModal')">&times;</button>
+        <h3 id="overrideModalTitle" style="margin:0 0 10px; font-weight:800;">Override Shift</h3>
+        <div style="background:rgba(10,132,255,0.08); border:1px solid rgba(10,132,255,0.18); border-radius:10px; padding:10px 14px; margin-bottom:16px;">
+            <div id="overrideModalShiftInfo" style="font-size:0.88rem; font-weight:700;"></div>
+            <div id="overrideModalWeekInfo" style="font-size:0.78rem; color:#0A84FF; margin-top:2px; font-weight:700;"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Assign Worker</label>
+                <select class="modern-input" id="overrideModalWorker" style="width:100%;"></select>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Start</label><input class="modern-input" type="time" id="overrideModalStart" style="width:100%;"></div>
+                <div style="flex:1;"><label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">End</label><input class="modern-input" type="time" id="overrideModalEnd" style="width:100%;"></div>
+            </div>
+            <input class="modern-input" id="overrideModalNotes" placeholder="Notes" style="width:100%;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:10px 14px; background:rgba(255,59,48,0.06); border:1px solid rgba(255,59,48,0.18); border-radius:10px;">
+                <input type="checkbox" id="overrideModalCancelled" style="width:18px; height:18px; accent-color:#FF3B30; cursor:pointer;">
+                <span style="font-size:0.88rem; font-weight:700; color:#FF6B6B;">Cancel shift this week only</span>
+            </label>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+            <button class="btn-action" onclick="saveWeekOverride()" style="flex:1; min-height:44px;">Save Override</button>
+            <button class="btn-outline" id="overrideDeleteBtn" onclick="deleteWeekOverride()" style="color:#FF6B6B; border-color:rgba(255,107,107,0.3); display:none;">Remove</button>
+        </div>
+    </div>
+</div>
+
+<!-- SWAP REQUEST MODAL -->
+<div id="swapRequestModal" class="modal-overlay" onclick="closeModal(event,'swapRequestModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:440px;">
+        <button class="close-modal" onclick="closeModal(null,'swapRequestModal')">&times;</button>
+        <h3 style="margin:0 0 6px; font-weight:800;">Request Shift Swap</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 18px;">Pick the shift and who should cover it. They'll need to approve.</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">My Shift *</label>
+                <select class="modern-input" id="swapModalShift" style="width:100%;"></select>
+            </div>
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Week (enter any date in that week) *</label>
+                <input class="modern-input" type="date" id="swapModalWeek" style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Covered by *</label>
+                <select class="modern-input" id="swapModalTarget" style="width:100%;"></select>
+            </div>
+            <textarea class="modern-input" id="swapModalNote" placeholder="Add a note (optional)…" style="width:100%; min-height:72px; resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-action" onclick="saveSwapRequest()" style="flex:1; min-height:44px;">Submit Request</button>
+            <button class="btn-outline" onclick="closeModal(null,'swapRequestModal')" style="flex:1; min-height:44px;">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- PUBLIC AVAILABILITY PAGE (?avail=TOKEN) -->
 <div id="publicAvailOverlay">
     <div class="public-avail-card">
@@ -10780,7 +10973,7 @@
         if (picker) picker.style.display = isMobile ? 'flex' : 'none';
     }
 
-    function schedSetView(v) { _schedView = v; renderSchedule(); }
+    function schedSetView(v) { _schedView = v; _schedMode = v; renderSchedule(); }
 
     function schedChangeWeek(dir) {
         _schedWeekStart = _schedWeekStart || _getWeekStart(new Date());
@@ -10811,7 +11004,7 @@
     }
 
     function printSchedule() {
-        const isWeek = _schedView === 'week';
+        const isWeek = (_schedMode || _schedView) === 'week';
         const workers = appData.workers || [];
         const shifts = appData.shifts || [];
         const todayStr = _fmtDate(new Date());
@@ -10820,9 +11013,12 @@
         if (isWeek) {
             const days = _getWeekDays();
             title = `Schedule: ${days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${days[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+            const weekSemForPrint = _activeSemesterId ? _getSemesterForWeek(_schedWeekStart) : null;
+            const useTemplateForPrint = !!weekSemForPrint && (appData.templateShifts||[]).length > 0;
+            const printShifts = useTemplateForPrint ? _getTemplateShiftsForWeek(_schedWeekStart) : shifts;
             days.forEach(d => {
                 const dateStr = _fmtDate(d);
-                const dayShifts = shifts.filter(s => s.date === dateStr).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
+                const dayShifts = printShifts.filter(s => s.date === dateStr).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
                 if (dayShifts.length) {
                     rows.push(`<tr><td colspan="4" style="background:#1a1a1a;padding:8px 10px;font-weight:800;font-size:0.85rem;color:#aaa;">${d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}${dateStr===todayStr?' (Today)':''}</td></tr>`);
                     dayShifts.forEach(s => {
@@ -11022,6 +11218,689 @@
         closeModal(null, 'shiftModal');
         saveData();
         renderSchedule();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // SEMESTER & TEMPLATE SCHEDULING SYSTEM
+    // ══════════════════════════════════════════════════════════
+
+    let _schedMode = 'week'; // 'week' | 'month' | 'template' | 'semesters'
+    let _activeSemesterId = null;
+
+    function _getCurrentWorker() {
+        if (!currentUserEmail) return null;
+        return (appData.workers || []).find(w =>
+            w.email && w.email.toLowerCase() === currentUserEmail.toLowerCase()
+        ) || null;
+    }
+
+    function _getTemplateShiftsForWeek(weekStart) {
+        const templateShifts = appData.templateShifts || [];
+        const weeklyOverrides = appData.weeklyOverrides || [];
+        const weekStartStr = _fmtDate(weekStart);
+        const result = [];
+        templateShifts.forEach(ts => {
+            const override = weeklyOverrides.find(o =>
+                o.templateShiftId === ts.id && o.weekStartDate === weekStartStr
+            );
+            if (override && override.cancelled) return;
+            // weekStart is Monday; dayOfWeek 0=Sun,1=Mon…6=Sat
+            const dayOffset = ts.dayOfWeek === 0 ? 6 : ts.dayOfWeek - 1;
+            const shiftDate = new Date(weekStart);
+            shiftDate.setDate(shiftDate.getDate() + dayOffset);
+            result.push({
+                templateShiftId: ts.id,
+                workerId: override ? override.workerId : ts.workerId,
+                role: override ? (override.role || ts.role) : ts.role,
+                startTime: override ? (override.startTime || ts.startTime) : ts.startTime,
+                endTime: override ? (override.endTime || ts.endTime) : ts.endTime,
+                date: _fmtDate(shiftDate),
+                isOverridden: !!override,
+                weekStartDate: weekStartStr,
+                originalWorkerId: ts.workerId
+            });
+        });
+        return result;
+    }
+
+    function _getSemesterForWeek(weekStart) {
+        const semesters = appData.semesters || [];
+        const ws = _fmtDate(weekStart);
+        const we = _fmtDate(new Date(new Date(weekStart).setDate(new Date(weekStart).getDate() + 6)));
+        return semesters.find(s => ws <= s.endDate && we >= s.startDate) || null;
+    }
+
+    function schedSetMode(m) { _schedMode = m; renderSchedule(); }
+    function schedSelectSemester(id) { _activeSemesterId = id || null; renderSchedule(); }
+
+    // ── Overhaul renderSchedule ──
+    const _origRenderSchedule = renderSchedule;
+    renderSchedule = function() {
+        if (!_schedWeekStart) _schedWeekStart = _getWeekStart(new Date());
+        if (!_schedMonthDate) _schedMonthDate = new Date();
+        const container = document.getElementById('schedule-content');
+        if (!container) return;
+        const isAdmin = currentUserRole === 'admin';
+        const currentWorker = _getCurrentWorker();
+
+        const mTab = (m) =>
+            `padding:6px 16px; border-radius:8px; font-size:0.8rem; font-weight:700;` +
+            `border:none; cursor:pointer; font-family:inherit; transition:0.12s; min-height:36px;` +
+            `background:${_schedMode===m ? 'rgba(10,132,255,0.25)' : 'none'};` +
+            `color:${_schedMode===m ? '#0A84FF' : 'var(--text-muted)'};`;
+
+        let html = `<div class="schedule-top-bar">`;
+
+        if (_schedMode === 'week' || _schedMode === 'month') {
+            const isWeek = _schedMode === 'week';
+            let navLabel = isWeek
+                ? (() => { const d = _getWeekDays(); return `${d[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${d[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`; })()
+                : _schedMonthDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+            html += `<div class="schedule-week-nav">
+                <button onclick="${isWeek?'schedChangeWeek(-1)':'schedChangeMonth(-1)'}" title="Previous">&#8249;</button>
+                <span class="schedule-week-label">${navLabel}</span>
+                <button onclick="${isWeek?'schedChangeWeek(1)':'schedChangeMonth(1)'}" title="Next">&#8250;</button>
+            </div>
+            <button class="btn-outline" onclick="schedGoToday()" style="font-size:0.8rem; padding:6px 14px;">Today</button>`;
+        }
+
+        html += `<div style="display:flex; gap:4px; background:rgba(255,255,255,0.06); border-radius:10px; padding:3px; border:1px solid rgba(255,255,255,0.1);">
+            <button onclick="schedSetMode('week')" style="${mTab('week')}">Week</button>
+            <button onclick="schedSetMode('month')" style="${mTab('month')}">Month</button>
+            ${isAdmin ? `<button onclick="schedSetMode('template')" style="${mTab('template')}">Template</button>
+            <button onclick="schedSetMode('semesters')" style="${mTab('semesters')}">Semesters</button>` : ''}
+        </div>
+        <div style="flex:1;"></div>`;
+
+        if (isAdmin && _schedMode === 'template')
+            html += `<button class="btn-action" onclick="openTemplateShiftModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Template Shift</button>`;
+        if (isAdmin && _schedMode === 'semesters')
+            html += `<button class="btn-action" onclick="openSemesterModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Semester</button>`;
+        if (isAdmin && _schedMode === 'week')
+            html += `<button class="btn-outline" onclick="printSchedule()" style="font-size:0.8rem; padding:6px 14px;">🖨 Print</button>`;
+
+        html += `</div>`; // close schedule-top-bar
+
+        // Semester banner (week/month modes with semesters available)
+        if ((_schedMode === 'week' || _schedMode === 'month') && (appData.semesters || []).length > 0) {
+            const semOpts = (appData.semesters || []).map(s =>
+                `<option value="${s.id}" ${s.id === _activeSemesterId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
+            ).join('');
+            html += `<div class="semester-banner">
+                <span style="color:#0A84FF; font-weight:700; font-size:0.82rem;">📅 Semester</span>
+                <select onchange="schedSelectSemester(this.value)"
+                    style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:var(--text-main); padding:4px 8px; font-size:0.8rem; font-family:inherit;">
+                    <option value="">None (manual shifts only)</option>
+                    ${semOpts}
+                </select>
+            </div>`;
+        }
+
+        // Content
+        if (_schedMode === 'week')      html += _renderTemplatizedWeekGrid(isAdmin, currentWorker);
+        else if (_schedMode === 'month') html += _renderMonthGrid(isAdmin);
+        else if (_schedMode === 'template') html += _renderTemplateEditor(isAdmin);
+        else if (_schedMode === 'semesters') html += _renderSemesterManager(isAdmin);
+
+        if (_schedMode === 'week' || _schedMode === 'month')
+            html += _renderWorkersPanel(isAdmin, _schedMode === 'week' ? _getWeekDays() : null);
+
+        container.innerHTML = html;
+        _applyScheduleMobileMode();
+        _updateSwapBadge();
+    };
+
+    function _renderTemplatizedWeekGrid(isAdmin, currentWorker) {
+        const days = _getWeekDays();
+        const todayStr = _fmtDate(new Date());
+        const workers = appData.workers || [];
+        const todayInWeek = days.find(d => _fmtDate(d) === todayStr);
+        const activeDayIdx = todayInWeek ? days.indexOf(todayInWeek) : 0;
+        const weekStartStr = _fmtDate(_schedWeekStart);
+
+        // Use template if semester is active and there are template shifts
+        const weekSemester = _activeSemesterId ? _getSemesterForWeek(_schedWeekStart) : null;
+        const useTemplate = !!weekSemester && (appData.templateShifts || []).length > 0;
+
+        const effectiveShifts = useTemplate
+            ? _getTemplateShiftsForWeek(_schedWeekStart)
+            : (appData.shifts || [])
+                .filter(s => days.some(d => _fmtDate(d) === s.date))
+                .map(s => ({ ...s, templateShiftId: null, isOverridden: false, weekStartDate: null, originalWorkerId: s.workerId }));
+
+        const swapRequests = (appData.swapRequests || []).filter(r => r.weekStartDate === weekStartStr && r.status === 'pending');
+
+        let html = `<div id="schedMobileDayPicker" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none; margin-bottom:12px;">`;
+        days.forEach((d, i) => {
+            const isToday = _fmtDate(d) === todayStr;
+            html += `<button onclick="schedSetActiveDay(${i})" id="schedDayPill_${i}"
+                style="flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; cursor:pointer; transition:0.12s;
+                background:${i===activeDayIdx?'rgba(10,132,255,0.2)':'rgba(255,255,255,0.05)'};
+                border:1px solid ${i===activeDayIdx?'rgba(10,132,255,0.4)':'rgba(255,255,255,0.08)'};
+                color:${isToday?'#0A84FF':'var(--text-main)'}; min-height:36px;">${DAY_NAMES[d.getDay()]} ${d.getDate()}</button>`;
+        });
+        html += `</div><div class="schedule-grid" id="schedGrid">`;
+
+        days.forEach((d, i) => {
+            const dateStr = _fmtDate(d);
+            const isToday = dateStr === todayStr;
+            const isActive = i === activeDayIdx;
+            const dayShifts = effectiveShifts.filter(s => s.date === dateStr)
+                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+
+            html += `<div class="schedule-day-col${isActive?' active-day':''}" id="schedCol_${i}">
+                <div class="schedule-day-header${isToday?' today':''}">
+                    <div class="day-name">${DAY_NAMES[d.getDay()]}</div>
+                    <div class="day-num">${d.getDate()}</div>
+                </div>`;
+
+            // Group overlapping shifts
+            const rows2 = [];
+            dayShifts.forEach(shift => {
+                let placed = false;
+                for (const row of rows2) {
+                    if (row.every(s => _shiftsOverlap(s, shift))) { row.push(shift); placed = true; break; }
+                }
+                if (!placed) rows2.push([shift]);
+            });
+
+            rows2.forEach(row => {
+                const isCompact = row.length > 1;
+                if (isCompact) html += `<div style="display:grid; grid-template-columns:repeat(${row.length},1fr); gap:4px;">`;
+                row.forEach(shift => {
+                    const worker = workers.find(w => w.id === shift.workerId);
+                    const color = worker ? (worker.color || '#0A84FF') : '#636366';
+                    const wName = worker ? (isCompact
+                        ? (worker.name.split(' ')[0][0] + (worker.name.split(' ')[1]?.[0]||''))
+                        : worker.name.split(' ')[0]) : '?';
+                    const isMyShift = currentWorker && shift.workerId === currentWorker.id;
+                    const hasPendingSwap = shift.templateShiftId &&
+                        swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
+                    const clickAction = isAdmin
+                        ? (shift.templateShiftId
+                            ? `openWeekOverrideModal('${shift.templateShiftId}','${weekStartStr}')`
+                            : `openShiftModal('${shift.id||''}')`)
+                        : '';
+                    html += `<div class="schedule-shift-card${shift.isOverridden?' is-overridden':''}"
+                        onclick="${clickAction}"
+                        style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
+                        border-color:${color}${shift.isOverridden?'aa':'66'}; border-top-color:${color}${shift.isOverridden?'ff':'99'};
+                        box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);
+                        cursor:${isAdmin||isMyShift?'pointer':'default'};">
+                        ${shift.isOverridden?`<div style="font-size:0.58rem;color:${color};font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">Override</div>`:''}
+                        <div class="shift-time" style="color:${color}; font-size:${isCompact?'0.58':'0.65'}rem;">${_fmtTime(shift.startTime)}${!isCompact&&shift.endTime?` – ${_fmtTime(shift.endTime)}`:''}</div>
+                        <div class="shift-worker" style="font-size:${isCompact?'0.7':'0.8'}rem;">${escapeHtml(wName)}</div>
+                        ${!isCompact&&shift.role?`<div class="shift-role">${escapeHtml(shift.role)}</div>`:''}
+                        ${hasPendingSwap?`<div style="font-size:0.58rem;color:#FF9500;font-weight:800;text-transform:uppercase;">⏳ Swap Pending</div>`:''}
+                        ${isMyShift&&!isAdmin&&!hasPendingSwap&&shift.templateShiftId?`
+                        <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId}','${weekStartStr}')"
+                            style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
+                            border:1px solid rgba(191,90,242,0.4);background:rgba(191,90,242,0.1);color:#BF5AF2;cursor:pointer;font-family:inherit;width:100%;">
+                            ↔ Request Swap
+                        </button>`:''}
+                    </div>`;
+                });
+                if (isCompact) html += `</div>`;
+            });
+
+            if (isAdmin) {
+                if (useTemplate)
+                    html += `<div class="schedule-add-shift-btn" onclick="openWeekOverrideModal(null,'${dateStr}')">+ override</div>`;
+                else
+                    html += `<div class="schedule-add-shift-btn" onclick="openShiftModal(null,'${dateStr}')">+ shift</div>`;
+            }
+            html += `</div>`;
+        });
+        return html + `</div>`;
+    }
+
+    function _renderTemplateEditor(isAdmin) {
+        const templateShifts = appData.templateShifts || [];
+        const workers = appData.workers || [];
+        const DAY_ORDER = [1,2,3,4,5,6,0];
+
+        let html = `<div style="background:rgba(191,90,242,0.08); border:1px solid rgba(191,90,242,0.18); border-radius:12px; padding:12px 16px; margin-bottom:14px;">
+            <div style="font-size:0.82rem; color:#BF5AF2; font-weight:800;">📋 Weekly Template</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Define the repeating weekly schedule. These shifts recur every week within any active semester.</div>
+        </div>`;
+
+        if (!templateShifts.length && !isAdmin) {
+            return html + `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:0.9rem;">No template shifts defined yet.</div>`;
+        }
+
+        html += `<div class="schedule-grid" id="schedGrid">`;
+        DAY_ORDER.forEach(dayIdx => {
+            const dayShifts = templateShifts.filter(ts => ts.dayOfWeek === dayIdx)
+                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+            const isToday = new Date().getDay() === dayIdx;
+            html += `<div class="schedule-day-col">
+                <div class="schedule-day-header${isToday?' today':''}">
+                    <div class="day-name">${DAY_NAMES[dayIdx]}</div>
+                </div>`;
+            dayShifts.forEach(ts => {
+                const worker = workers.find(w => w.id === ts.workerId);
+                const color = worker ? (worker.color || '#0A84FF') : '#636366';
+                const wName = worker ? worker.name.split(' ')[0] : '?';
+                html += `<div class="schedule-shift-card" onclick="${isAdmin?`openTemplateShiftModal('${ts.id}')`:'void(0)'}"
+                    style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
+                    border-color:${color}66; border-top-color:${color}99;
+                    box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);
+                    cursor:${isAdmin?'pointer':'default'};">
+                    <div style="font-size:0.56rem;color:#BF5AF2;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">Every Week</div>
+                    <div class="shift-time" style="color:${color};">${_fmtTime(ts.startTime)}${ts.endTime?` – ${_fmtTime(ts.endTime)}`:''}</div>
+                    <div class="shift-worker">${escapeHtml(wName)}</div>
+                    ${ts.role?`<div class="shift-role">${escapeHtml(ts.role)}</div>`:''}
+                </div>`;
+            });
+            if (isAdmin) html += `<div class="schedule-add-shift-btn" onclick="openTemplateShiftModal(null,${dayIdx})">+ template shift</div>`;
+            html += `</div>`;
+        });
+        return html + `</div>`;
+    }
+
+    function _renderSemesterManager(isAdmin) {
+        const semesters = appData.semesters || [];
+        if (!semesters.length) {
+            return `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                <div style="font-size:2rem;margin-bottom:12px;">📅</div>
+                <div style="font-size:1rem;font-weight:700;margin-bottom:8px;">No Semesters Yet</div>
+                <div style="font-size:0.85rem;">Create a semester to define a date range for the schedule template.</div>
+                ${isAdmin?`<button class="btn-action" onclick="openSemesterModal(null)" style="margin-top:20px;">+ Add Semester</button>`:''}
+            </div>`;
+        }
+        let html = `<div style="display:flex;flex-direction:column;gap:12px;max-width:640px;">`;
+        const today = new Date(); today.setHours(0,0,0,0);
+        semesters.forEach(s => {
+            const start = new Date(s.startDate + 'T12:00:00');
+            const end   = new Date(s.endDate   + 'T12:00:00');
+            let sc = '#636366', sl = 'Past';
+            if (end >= today && start <= today) { sc = '#34C759'; sl = 'Active'; }
+            else if (start > today) { sc = '#0A84FF'; sl = 'Upcoming'; }
+            const weeks = Math.ceil((end - start) / (7*24*60*60*1000));
+            html += `<div style="padding:16px 20px;border-radius:16px;background:linear-gradient(160deg,rgba(38,38,38,0.9),rgba(18,18,18,0.85));border:1px solid rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.18);display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">${escapeHtml(s.name)}</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);">
+                        ${start.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} – ${end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+                        · ${weeks} week${weeks!==1?'s':''}
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+                    <span style="font-size:0.72rem;font-weight:800;padding:4px 10px;border-radius:100px;background:${sc}22;border:1px solid ${sc}44;color:${sc};">${sl}</span>
+                    ${isAdmin?`<button class="btn-outline" onclick="openSemesterModal('${s.id}')" style="font-size:0.78rem;padding:5px 12px;">Edit</button>`:''}
+                    <button class="btn-outline" onclick="schedSelectSemester('${s.id}');schedSetMode('week');" style="font-size:0.78rem;padding:5px 12px;">View Week</button>
+                </div>
+            </div>`;
+        });
+        return html + `</div>`;
+    }
+
+    // ── Swap Requests View ──
+
+    function renderSwapRequests() {
+        const container = document.getElementById('swaps-content');
+        if (!container) return;
+        const isAdmin = currentUserRole === 'admin';
+        const currentWorker = _getCurrentWorker();
+        const workers = appData.workers || [];
+        const templateShifts = appData.templateShifts || [];
+        const swapRequests = appData.swapRequests || [];
+
+        let requests;
+        if (isAdmin) {
+            requests = [...swapRequests].sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+        } else if (currentWorker) {
+            requests = swapRequests
+                .filter(r => r.requesterId === currentWorker.id || r.targetId === currentWorker.id)
+                .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+        } else {
+            requests = [];
+        }
+
+        const pending  = requests.filter(r => r.status === 'pending');
+        const resolved = requests.filter(r => r.status !== 'pending');
+
+        let html = `<div class="schedule-top-bar">
+            <h2 style="margin:0;font-size:1.1rem;font-weight:800;">Shift Swap Requests</h2>
+            <div style="flex:1;"></div>
+            ${currentWorker||isAdmin ? `<button class="btn-action" onclick="openSwapRequestModal(null,null)" style="font-size:0.8rem;padding:6px 16px;">+ Request Swap</button>` : ''}
+        </div>`;
+
+        if (!requests.length) {
+            html += `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                <div style="font-size:2rem;margin-bottom:12px;">🔄</div>
+                <div style="font-size:1rem;font-weight:700;margin-bottom:6px;">No Swap Requests</div>
+                <div style="font-size:0.85rem;">Swap requests will appear here once submitted.</div>
+            </div>`;
+        } else {
+            if (pending.length) {
+                html += `<div style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Pending (${pending.length})</div>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">`;
+                pending.forEach(r => { html += _renderSwapCard(r, workers, templateShifts, isAdmin, currentWorker); });
+                html += `</div>`;
+            }
+            if (resolved.length) {
+                html += `<div style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;margin-top:8px;">Resolved</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">`;
+                resolved.forEach(r => { html += _renderSwapCard(r, workers, templateShifts, isAdmin, currentWorker); });
+                html += `</div>`;
+            }
+        }
+        container.innerHTML = html;
+        _updateSwapBadge();
+    }
+
+    function _renderSwapCard(r, workers, templateShifts, isAdmin, currentWorker) {
+        const requester = workers.find(w => w.id === r.requesterId);
+        const target    = workers.find(w => w.id === r.targetId);
+        const ts        = templateShifts.find(t => t.id === r.templateShiftId);
+        const weekDate  = r.weekStartDate ? new Date(r.weekStartDate + 'T12:00:00') : null;
+        const weekLabel = weekDate ? `Week of ${weekDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}` : '';
+        const sc = r.status==='approved'?'#34C759': r.status==='denied'?'#FF3B30':'#FF9500';
+        const sl = r.status==='approved'?'Approved': r.status==='denied'?'Denied':'Pending';
+        const canAct = r.status==='pending' && (isAdmin || (currentWorker && r.targetId===currentWorker.id));
+        return `<div style="padding:16px 20px;border-radius:16px;background:linear-gradient(160deg,rgba(38,38,38,0.9),rgba(18,18,18,0.85));border:1px solid rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.18);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                        <span style="font-weight:800;font-size:0.95rem;">${escapeHtml(requester?.name||'Unknown')} → ${escapeHtml(target?.name||'Unknown')}</span>
+                        <span style="font-size:0.7rem;font-weight:800;padding:3px 8px;border-radius:100px;background:${sc}22;border:1px solid ${sc}44;color:${sc};">${sl}</span>
+                    </div>
+                    ${weekLabel?`<div style="font-size:0.8rem;color:var(--text-muted);">${weekLabel}</div>`:''}
+                    ${ts?`<div style="font-size:0.8rem;color:var(--text-muted);">${ts.role||'Shift'} · ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${DAY_FULL[ts.dayOfWeek]}s</div>`:''}
+                    ${r.note?`<div style="font-size:0.8rem;color:var(--text-main);margin-top:6px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">"${escapeHtml(r.note)}"</div>`:''}
+                </div>
+                <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start;">
+                    ${canAct?`<button class="btn-action" onclick="approveSwapRequest('${r.id}')" style="font-size:0.8rem;padding:6px 14px;background:var(--gradient-success);">Approve</button>
+                    <button class="btn-outline" onclick="denySwapRequest('${r.id}')" style="font-size:0.8rem;padding:6px 14px;border-color:rgba(255,59,48,0.4);color:#FF3B30;">Deny</button>`:''}
+                    ${isAdmin?`<button class="btn-outline" onclick="deleteSwapRequest('${r.id}')" style="font-size:0.72rem;padding:4px 10px;border-color:rgba(255,255,255,0.12);color:var(--text-muted);">×</button>`:''}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function _updateSwapBadge() {
+        const currentWorker = _getCurrentWorker();
+        const pendingCount = (appData.swapRequests || []).filter(r => {
+            if (r.status !== 'pending') return false;
+            if (currentUserRole === 'admin') return true;
+            return currentWorker && (r.requesterId === currentWorker.id || r.targetId === currentWorker.id);
+        }).length;
+        const swapsTab = document.getElementById('tab-swaps');
+        if (!swapsTab) return;
+        let badge = swapsTab.querySelector('.swap-count-badge');
+        if (pendingCount > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'swap-count-badge notif-badge';
+                badge.style.cssText = 'display:inline-flex;position:absolute;top:2px;right:2px;';
+                swapsTab.style.position = 'relative';
+                swapsTab.appendChild(badge);
+            }
+            badge.textContent = pendingCount;
+        } else {
+            if (badge) badge.remove();
+        }
+    }
+
+    // ── Semester CRUD ──
+
+    let _semesterEditId = null;
+
+    function openSemesterModal(id) {
+        _semesterEditId = id;
+        const s = id ? (appData.semesters || []).find(x => x.id === id) : null;
+        document.getElementById('semesterModalTitle').textContent = s ? 'Edit Semester' : 'Add Semester';
+        document.getElementById('semesterModalName').value  = s ? s.name      : '';
+        document.getElementById('semesterModalStart').value = s ? s.startDate : '';
+        document.getElementById('semesterModalEnd').value   = s ? s.endDate   : '';
+        document.getElementById('semesterDeleteBtn').style.display = s ? 'inline-flex' : 'none';
+        openModal('semesterModal');
+    }
+
+    function saveSemester() {
+        const name      = document.getElementById('semesterModalName').value.trim();
+        const startDate = document.getElementById('semesterModalStart').value;
+        const endDate   = document.getElementById('semesterModalEnd').value;
+        if (!name || !startDate || !endDate) { showToast('Name and both dates are required'); return; }
+        if (startDate > endDate) { showToast('Start date must be before end date'); return; }
+        if (!appData.semesters) appData.semesters = [];
+        const id = _semesterEditId || ('sem_' + Date.now());
+        const obj = { id, name, startDate, endDate };
+        const existing = appData.semesters.find(s => s.id === id);
+        if (existing) Object.assign(existing, obj);
+        else appData.semesters.push(obj);
+        closeModal(null, 'semesterModal');
+        saveData();
+        renderSchedule();
+        showToast(existing ? 'Semester updated' : 'Semester created!');
+    }
+
+    function deleteSemester() {
+        if (!_semesterEditId) return;
+        if (!confirm('Delete this semester?')) return;
+        appData.semesters = (appData.semesters || []).filter(s => s.id !== _semesterEditId);
+        if (_activeSemesterId === _semesterEditId) _activeSemesterId = null;
+        closeModal(null, 'semesterModal');
+        saveData();
+        renderSchedule();
+    }
+
+    // ── Template Shift CRUD ──
+
+    let _templateShiftEditId = null;
+
+    function openTemplateShiftModal(id, prefDay) {
+        _templateShiftEditId = id;
+        const ts = id ? (appData.templateShifts || []).find(x => x.id === id) : null;
+        document.getElementById('tsModalTitle').textContent = ts ? 'Edit Template Shift' : 'Add Template Shift';
+        document.getElementById('tsModalDay').value   = ts ? ts.dayOfWeek  : (prefDay !== undefined ? String(prefDay) : '1');
+        document.getElementById('tsModalStart').value = ts ? ts.startTime  : '09:00';
+        document.getElementById('tsModalEnd').value   = ts ? ts.endTime    : '17:00';
+        document.getElementById('tsModalRole').value  = ts ? (ts.role  || '') : '';
+        document.getElementById('tsModalNotes').value = ts ? (ts.notes || '') : '';
+        document.getElementById('tsDeleteBtn').style.display = ts ? 'inline-flex' : 'none';
+        const workers = appData.workers || [];
+        const sel = document.getElementById('tsModalWorker');
+        sel.innerHTML = workers.length
+            ? workers.map(w => `<option value="${w.id}" ${ts && ts.workerId===w.id?'selected':''}>${escapeHtml(w.name)}</option>`).join('')
+            : '<option value="">No workers — add one first</option>';
+        openModal('templateShiftModal');
+    }
+
+    function saveTemplateShift() {
+        const workerId  = document.getElementById('tsModalWorker').value;
+        const dayOfWeek = parseInt(document.getElementById('tsModalDay').value);
+        const startTime = document.getElementById('tsModalStart').value;
+        if (!workerId || startTime === '') { showToast('Worker and start time are required'); return; }
+        if (!appData.templateShifts) appData.templateShifts = [];
+        const id = _templateShiftEditId || ('ts_' + Date.now());
+        const obj = {
+            id, workerId, dayOfWeek, startTime,
+            endTime: document.getElementById('tsModalEnd').value,
+            role:    document.getElementById('tsModalRole').value.trim(),
+            notes:   document.getElementById('tsModalNotes').value.trim()
+        };
+        const existing = appData.templateShifts.find(ts => ts.id === id);
+        if (existing) Object.assign(existing, obj);
+        else appData.templateShifts.push(obj);
+        closeModal(null, 'templateShiftModal');
+        saveData();
+        renderSchedule();
+        showToast('Template shift saved');
+    }
+
+    function deleteTemplateShift() {
+        if (!_templateShiftEditId) return;
+        if (!confirm('Delete this template shift? It will be removed from all future generated weeks.')) return;
+        appData.templateShifts  = (appData.templateShifts  || []).filter(ts => ts.id !== _templateShiftEditId);
+        appData.weeklyOverrides = (appData.weeklyOverrides || []).filter(o  => o.templateShiftId !== _templateShiftEditId);
+        closeModal(null, 'templateShiftModal');
+        saveData();
+        renderSchedule();
+    }
+
+    // ── Week Override CRUD ──
+
+    let _overrideEditKey = null;
+
+    function openWeekOverrideModal(templateShiftId, weekStartOrDate) {
+        if (!templateShiftId) { openShiftModal(null, weekStartOrDate); return; }
+        const workers = appData.workers || [];
+        const templateShifts = appData.templateShifts || [];
+        const ts = templateShifts.find(t => t.id === templateShiftId);
+        // Normalise to Monday of the week
+        const weekStart = _getWeekStart(new Date(weekStartOrDate + 'T12:00:00'));
+        const weekStartStr = _fmtDate(weekStart);
+        const existingOverride = (appData.weeklyOverrides || []).find(o =>
+            o.templateShiftId === templateShiftId && o.weekStartDate === weekStartStr
+        );
+        _overrideEditKey = { templateShiftId, weekStartDate: weekStartStr };
+        document.getElementById('overrideModalTitle').textContent = existingOverride ? 'Edit Week Override' : 'Override Shift (This Week Only)';
+        document.getElementById('overrideModalShiftInfo').textContent = ts
+            ? `${ts.role||'Shift'} · ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${DAY_FULL[ts.dayOfWeek]}s` : '';
+        const weekDate = new Date(weekStartStr + 'T12:00:00');
+        document.getElementById('overrideModalWeekInfo').textContent =
+            `Week of ${weekDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+        document.getElementById('overrideModalCancelled').checked = existingOverride ? !!existingOverride.cancelled : false;
+        document.getElementById('overrideModalNotes').value  = existingOverride ? (existingOverride.notes||'') : '';
+        document.getElementById('overrideModalStart').value  = existingOverride ? (existingOverride.startTime||(ts?.startTime||'')) : (ts?.startTime||'');
+        document.getElementById('overrideModalEnd').value    = existingOverride ? (existingOverride.endTime  ||(ts?.endTime  ||'')) : (ts?.endTime  ||'');
+        const currentWorkerId = existingOverride ? existingOverride.workerId : (ts?.workerId||'');
+        const sel = document.getElementById('overrideModalWorker');
+        sel.innerHTML = workers.map(w => `<option value="${w.id}" ${w.id===currentWorkerId?'selected':''}>${escapeHtml(w.name)}</option>`).join('');
+        document.getElementById('overrideDeleteBtn').style.display = existingOverride ? 'inline-flex' : 'none';
+        openModal('weekOverrideModal');
+    }
+
+    function saveWeekOverride() {
+        if (!_overrideEditKey) return;
+        const { templateShiftId, weekStartDate } = _overrideEditKey;
+        const workerId   = document.getElementById('overrideModalWorker').value;
+        const cancelled  = document.getElementById('overrideModalCancelled').checked;
+        const startTime  = document.getElementById('overrideModalStart').value;
+        const endTime    = document.getElementById('overrideModalEnd').value;
+        const notes      = document.getElementById('overrideModalNotes').value.trim();
+        if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+        const existing = appData.weeklyOverrides.find(o =>
+            o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate
+        );
+        if (existing) { Object.assign(existing, { workerId, cancelled, startTime, endTime, notes }); }
+        else { appData.weeklyOverrides.push({ id:'wo_'+Date.now(), templateShiftId, weekStartDate, workerId, cancelled, startTime, endTime, notes }); }
+        closeModal(null, 'weekOverrideModal');
+        saveData();
+        renderSchedule();
+        showToast('Override saved');
+    }
+
+    function deleteWeekOverride() {
+        if (!_overrideEditKey) return;
+        const { templateShiftId, weekStartDate } = _overrideEditKey;
+        appData.weeklyOverrides = (appData.weeklyOverrides || []).filter(o =>
+            !(o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate)
+        );
+        closeModal(null, 'weekOverrideModal');
+        saveData();
+        renderSchedule();
+        showToast('Override removed');
+    }
+
+    // ── Swap Request CRUD ──
+
+    function openSwapRequestModal(templateShiftId, weekStartDate) {
+        const workers = appData.workers || [];
+        const templateShifts = appData.templateShifts || [];
+        const currentWorker = _getCurrentWorker();
+        if (!currentWorker && currentUserRole !== 'admin') {
+            showToast('You must be listed as a worker to request swaps. Ask an admin to link your email to a worker profile.');
+            return;
+        }
+        const myShifts = templateShiftId
+            ? [templateShifts.find(ts => ts.id === templateShiftId)].filter(Boolean)
+            : (currentWorker ? templateShifts.filter(ts => ts.workerId === currentWorker.id) : templateShifts);
+        const tsSelect = document.getElementById('swapModalShift');
+        tsSelect.innerHTML = myShifts.length
+            ? myShifts.map(ts => `<option value="${ts.id}" ${ts.id===templateShiftId?'selected':''}>${DAY_FULL[ts.dayOfWeek]} ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${ts.role||'Shift'}</option>`).join('')
+            : '<option value="">No template shifts assigned to you</option>';
+        const weekInp = document.getElementById('swapModalWeek');
+        weekInp.value = weekStartDate || _fmtDate(_schedWeekStart || _getWeekStart(new Date()));
+        const otherWorkers = workers.filter(w => !currentWorker || w.id !== currentWorker.id);
+        const targetSel = document.getElementById('swapModalTarget');
+        targetSel.innerHTML = `<option value="">Select who will cover…</option>` +
+            otherWorkers.map(w => `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join('');
+        document.getElementById('swapModalNote').value = '';
+        openModal('swapRequestModal');
+    }
+
+    function saveSwapRequest() {
+        const templateShiftId = document.getElementById('swapModalShift').value;
+        const weekRaw         = document.getElementById('swapModalWeek').value;
+        const targetId        = document.getElementById('swapModalTarget').value;
+        const note            = document.getElementById('swapModalNote').value.trim();
+        if (!templateShiftId || !weekRaw || !targetId) { showToast('Please fill in all required fields'); return; }
+        const currentWorker = _getCurrentWorker();
+        const requesterId = currentWorker ? currentWorker.id : (currentUserRole==='admin' ? 'admin' : null);
+        if (!requesterId) { showToast('Could not find your worker profile'); return; }
+        const weekStartDate = _fmtDate(_getWeekStart(new Date(weekRaw + 'T12:00:00')));
+        if (!appData.swapRequests) appData.swapRequests = [];
+        appData.swapRequests.push({
+            id: 'swap_' + Date.now(),
+            requesterId, targetId, templateShiftId, weekStartDate, note,
+            status: 'pending', createdAt: new Date().toISOString()
+        });
+        closeModal(null, 'swapRequestModal');
+        saveData();
+        renderSwapRequests();
+        showToast('Swap request submitted!');
+    }
+
+    function approveSwapRequest(swapId) {
+        const req = (appData.swapRequests || []).find(r => r.id === swapId);
+        if (!req) return;
+        if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+        const existing = appData.weeklyOverrides.find(o =>
+            o.templateShiftId === req.templateShiftId && o.weekStartDate === req.weekStartDate
+        );
+        const ts = (appData.templateShifts || []).find(t => t.id === req.templateShiftId);
+        const reqName = (appData.workers||[]).find(w=>w.id===req.requesterId)?.name || '?';
+        const tgtName = (appData.workers||[]).find(w=>w.id===req.targetId)?.name || '?';
+        if (existing) {
+            existing.workerId = req.targetId;
+        } else {
+            appData.weeklyOverrides.push({
+                id: 'wo_' + Date.now(),
+                templateShiftId: req.templateShiftId,
+                weekStartDate: req.weekStartDate,
+                workerId: req.targetId,
+                startTime: ts?.startTime || '',
+                endTime:   ts?.endTime   || '',
+                notes: `Swap: ${reqName} → ${tgtName}`
+            });
+        }
+        req.status = 'approved';
+        req.respondedAt = new Date().toISOString();
+        req.respondedBy = currentUserEmail;
+        saveData();
+        renderSwapRequests();
+        showToast('Swap approved!');
+    }
+
+    function denySwapRequest(swapId) {
+        const req = (appData.swapRequests || []).find(r => r.id === swapId);
+        if (!req) return;
+        req.status = 'denied';
+        req.respondedAt = new Date().toISOString();
+        req.respondedBy = currentUserEmail;
+        saveData();
+        renderSwapRequests();
+        showToast('Swap denied.');
+    }
+
+    function deleteSwapRequest(swapId) {
+        if (!confirm('Delete this swap request?')) return;
+        appData.swapRequests = (appData.swapRequests || []).filter(r => r.id !== swapId);
+        saveData();
+        renderSwapRequests();
     }
 
     // ── Public Availability Form ──
