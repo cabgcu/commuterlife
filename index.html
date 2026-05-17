@@ -1290,9 +1290,9 @@
             .schedule-month-chip .chip-label { display: none; }
             .month-cell-num { font-size: 0.78rem; }
 
-            /* Hide scheduling on mobile */
-            #tab-schedule { display: none !important; }
-            #view-schedule { display: none !important; }
+            /* Schedule sub-mode pill bar scrollable on mobile */
+            #view-schedule .schedule-wrapper > div:first-child { overflow-x: auto; scrollbar-width: none; }
+            #view-schedule .schedule-wrapper > div:first-child::-webkit-scrollbar { display: none; }
 
             /* Due-soon: bigger touch targets, readable text */
             .due-row { min-height: 52px; padding: 12px 14px; gap: 12px; border-radius: 16px; }
@@ -1826,11 +1826,14 @@
 
         /* ── Events Manager ── */
         .em-subnav {
-            display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-            padding: 14px 16px; margin-bottom: 20px;
-            background: rgba(20,20,20,0.55); backdrop-filter: blur(40px);
-            border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+            display: flex; flex-wrap: nowrap; align-items: center; gap: 8px;
+            padding: 12px 16px; margin-bottom: 20px;
+            background: var(--glass-surface);
+            backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            overflow-x: auto; scrollbar-width: none;
         }
+        .em-subnav::-webkit-scrollbar { display: none; }
         .em-subtab {
             padding: 8px 18px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
             background: transparent; color: var(--text-muted); cursor: pointer;
@@ -1926,6 +1929,28 @@
         @media (max-width: 600px) {
             .em-grid-2, .em-grid-3 { grid-template-columns: 1fr; }
             .em-cal-cell { min-height: 60px; }
+            .em-card-grid { grid-template-columns: 1fr; }
+            .em-subtab { padding: 7px 14px; font-size: 0.78rem; }
+            .em-btn-add { padding: 8px 16px; font-size: 0.8rem; }
+            .em-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            /* Convert em-table rows to stacked cards on mobile */
+            .em-table, .em-table thead, .em-table tbody,
+            .em-table th, .em-table td, .em-table tr { display: block; }
+            .em-table thead tr { display: none; }
+            .em-table tbody tr {
+                background: var(--glass-surface);
+                border: 1px solid var(--glass-border);
+                border-radius: 14px; margin-bottom: 10px;
+                padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+            }
+            .em-table td { padding: 0; border: none; font-size: 0.85rem; }
+            /* Manager view padding */
+            #view-manager > div { padding: 0 8px 80px !important; }
+            .em-subnav { padding: 10px 12px; gap: 6px; margin-bottom: 14px; }
+            /* Budget table stays scrollable on mobile rather than card-stacking */
+            .em-frosted .em-table, .em-frosted .em-table thead,
+            .em-frosted .em-table tbody, .em-frosted .em-table th,
+            .em-frosted .em-table td, .em-frosted .em-table tr { display: revert; }
         }
 
     </style>
@@ -2115,8 +2140,8 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                     <h3 style="margin:0; font-weight:700;">Event Dashboard</h3>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button id="em-toggle-list" class="em-view-toggle active" onclick="emToggleViewMode('list')">☰ List</button>
-                        <button id="em-toggle-card" class="em-view-toggle" onclick="emToggleViewMode('card')">⊞ Card</button>
+                        <button id="em-toggle-list" class="em-view-toggle active" onclick="emToggleViewMode('list')">List</button>
+                        <button id="em-toggle-card" class="em-view-toggle" onclick="emToggleViewMode('card')">Card</button>
                         <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
                     </div>
                 </div>
