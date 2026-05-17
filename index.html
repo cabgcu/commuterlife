@@ -1387,41 +1387,67 @@
             box-sizing: border-box;
         }
         .storage-section-header {
-            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.09em;
+            display: flex; align-items: center; gap: 10px;
+            margin: 20px 0 10px;
+        }
+        .storage-section-header-pill {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 100px;
+            padding: 5px 14px;
+            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
             text-transform: uppercase; color: var(--text-muted);
-            padding: 20px 2px 10px; margin: 0;
+            white-space: nowrap;
+        }
+        .storage-section-header-line {
+            flex: 1; height: 1px; background: rgba(255,255,255,0.07);
         }
         .storage-bins-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 16px; margin-bottom: 24px;
+            gap: 14px; margin-bottom: 20px;
         }
         .storage-bin-card {
-            background: linear-gradient(160deg, rgba(38,38,38,0.88) 0%, rgba(18,18,18,0.82) 100%);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
+            background: rgba(20,20,20,0.55);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
             cursor: pointer;
             transition: all 0.15s ease;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             overflow: hidden;
             display: flex; flex-direction: column;
+            position: relative;
         }
         .storage-bin-card:hover {
-            background: linear-gradient(160deg, rgba(50,50,50,0.92) 0%, rgba(25,25,25,0.88) 100%);
-            border-color: rgba(255,255,255,0.18);
-            border-top-color: rgba(255,255,255,0.28);
+            background: rgba(30,30,30,0.65);
+            border-color: rgba(255,255,255,0.2);
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
+        .storage-bin-reorder {
+            position: absolute; top: 10px; right: 10px;
+            display: flex; flex-direction: column; gap: 3px;
+            z-index: 5;
+        }
+        .storage-bin-reorder button {
+            width: 26px; height: 26px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 7px;
+            color: rgba(255,255,255,0.65);
+            font-size: 0.72rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.12s; line-height: 1;
+        }
+        .storage-bin-reorder button:hover:not(:disabled) { background: rgba(255,255,255,0.12); color: #fff; }
+        .storage-bin-reorder button:disabled { opacity: 0.25; cursor: default; }
         .storage-bin-hero {
-            width: 100%; height: 180px; flex-shrink: 0;
+            width: 100%; height: 140px; flex-shrink: 0;
             background: rgba(255,255,255,0.04);
             display: flex; align-items: center; justify-content: center;
-            font-size: 3.5rem; overflow: hidden; position: relative;
-            border-radius: 20px 20px 0 0;
+            font-size: 3rem; overflow: hidden; position: relative;
+            border-radius: 16px 16px 0 0;
         }
         .storage-bin-hero img { width: 100%; height: 100%; object-fit: cover; }
         .storage-bin-hero-overlay {
@@ -1430,13 +1456,18 @@
             display: flex; align-items: center; justify-content: center;
         }
         .storage-bin-hero-overlay span {
-            font-size: 1.6rem; opacity: 0; transition: opacity 0.15s;
-            background: rgba(0,0,0,0.5); border-radius: 50%; width: 48px; height: 48px;
-            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; opacity: 0; transition: opacity 0.15s;
+            background: rgba(0,0,0,0.6); border-radius: 100px; padding: 5px 12px;
+            color: rgba(255,255,255,0.9); text-transform: uppercase;
         }
         .storage-bin-hero:hover .storage-bin-hero-overlay { background: rgba(0,0,0,0.25); }
         .storage-bin-hero:hover .storage-bin-hero-overlay span { opacity: 1; }
-        .storage-bin-body { padding: 14px 16px 12px; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+        .storage-bin-icon {
+            width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+        }
+        .storage-bin-body { padding: 14px 16px 12px; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
         .storage-bin-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .storage-bin-label {
             font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
@@ -1459,8 +1490,9 @@
         }
         .storage-item-chip .chip-qty { color: #0A84FF; font-weight: 800; margin-right: 3px; }
         .storage-bin-actions {
-            display: flex; gap: 6px; padding: 14px 16px 14px;
-            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex; gap: 8px; padding: 12px 14px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            align-items: center;
         }
 
         /* Bin Item Editor Row */
@@ -10198,7 +10230,6 @@
 
         if (bins.length === 0) {
             html += `<div class="frosted" style="text-align:center; padding:48px 24px; border-radius:16px; color:var(--text-muted);">
-                <div style="font-size:3rem; margin-bottom:12px;">📦</div>
                 <div style="font-weight:700; font-size:1rem; margin-bottom:6px; color:var(--text-main);">No storage bins yet</div>
                 <div style="font-size:0.85rem;">Add a bin to get started. Each bin gets its own QR code.</div>
             </div>`;
@@ -10216,7 +10247,10 @@
 
         Object.keys(sections).sort().forEach(sec => {
             const secBins = sections[sec].slice().sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-            html += `<div class="storage-section-header">Section ${escapeHtml(sec)}</div>`;
+            html += `<div class="storage-section-header">
+                <span class="storage-section-header-pill">${escapeHtml(sec)}</span>
+                <div class="storage-section-header-line"></div>
+            </div>`;
             html += `<div class="storage-bins-grid">`;
             secBins.forEach((bin, secIdx) => {
                 const items = bin.items || [];
@@ -10231,7 +10265,6 @@
                     statusText  = active ? `Out: ${escapeHtml(active.user)}` : 'Available';
                 }
                 const hasActive = _binHasActiveCheckouts(bin);
-                const heroInner = bin.picture ? `<img src="${bin.picture}" alt="">` : `📦`;
                 const anyPic = items.some(it => it.picture);
 
                 let itemsHtml = '';
@@ -10239,7 +10272,7 @@
                     if (anyPic) {
                         itemsHtml = `<div class="storage-item-strip">` +
                             items.map(it => `<div class="storage-item-tile">
-                                <div class="storage-item-tile-img">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                                <div class="storage-item-tile-img">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                                 ${it.qty ? `<div class="storage-item-tile-qty">×${escapeHtml(it.qty)}</div>` : ''}
                                 <div class="storage-item-tile-label">${escapeHtml(it.name)}</div>
                             </div>`).join('') +
@@ -10253,30 +10286,41 @@
 
                 const isFirst = secIdx === 0;
                 const isLast = secIdx === secBins.length - 1;
-                const moveButtons = currentUserRole === 'admin' ? `
-                    <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', -1)" class="btn-outline" style="font-size:0.78rem; padding:5px 8px;" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
-                    <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', 1)" class="btn-outline" style="font-size:0.78rem; padding:5px 8px;" ${isLast ? 'disabled' : ''} title="Move down">↓</button>
-                ` : '';
+                const reorderOverlay = currentUserRole === 'admin' ? `
+                    <div class="storage-bin-reorder">
+                        <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', -1)" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
+                        <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', 1)" ${isLast ? 'disabled' : ''} title="Move down">↓</button>
+                    </div>` : '';
+
+                const heroHtml = bin.picture ? `
+                    <div class="storage-bin-hero" onclick="event.stopPropagation(); openBinPhotoViewer('${bin.id}')">
+                        <img src="${bin.picture}" alt="">
+                        <div class="storage-bin-hero-overlay"><span>View</span></div>
+                    </div>` : '';
+
+                const iconHtml = '';
 
                 html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
-                    <div class="storage-bin-hero" onclick="event.stopPropagation(); openBinPhotoViewer('${bin.id}')">
-                        ${heroInner}
-                        <div class="storage-bin-hero-overlay"><span>🔍</span></div>
-                    </div>
+                    ${heroHtml}
+                    ${reorderOverlay}
                     <div class="storage-bin-body">
-                        <div class="storage-bin-meta">
-                            ${bin.label ? `<span class="storage-bin-label">${escapeHtml(bin.label)}</span>` : ''}
-                            <span class="storage-bin-status ${statusClass}">${statusText}</span>
+                        <div style="display:flex; align-items:flex-start; gap:10px;">
+                            ${iconHtml}
+                            <div style="flex:1; min-width:0;">
+                                <div class="storage-bin-meta">
+                                    ${bin.label ? `<span class="storage-bin-label">${escapeHtml(bin.label)}</span>` : ''}
+                                    <span class="storage-bin-status ${statusClass}">${statusText}</span>
+                                </div>
+                                <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
+                                ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 120))}${bin.description.length > 120 ? '…' : ''}</div>` : ''}
+                            </div>
                         </div>
-                        <div class="storage-bin-name">${escapeHtml(bin.name || 'Unnamed Bin')}</div>
-                        ${bin.description ? `<div class="storage-bin-desc">${escapeHtml(bin.description.substring(0, 120))}${bin.description.length > 120 ? '…' : ''}</div>` : ''}
-                        ${itemsHtml}
+                        ${itemsHtml ? `<div style="margin-top:6px;">${itemsHtml}</div>` : ''}
                     </div>
                     <div class="storage-bin-actions">
-                        ${moveButtons}
-                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">📱 QR</button>
-                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.78rem; padding:5px 12px; flex:1;">✏️ Edit</button>` : ''}
-                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.78rem; padding:5px 14px;">${hasActive ? '↩ Check In' : '↗ Check Out'}</button>
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">QR</button>
+                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">Edit</button>` : ''}
+                        <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.8rem; padding:6px 16px; margin-left:auto;">${hasActive ? 'Check In' : 'Check Out'}</button>
                     </div>
                 </div>`;
             });
@@ -10297,7 +10341,7 @@
         if (bin.picture) {
             html += `<div class="bin-lightbox-img"><img src="${bin.picture}" alt="${escapeHtml(bin.name || '')}"></div>`;
         } else {
-            html += `<div class="bin-lightbox-img">📦</div>`;
+            html += `<div class="bin-lightbox-img"></div>`;
         }
 
         html += `<div>
@@ -10317,7 +10361,7 @@
                     const statusClass = co ? 'out' : 'available';
                     const statusText  = co ? `Out: ${escapeHtml(co.user)}` : 'Available';
                     return `<div class="bin-lightbox-item">
-                        <div class="bin-lightbox-item-img">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                        <div class="bin-lightbox-item-img">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                         <div class="bin-lightbox-item-name">${escapeHtml(it.name)}</div>
                         ${it.qty ? `<div class="bin-lightbox-item-qty">×${escapeHtml(it.qty)}</div>` : ''}
                         <div class="bin-lightbox-item-status ${statusClass}">${statusText}</div>
@@ -10330,7 +10374,7 @@
 
         html += `<div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); margin-top:4px;">
             <button class="btn-action" onclick="closeBinPhotoLightbox(); openPublicBinCardModal('${bin.id}')" style="flex:1; min-height:52px; font-size:1rem;">
-                ${_binHasActiveCheckouts(bin) ? '↩ Check In' : '↗ Check Out'}
+                ${_binHasActiveCheckouts(bin) ? 'Check In' : 'Check Out'}
             </button>
         </div>`;
 
@@ -10646,7 +10690,7 @@
                     <input id="coNotes" class="modern-input" placeholder="e.g. For Friday event" style="width:100%;">
                 </div>
                 <button onclick="submitBinCheckout()" class="btn-action" style="${legacy ? 'background:var(--gradient-success);' : ''}">
-                    ${legacy ? `↩ Mark as Returned (out: ${escapeHtml(legacy.user)})` : '↗ Check Out'}
+                    ${legacy ? `Mark as Returned (out: ${escapeHtml(legacy.user)})` : 'Check Out'}
                 </button>
                 ${_renderCheckoutHistory(bin)}
             </div>`;
@@ -10667,7 +10711,7 @@
 
             itemRows += `<div class="checkout-item-row ${selClass}" onclick="_toggleCoItem('${bin.id}','${it.id}')">
                 <div class="checkout-item-check">${checkMark}</div>
-                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-size:0.9rem;font-weight:700;line-height:1.2;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;font-weight:600;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
                     <div style="margin-top:3px;">${statusBadge}</div>
@@ -10682,10 +10726,10 @@
         const btnLabel = selIds.length === 0
             ? 'Select items above'
             : outSelected.length && inSelected.length
-                ? `↗ Check Out ${inSelected.length} · ↩ Check In ${outSelected.length}`
+                ? `Check Out ${inSelected.length} · Check In ${outSelected.length}`
                 : inSelected.length
-                    ? `↗ Check Out ${inSelected.length} item${inSelected.length > 1 ? 's' : ''}`
-                    : `↩ Check In ${outSelected.length} item${outSelected.length > 1 ? 's' : ''}`;
+                    ? `Check Out ${inSelected.length} item${inSelected.length > 1 ? 's' : ''}`
+                    : `Check In ${outSelected.length} item${outSelected.length > 1 ? 's' : ''}`;
         const btnStyle = selIds.length === 0 ? 'opacity:0.5;cursor:not-allowed;' : (outSelected.length && !inSelected.length ? 'background:var(--gradient-success);' : '');
 
         body.innerHTML = `
@@ -10815,7 +10859,7 @@
         let html = `<div class="frosted" style="border-radius:var(--radius-card); overflow:hidden;">`;
         html += bin.picture
             ? `<div class="public-bin-hero"><img src="${bin.picture}" alt=""></div>`
-            : `<div class="public-bin-hero">📦</div>`;
+            : `<div class="public-bin-hero"></div>`;
         html += `<div style="padding:20px 22px 22px;">
             <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#0A84FF;margin-bottom:3px;">${escapeHtml(bin.section ? 'Section ' + bin.section + (bin.label ? ' · ' + bin.label : '') : bin.label || '')}</div>
             <h2 style="margin:0 0 6px;font-size:1.4rem;font-weight:800;">${escapeHtml(bin.name || 'Unnamed Bin')}</h2>
@@ -10827,7 +10871,7 @@
             // No items — bin-level checkout
             const active = (bin.checkouts || []).find(c => !c.checkedInAt);
             html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">
-                <h3 style="margin:0 0 12px;font-size:1rem;font-weight:800;">${active ? '↩ Check In' : '↗ Check Out'}</h3>
+                <h3 style="margin:0 0 12px;font-size:1rem;font-weight:800;">${active ? 'Check In' : 'Check Out'}</h3>
                 ${active ? `<div style="margin-bottom:12px;font-size:0.85rem;color:var(--text-muted);">Currently out: <strong>${escapeHtml(active.user)}</strong></div>` : ''}
                 <div style="display:flex;flex-direction:column;gap:10px;">
                     <input id="pubName" class="modern-input" placeholder="Your name" style="width:100%;">
@@ -10851,7 +10895,7 @@
                     : `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(52,199,89,0.15);color:#34C759;">Available</span>`;
                 itemRows += `<div class="checkout-item-row ${selClass}" onclick="_togglePubItem('${bin.id}','${it.id}')">
                     <div class="checkout-item-check">${checkMark}</div>
-                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : '📦'}</div>
+                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:0.9rem;font-weight:700;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
                         <div style="margin-top:3px;">${badge}</div>
@@ -10864,10 +10908,10 @@
             const inSel  = selIds.filter(id => !_itemActiveCheckout(bin, id));
             const btnLabel = selIds.length === 0 ? 'Select items above'
                 : outSel.length && inSel.length
-                    ? `Submit (↗${inSel.length} out · ↩${outSel.length} in)`
+                    ? `Submit (${inSel.length} out · ${outSel.length} in)`
                     : inSel.length
-                        ? `↗ Check Out ${inSel.length} item${inSel.length > 1 ? 's' : ''}`
-                        : `↩ Check In ${outSel.length} item${outSel.length > 1 ? 's' : ''}`;
+                        ? `Check Out ${inSel.length} item${inSel.length > 1 ? 's' : ''}`
+                        : `Check In ${outSel.length} item${outSel.length > 1 ? 's' : ''}`;
             const btnDisabled = selIds.length === 0 ? 'disabled style="opacity:0.5;"' : (outSel.length && !inSel.length ? 'style="background:var(--gradient-success);"' : '');
 
             html += `<div class="frosted" style="border-radius:var(--radius-card);padding:20px;margin-top:12px;">
