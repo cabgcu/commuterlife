@@ -12503,13 +12503,13 @@
     function emUpdateAllocation(index, value) {
         if (!appData.manager) return;
         appData.manager.budgets[index].allocated = Number(value)||0;
-        saveAppData(); emRenderBudget();
+        saveData(); emRenderBudget();
     }
 
     function emRemoveBudgetMonth(index) {
         if (!confirm('Remove this month?')) return;
         appData.manager.budgets.splice(index, 1);
-        saveAppData(); emRenderBudget();
+        saveData(); emRenderBudget();
     }
 
     function emAddBudgetMonth() {
@@ -12518,12 +12518,12 @@
         if (!appData.manager) return;
         if (!appData.manager.budgets) appData.manager.budgets = JSON.parse(JSON.stringify(EM_DEFAULT_BUDGETS));
         appData.manager.budgets.push({ name: name, allocated: 0 });
-        saveAppData(); emRenderBudget();
+        saveData(); emRenderBudget();
     }
 
     function emUpdateAttendance(eventId, val) {
         var ev = (appData.manager.events||[]).find(function(e) { return e.id === eventId; });
-        if (ev) { ev.attendance = val; saveAppData(); emRenderBudget(); }
+        if (ev) { ev.attendance = val; saveData(); emRenderBudget(); }
     }
 
     function emSaveExpense() {
@@ -12536,7 +12536,7 @@
         if (!name || !cost) { alert('Name and Cost required'); return; }
         if (!appData.manager.expenses) appData.manager.expenses = [];
         appData.manager.expenses.push({ id: 'emexp_'+Date.now(), name: name, cost: Number(cost), date: date, month: month, eventId: eventId, category: category });
-        saveAppData();
+        saveData();
         emRenderBudget();
         document.getElementById('em-exp-name').value = '';
         document.getElementById('em-exp-cost').value = '';
@@ -12545,7 +12545,7 @@
     function emDeleteExpense(id) {
         if (!confirm('Delete expense?')) return;
         appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.id !== id; });
-        saveAppData(); emRenderBudget();
+        saveData(); emRenderBudget();
     }
 
     // ---- Photos ----
@@ -12568,7 +12568,7 @@
 
     function emUpdateEventField(id, field, value) {
         var ev = (appData.manager.events||[]).find(function(e) { return e.id === id; });
-        if (ev) { ev[field] = value; saveAppData(); }
+        if (ev) { ev[field] = value; saveData(); }
     }
 
     // ---- Event Modal ----
@@ -12673,7 +12673,7 @@
         } else {
             appData.manager.events.push(ev);
         }
-        saveAppData();
+        saveData();
         emCloseEventModal();
         emRenderEvents();
     }
@@ -12682,7 +12682,7 @@
         if (!confirm('Delete this event? All associated data will be lost.')) return;
         appData.manager.events = (appData.manager.events||[]).filter(function(e) { return e.id !== id; });
         appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.eventId !== id; });
-        saveAppData(); emRenderEvents();
+        saveData(); emRenderEvents();
     }
 
     function emToggleDeadline(eventId, key) {
@@ -12691,7 +12691,7 @@
             if (!ev.deadlines) ev.deadlines = {};
             if (!ev.deadlines[key]) ev.deadlines[key] = {};
             ev.deadlines[key].completed = !ev.deadlines[key].completed;
-            saveAppData(); emRenderEvents();
+            saveData(); emRenderEvents();
         }
     }
 
@@ -12737,7 +12737,7 @@
         });
         appData.manager.settings.columnLabels = labels;
         appData.manager.settings.milestoneOffsets = offsets;
-        saveAppData();
+        saveData();
         document.getElementById('em-settings-modal').style.display = 'none';
         if (_emCurrentSubTab === 'events') emRenderEvents();
     }
