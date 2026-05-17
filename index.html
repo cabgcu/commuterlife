@@ -1789,6 +1789,106 @@
         }
         .public-avail-card { max-width: 520px; margin: 0 auto; padding: 40px 20px 80px; }
 
+        /* ── Events Manager ── */
+        .em-subnav {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+            padding: 14px 16px; margin-bottom: 20px;
+            background: rgba(20,20,20,0.55); backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+        }
+        .em-subtab {
+            padding: 8px 18px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
+            background: transparent; color: var(--text-muted); cursor: pointer;
+            font-size: 0.82rem; font-weight: 700; transition: all 0.2s;
+        }
+        .em-subtab.active {
+            background: var(--gradient-accent); color: #fff; border-color: transparent;
+        }
+        .em-btn-add {
+            margin-left: auto; padding: 9px 20px; border-radius: 100px; border: none;
+            background: var(--gradient-accent); color: #fff; font-weight: 700;
+            font-size: 0.84rem; cursor: pointer;
+        }
+        .em-hidden { display: none !important; }
+        .em-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
+        .em-frosted {
+            background: rgba(20,20,20,0.55); backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+        }
+        .em-table-wrap { overflow-x: auto; }
+        .em-table { width: 100%; border-collapse: collapse; }
+        .em-table th, .em-th {
+            background: rgba(255,255,255,0.06); padding: 14px 16px;
+            font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted);
+            border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; white-space: nowrap;
+        }
+        .em-table td { padding: 14px 16px; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .em-table tr:hover td { background: rgba(255,255,255,0.025); }
+        .em-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .em-cal-cell {
+            min-height: 100px; background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+            padding: 8px; overflow: hidden;
+        }
+        .em-cal-today { border-color: #0A84FF !important; }
+        .em-cal-event {
+            display: block; font-size: 0.65rem; font-weight: 700; padding: 3px 7px;
+            border-radius: 20px; background: var(--gradient-accent); color: #fff;
+            margin-bottom: 3px; cursor: pointer; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        .em-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            font-size: 0.68rem; font-weight: 800; border: none; cursor: pointer;
+        }
+        .em-badge-ok { background: linear-gradient(135deg, #34C759, #30B0C7); color: #fff; }
+        .em-badge-warn { background: linear-gradient(135deg, #FFD60A, #FF9F0A); color: #000; }
+        .em-badge-fire { background: linear-gradient(135deg, #FF9500, #FF3B30); color: #fff; }
+        .em-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .em-modal {
+            position: fixed; inset: 0; z-index: 9999; display: flex;
+            align-items: center; justify-content: center; padding: 16px;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
+        }
+        .em-modal-content {
+            background: rgba(20,20,20,0.55); backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 20px;
+            width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;
+        }
+        .em-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .em-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+        .em-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .em-input {
+            background: rgba(0,0,0,0.3); color: #fff;
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+            padding: 10px 14px; outline: none; width: 100%; box-sizing: border-box;
+            font-family: var(--font-stack); font-size: 0.9rem;
+        }
+        .em-input:focus { border-color: #0A84FF; box-shadow: 0 0 0 2px rgba(10,132,255,0.2); }
+        .em-label {
+            display: block; font-size: 0.7rem; font-weight: 700;
+            color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 6px;
+        }
+        .em-btn-save {
+            width: 100%; padding: 14px; border-radius: 12px;
+            background: var(--gradient-accent); color: #fff; font-weight: 700;
+            cursor: pointer; border: none; font-size: 1rem;
+        }
+        .em-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .em-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .em-view-toggle {
+            padding: 7px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.78rem; font-weight: 700;
+        }
+        .em-view-toggle.active {
+            background: var(--gradient-accent); color: #fff; border-color: transparent;
+        }
+        @media (max-width: 600px) {
+            .em-grid-2, .em-grid-3 { grid-template-columns: 1fr; }
+            .em-cal-cell { min-height: 60px; }
+        }
+
     </style>
 </head>
 <body>
@@ -1924,6 +2024,7 @@
         <button class="nav-tab" id="tab-storage" onclick="switchView('storage')"><span class="nav-icon">📦</span><span class="nav-label">Storage</span></button>
         <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')"><span class="nav-icon">👥</span><span class="nav-label">Schedule</span></button>
         <button class="nav-tab" id="tab-swaps" onclick="switchView('swaps')"><span class="nav-icon">🔄</span><span class="nav-label">Swaps</span></button>
+        <button class="nav-tab" id="tab-manager" onclick="switchView('manager')"><span class="nav-icon">📋</span><span class="nav-label">Manager</span></button>
         <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;"><span class="nav-icon">🔔</span><span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
         <button class="nav-tab" id="tab-settings" onclick="switchView('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
     </div>
@@ -1948,6 +2049,135 @@
 
     <div class="app-view" id="view-swaps" style="padding: 0 4px; overflow-y: auto; -webkit-overflow-scrolling: touch;">
         <div id="swaps-content" style="max-width:800px; margin:0 auto; padding:16px 4px 40px;"></div>
+    </div>
+
+    <!-- EVENTS MANAGER VIEW -->
+    <div class="app-view" id="view-manager" style="overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 12px 80px;">
+            <!-- Sub-nav -->
+            <div class="em-subnav">
+                <button class="em-subtab active" id="em-tab-events" onclick="emSwitchTab('events')">Events</button>
+                <button class="em-subtab" id="em-tab-calendar" onclick="emSwitchTab('calendar')">Calendar</button>
+                <button class="em-subtab" id="em-tab-budget" onclick="emSwitchTab('budget')">Budget</button>
+                <button class="em-subtab" id="em-tab-photos" onclick="emSwitchTab('photos')">Photos</button>
+                <button class="em-btn-add" onclick="emOpenEventModal()">+ New Event</button>
+            </div>
+
+            <!-- Sub-view: Events -->
+            <div id="em-view-events">
+                <!-- Needs Attention widget -->
+                <div id="em-attention-widget" style="display:none; margin-bottom:20px;">
+                    <div class="em-frosted" style="padding:16px 20px; border-radius:16px;">
+                        <h3 style="font-weight:700; margin:0 0 12px;">⚠️ Needs Attention</h3>
+                        <div id="em-attention-list" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px;"></div>
+                    </div>
+                </div>
+                <!-- Header bar -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <h3 style="margin:0; font-weight:700;">Event Dashboard</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button id="em-toggle-list" class="em-view-toggle active" onclick="emToggleViewMode('list')">☰ List</button>
+                        <button id="em-toggle-card" class="em-view-toggle" onclick="emToggleViewMode('card')">⊞ Card</button>
+                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
+                    </div>
+                </div>
+                <div id="em-events-inner"></div>
+            </div>
+
+            <!-- Sub-view: Calendar -->
+            <div id="em-view-calendar" class="em-hidden">
+                <div class="em-frosted" style="padding:16px 20px; border-radius:16px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <button onclick="emChangeMonth(-1)" style="background:rgba(255,255,255,0.08); border:none; color:#fff; border-radius:100px; width:36px; height:36px; cursor:pointer; font-size:1rem;">‹</button>
+                        <h3 id="em-cal-title" style="margin:0; font-weight:800; font-size:1.1rem;">Month Year</h3>
+                        <button onclick="emChangeMonth(1)" style="background:rgba(255,255,255,0.08); border:none; color:#fff; border-radius:100px; width:36px; height:36px; cursor:pointer; font-size:1rem;">›</button>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px;">
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Sun</div>
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Mon</div>
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Tue</div>
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Wed</div>
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Thu</div>
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Fri</div>
+                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Sat</div>
+                </div>
+                <div id="em-cal-grid" class="em-cal-grid"></div>
+            </div>
+
+            <!-- Sub-view: Budget -->
+            <div id="em-view-budget" class="em-hidden">
+                <!-- Event Financials Table -->
+                <div class="em-frosted" style="border-radius:16px; overflow:hidden; margin-bottom:20px;">
+                    <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0; font-weight:700;">Event Financials</h3>
+                    </div>
+                    <div class="em-table-wrap">
+                        <table class="em-table">
+                            <thead><tr>
+                                <th class="em-th">Event Name</th>
+                                <th class="em-th">Total Cost</th>
+                                <th class="em-th">Food Cost</th>
+                                <th class="em-th">Attendance</th>
+                                <th class="em-th">Cost/Student</th>
+                            </tr></thead>
+                            <tbody id="em-financials-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Monthly Breakdown Table -->
+                <div class="em-frosted" style="border-radius:16px; overflow:hidden; margin-bottom:20px;">
+                    <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0; font-weight:700;">Monthly Budget</h3>
+                        <button onclick="emAddBudgetMonth()" style="background:rgba(10,132,255,0.12); color:#0A84FF; border:1px solid rgba(10,132,255,0.3); padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Month</button>
+                    </div>
+                    <div class="em-table-wrap">
+                        <table class="em-table">
+                            <thead><tr>
+                                <th class="em-th">Month</th>
+                                <th class="em-th">Allocated</th>
+                                <th class="em-th">Used</th>
+                                <th class="em-th">Remaining</th>
+                                <th class="em-th">Actions</th>
+                            </tr></thead>
+                            <tbody id="em-budget-months-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Expense Form -->
+                <div class="em-frosted" style="border-radius:16px; padding:20px; margin-bottom:20px;">
+                    <h3 style="margin:0 0 16px; font-weight:700;">Add Expense</h3>
+                    <div class="em-grid-2" style="margin-bottom:12px;">
+                        <div><label class="em-label">Description</label><input id="em-exp-name" class="em-input" placeholder="e.g. Catering deposit"></div>
+                        <div><label class="em-label">Amount ($)</label><input type="number" id="em-exp-cost" class="em-input" placeholder="0.00" step="0.01"></div>
+                    </div>
+                    <div class="em-grid-3" style="margin-bottom:16px;">
+                        <div><label class="em-label">Date</label><input type="date" id="em-exp-date" class="em-input"></div>
+                        <div><label class="em-label">Month</label><select id="em-exp-month" class="em-input"></select></div>
+                        <div><label class="em-label">Category</label>
+                            <select id="em-exp-category" class="em-input">
+                                <option>Food</option><option>Supplies</option><option>Marketing</option><option>Entertainment</option><option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:16px;"><label class="em-label">Event (optional)</label><select id="em-exp-event" class="em-input"></select></div>
+                    <button onclick="emSaveExpense()" class="em-btn-save">Add Expense</button>
+                </div>
+
+                <!-- Recent Expenses -->
+                <div>
+                    <h3 style="font-weight:700; margin-bottom:12px;">Recent Expenses</h3>
+                    <div id="em-expenses-list"></div>
+                </div>
+            </div>
+
+            <!-- Sub-view: Photos -->
+            <div id="em-view-photos" class="em-hidden">
+                <div id="em-photos-grid" class="em-card-grid"></div>
+            </div>
+        </div>
     </div>
 
     <!-- BULK ACTION BAR -->
@@ -2895,6 +3125,11 @@
                 if (!appData.templateShifts) appData.templateShifts = [];
                 if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
                 if (!appData.swapRequests) appData.swapRequests = [];
+                if (!appData.manager) appData.manager = { events: [], expenses: [], budgets: null, settings: null };
+                if (!appData.manager.events) appData.manager.events = [];
+                if (!appData.manager.expenses) appData.manager.expenses = [];
+                if (!appData.manager.budgets) appData.manager.budgets = JSON.parse(JSON.stringify(EM_DEFAULT_BUDGETS));
+                if (!appData.manager.settings) appData.manager.settings = { columnLabels: Object.assign({}, EM_COL_LABELS), milestoneOffsets: Object.assign({}, EM_COL_OFFSETS) };
 
                 appData.boards.forEach(b => {
                     if (b.backgroundImage === undefined) b.backgroundImage = '';
@@ -3455,6 +3690,7 @@
         if (viewName === 'storage') renderStorage();
         if (viewName === 'schedule') renderSchedule();
         if (viewName === 'swaps') renderSwapRequests();
+        if (viewName === 'manager') renderManager();
     }
 
     let searchQuery = '';
@@ -4790,10 +5026,10 @@
 
     const SECTION_LABELS = {
         board: 'Home / Board', calendar: 'Calendar', duesoon: 'Due Soon',
-        storage: 'Storage', schedule: 'Schedule', swaps: 'Swap Requests'
+        storage: 'Storage', schedule: 'Schedule', swaps: 'Swap Requests', manager: 'Manager'
     };
     const DEFAULT_SECTION_PERMISSIONS = {
-        board: true, calendar: true, duesoon: true, storage: true, schedule: true, swaps: true
+        board: true, calendar: true, duesoon: true, storage: true, schedule: true, swaps: true, manager: true
     };
 
     function applyUserPermissions() {
@@ -4803,7 +5039,7 @@
         }
         const user = (appData.settings.users || []).find(u => u.email === currentUserEmail);
         const perms = { ...DEFAULT_SECTION_PERMISSIONS, ...(user?.sectionPermissions || {}) };
-        const tabMap = { board:'tab-board', calendar:'tab-calendar', duesoon:'tab-duesoon', storage:'tab-storage', schedule:'tab-schedule', swaps:'tab-swaps' };
+        const tabMap = { board:'tab-board', calendar:'tab-calendar', duesoon:'tab-duesoon', storage:'tab-storage', schedule:'tab-schedule', swaps:'tab-swaps', manager:'tab-manager' };
         let firstVisible = null;
         Object.entries(tabMap).forEach(([section, tabId]) => {
             const tab = document.getElementById(tabId);
