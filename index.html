@@ -32,8 +32,8 @@
     <style>
         :root {
             --bg-dark: #000000;
-            --glass-surface: rgba(15, 15, 15, 0.85); 
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-surface: rgba(20, 20, 20, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.12);
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --gradient-accent: linear-gradient(135deg, #0A84FF, #BF5AF2);
@@ -90,8 +90,8 @@
 
         .frosted {
             background: var(--glass-surface);
-            backdrop-filter: blur(var(--blur)) saturate(150%);
-            -webkit-backdrop-filter: blur(var(--blur)) saturate(150%);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
             border: 1px solid var(--glass-border);
         }
 
@@ -1405,13 +1405,13 @@
             gap: 14px; margin-bottom: 20px;
         }
         .storage-bin-card {
-            background: rgba(20,20,20,0.55);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
             border-radius: 16px;
             cursor: pointer;
             transition: all 0.15s ease;
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
             overflow: hidden;
             display: flex; flex-direction: column;
             position: relative;
@@ -1847,8 +1847,11 @@
         .em-hidden { display: none !important; }
         .em-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
         .em-frosted {
-            background: rgba(20,20,20,0.55); backdrop-filter: blur(40px);
-            border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+            background: var(--glass-surface);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
         }
         .em-table-wrap { overflow-x: auto; }
         .em-table { width: 100%; border-collapse: collapse; }
@@ -1861,11 +1864,12 @@
         .em-table tr:hover td { background: rgba(255,255,255,0.025); }
         .em-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .em-cal-cell {
-            min-height: 100px; background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+            min-height: 100px; background: var(--glass-surface);
+            border: 1px solid var(--glass-border); border-radius: 10px;
             padding: 8px; overflow: hidden;
+            backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
         }
-        .em-cal-today { border-color: #0A84FF !important; }
+        .em-cal-today { border-color: #0A84FF !important; background: rgba(10,132,255,0.08) !important; }
         .em-cal-event {
             display: block; font-size: 0.65rem; font-weight: 700; padding: 3px 7px;
             border-radius: 20px; background: var(--gradient-accent); color: #fff;
@@ -2128,16 +2132,18 @@
                         <button onclick="emChangeMonth(1)" style="background:rgba(255,255,255,0.08); border:none; color:#fff; border-radius:100px; width:36px; height:36px; cursor:pointer; font-size:1rem;">›</button>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px;">
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Sun</div>
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Mon</div>
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Tue</div>
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Wed</div>
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Thu</div>
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Fri</div>
-                    <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:6px 0;">Sat</div>
+                <div class="em-frosted" style="border-radius:16px; padding:16px;">
+                    <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px;">
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Sun</div>
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Mon</div>
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Tue</div>
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Wed</div>
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Thu</div>
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Fri</div>
+                        <div style="text-align:center; font-size:0.68rem; font-weight:800; color:var(--text-muted); padding:4px 0;">Sat</div>
+                    </div>
+                    <div id="em-cal-grid" class="em-cal-grid"></div>
                 </div>
-                <div id="em-cal-grid" class="em-cal-grid"></div>
             </div>
 
             <!-- Sub-view: Budget -->
