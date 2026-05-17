@@ -154,32 +154,38 @@
         .controls { display: flex; gap: 12px; align-items: center; }
 
         .nav-tabs {
-            position: fixed; 
-            bottom: 30px; 
-            left: 50%; 
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
             transform: translateX(-50%);
-            display: flex; 
-            gap: 12px; 
+            display: flex;
+            gap: 8px;
             background: rgba(15, 15, 15, 0.85);
-            padding: 10px; 
-            border-radius: 100px; 
+            padding: 8px;
+            border-radius: 100px;
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(var(--blur));
             -webkit-backdrop-filter: blur(var(--blur));
             z-index: 100;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            overflow-x: auto;
+            max-width: calc(100vw - 40px);
+            scrollbar-width: none;
         }
+        .nav-tabs::-webkit-scrollbar { display: none; }
 
         .nav-tab {
-            background: rgba(255,255,255,0.03); 
-            border: 1px solid rgba(255,255,255,0.08); 
-            color: var(--text-muted); 
-            padding: 10px 20px; 
-            border-radius: var(--radius-button); 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            font-size: 0.9rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-muted);
+            padding: 10px 14px;
+            border-radius: var(--radius-button);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .nav-tab:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .nav-tab.active { background: var(--gradient-accent); color: #fff; border: none; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.2); }
@@ -2053,7 +2059,7 @@
 
     <!-- EVENTS MANAGER VIEW -->
     <div class="app-view" id="view-manager" style="overflow-y: auto; -webkit-overflow-scrolling: touch;">
-        <div style="max-width: 1400px; margin: 0 auto; padding: 0 12px 80px;">
+        <div style="width: 100%; padding: 0 16px 80px; box-sizing: border-box;">
             <!-- Sub-nav -->
             <div class="em-subnav">
                 <button class="em-subtab active" id="em-tab-events" onclick="emSwitchTab('events')">Events</button>
@@ -2061,6 +2067,7 @@
                 <button class="em-subtab" id="em-tab-budget" onclick="emSwitchTab('budget')">Budget</button>
                 <button class="em-subtab" id="em-tab-photos" onclick="emSwitchTab('photos')">Photos</button>
                 <button class="em-btn-add" onclick="emOpenEventModal()">+ New Event</button>
+                <button onclick="emOpenManagerSettings()" style="padding:8px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:var(--text-muted);cursor:pointer;font-size:0.85rem;" title="Manager Settings">⚙️</button>
             </div>
 
             <!-- Sub-view: Events -->
@@ -2167,8 +2174,8 @@
                 </div>
 
                 <!-- Recent Expenses -->
-                <div>
-                    <h3 style="font-weight:700; margin-bottom:12px;">Recent Expenses</h3>
+                <div class="em-frosted" style="border-radius:16px; padding:20px;">
+                    <h3 style="font-weight:700; margin:0 0 16px;">Recent Expenses</h3>
                     <div id="em-expenses-list"></div>
                 </div>
             </div>
@@ -11753,7 +11760,7 @@
             if (end >= today && start <= today) { sc = '#34C759'; sl = 'Active'; }
             else if (start > today) { sc = '#0A84FF'; sl = 'Upcoming'; }
             const weeks = Math.ceil((end - start) / (7*24*60*60*1000));
-            html += `<div style="padding:16px 20px;border-radius:16px;background:linear-gradient(160deg,rgba(38,38,38,0.9),rgba(18,18,18,0.85));border:1px solid rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.18);display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            html += `<div class="frosted" style="padding:16px 20px;border-radius:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">${escapeHtml(s.name)}</div>
                     <div style="font-size:0.8rem;color:var(--text-muted);">
@@ -11835,7 +11842,7 @@
         const sc = r.status==='approved'?'#34C759': r.status==='denied'?'#FF3B30':'#FF9500';
         const sl = r.status==='approved'?'Approved': r.status==='denied'?'Denied':'Pending';
         const canAct = r.status==='pending' && (isAdmin || (currentWorker && r.targetId===currentWorker.id));
-        return `<div style="padding:16px 20px;border-radius:16px;background:linear-gradient(160deg,rgba(38,38,38,0.9),rgba(18,18,18,0.85));border:1px solid rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.18);">
+        return `<div class="frosted" style="padding:16px 20px;border-radius:16px;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:0;">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
@@ -12340,7 +12347,7 @@
                     '</td></tr>';
             }).join('');
 
-            container.innerHTML = '<div class="em-table-wrap"><table class="em-table"><thead><tr>' +
+            container.innerHTML = '<div class="em-frosted" style="border-radius:16px;overflow:hidden;"><div class="em-table-wrap"><table class="em-table"><thead><tr>' +
                 '<th class="em-th" onclick="emSort(\'name\')" style="cursor:pointer;">Event Name' + sortIcon('name') + '</th>' +
                 '<th class="em-th" onclick="emSort(\'date\')" style="cursor:pointer;">Date' + sortIcon('date') + '</th>' +
                 '<th class="em-th" onclick="emSort(\'time\')" style="cursor:pointer;">Time' + sortIcon('time') + '</th>' +
@@ -12348,7 +12355,7 @@
                 '<th class="em-th" onclick="emSort(\'budget\')" style="cursor:pointer;">Budget' + sortIcon('budget') + '</th>' +
                 milestoneHeaders +
                 '<th class="em-th">Cart</th><th class="em-th">Status</th><th class="em-th" style="text-align:right;">Actions</th>' +
-                '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+                '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
         } else {
             container.innerHTML = '<div class="em-card-grid">' + sorted.map(function(ev) {
                 var spent = d.expenses.filter(function(e) { return e.eventId === ev.id; }).reduce(function(s,e) { return s + (Number(e.cost)||0); }, 0);
@@ -12702,6 +12709,39 @@
         a.click();
     }
 
+    function emOpenManagerSettings() {
+        var settings = emGetSettings();
+        var labels = settings.columnLabels || Object.assign({}, EM_COL_LABELS);
+        var offsets = settings.milestoneOffsets || Object.assign({}, EM_COL_OFFSETS);
+        var rows = document.getElementById('em-settings-rows');
+        if (!rows) return;
+        rows.innerHTML = EM_MILESTONE_KEYS.map(function(k) {
+            return '<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;">' +
+                '<input id="em-set-label-' + k + '" class="em-input" value="' + (labels[k]||k) + '" placeholder="Column label">' +
+                '<input type="number" id="em-set-weeks-' + k + '" class="em-input" value="' + (offsets[k]!==undefined?offsets[k]:1) + '" min="0" max="52" style="width:80px;text-align:center;" title="Weeks before event">' +
+                '</div>';
+        }).join('');
+        document.getElementById('em-settings-modal').style.display = 'flex';
+    }
+
+    function emSaveManagerSettings() {
+        if (!appData.manager) return;
+        if (!appData.manager.settings) appData.manager.settings = {};
+        var labels = {};
+        var offsets = {};
+        EM_MILESTONE_KEYS.forEach(function(k) {
+            var lbl = document.getElementById('em-set-label-' + k);
+            var wks = document.getElementById('em-set-weeks-' + k);
+            labels[k] = lbl ? lbl.value : EM_COL_LABELS[k];
+            offsets[k] = wks ? (parseInt(wks.value)||0) : EM_COL_OFFSETS[k];
+        });
+        appData.manager.settings.columnLabels = labels;
+        appData.manager.settings.milestoneOffsets = offsets;
+        saveAppData();
+        document.getElementById('em-settings-modal').style.display = 'none';
+        if (_emCurrentSubTab === 'events') emRenderEvents();
+    }
+
     // ============================================================
     // END EVENTS MANAGER SECTION
     // ============================================================
@@ -12774,6 +12814,27 @@
         <div id="em-modal-body" style="padding:24px;overflow-y:auto;flex:1;"></div>
         <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);">
             <button onclick="emSaveEvent()" class="em-btn-save">Save Event</button>
+        </div>
+    </div>
+</div>
+
+<!-- MANAGER SETTINGS MODAL -->
+<div id="em-settings-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);">
+    <div class="em-frosted" style="width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+            <h2 style="margin:0;font-weight:800;">⚙️ Manager Settings</h2>
+            <button onclick="document.getElementById('em-settings-modal').style.display='none'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;">✕</button>
+        </div>
+        <div style="padding:24px;overflow-y:auto;flex:1;">
+            <p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 20px;">Configure the deadline milestone columns — their label and how many weeks before the event each auto-fills to.</p>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:8px;">
+                <span style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Milestone Label</span>
+                <span style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;text-align:center;width:80px;">Weeks Out</span>
+            </div>
+            <div id="em-settings-rows" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);">
+            <button onclick="emSaveManagerSettings()" class="em-btn-save">Save Settings</button>
         </div>
     </div>
 </div>
