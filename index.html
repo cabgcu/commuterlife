@@ -10197,9 +10197,9 @@
         </div>`;
 
         if (bins.length === 0) {
-            html += `<div style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+            html += `<div class="frosted" style="text-align:center; padding:48px 24px; border-radius:16px; color:var(--text-muted);">
                 <div style="font-size:3rem; margin-bottom:12px;">📦</div>
-                <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">No storage bins yet</div>
+                <div style="font-weight:700; font-size:1rem; margin-bottom:6px; color:var(--text-main);">No storage bins yet</div>
                 <div style="font-size:0.85rem;">Add a bin to get started. Each bin gets its own QR code.</div>
             </div>`;
             container.innerHTML = html;
@@ -10325,7 +10325,7 @@
                 }).join('') +
                 `</div></div>`;
         } else {
-            html += `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.88rem;">No items listed for this bin.</div>`;
+            html += `<div class="frosted" style="text-align:center; padding:32px 20px; border-radius:12px; color:var(--text-muted); font-size:0.88rem;">No items listed for this bin.</div>`;
         }
 
         html += `<div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); margin-top:4px;">
@@ -11172,7 +11172,7 @@
             </div>
             <div class="workers-grid" style="margin-top:12px;">`;
         if (!workers.length) {
-            html += `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);font-size:0.88rem;">No workers yet.</div>`;
+            html += `<div class="frosted" style="grid-column:1/-1;text-align:center;padding:40px 24px;border-radius:16px;color:var(--text-muted);font-size:0.88rem;">No workers yet. Add one above.</div>`;
         } else {
             workers.forEach(w => {
                 const initials = w.name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
@@ -11680,7 +11680,7 @@
                         ${isMyShift&&!isAdmin&&!hasPendingSwap&&shift.templateShiftId?`
                         <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId}','${weekStartStr}')"
                             style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
-                            border:1px solid rgba(191,90,242,0.4);background:rgba(191,90,242,0.1);color:#BF5AF2;cursor:pointer;font-family:inherit;width:100%;">
+                            border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
                             ↔ Request Swap
                         </button>`:''}
                     </div>`;
@@ -11704,13 +11704,13 @@
         const workers = appData.workers || [];
         const DAY_ORDER = [1,2,3,4,5,6,0];
 
-        let html = `<div style="background:rgba(191,90,242,0.08); border:1px solid rgba(191,90,242,0.18); border-radius:12px; padding:12px 16px; margin-bottom:14px;">
-            <div style="font-size:0.82rem; color:#BF5AF2; font-weight:800;">📋 Weekly Template</div>
+        let html = `<div class="frosted" style="border-radius:12px; padding:12px 16px; margin-bottom:14px;">
+            <div style="font-size:0.82rem; color:rgba(255,255,255,0.6); font-weight:800;">📋 Weekly Template</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Define the repeating weekly schedule. These shifts recur every week within any active semester.</div>
         </div>`;
 
         if (!templateShifts.length && !isAdmin) {
-            return html + `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:0.9rem;">No template shifts defined yet.</div>`;
+            return html + `<div class="frosted" style="text-align:center;padding:48px 24px;border-radius:16px;color:var(--text-muted);font-size:0.9rem;">No template shifts defined yet.<br><span style="font-size:0.8rem;opacity:0.7;">Click &ldquo;+ Template Shift&rdquo; to add one.</span></div>`;
         }
 
         html += `<div class="schedule-grid" id="schedGrid">`;
@@ -11731,7 +11731,7 @@
                     border-color:${color}66; border-top-color:${color}99;
                     box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);
                     cursor:${isAdmin?'pointer':'default'};">
-                    <div style="font-size:0.56rem;color:#BF5AF2;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">Every Week</div>
+                    <div style="font-size:0.56rem;color:rgba(255,255,255,0.35);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Every Week</div>
                     <div class="shift-time" style="color:${color};">${_fmtTime(ts.startTime)}${ts.endTime?` – ${_fmtTime(ts.endTime)}`:''}</div>
                     <div class="shift-worker">${escapeHtml(wName)}</div>
                     ${ts.role?`<div class="shift-role">${escapeHtml(ts.role)}</div>`:''}
@@ -11746,10 +11746,10 @@
     function _renderSemesterManager(isAdmin) {
         const semesters = appData.semesters || [];
         if (!semesters.length) {
-            return `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+            return `<div class="frosted" style="text-align:center;padding:48px 24px;border-radius:16px;">
                 <div style="font-size:2rem;margin-bottom:12px;">📅</div>
-                <div style="font-size:1rem;font-weight:700;margin-bottom:8px;">No Semesters Yet</div>
-                <div style="font-size:0.85rem;">Create a semester to define a date range for the schedule template.</div>
+                <div style="font-size:1rem;font-weight:700;margin-bottom:8px;color:var(--text-main);">No Semesters Yet</div>
+                <div style="font-size:0.85rem;color:var(--text-muted);">Create a semester to define a date range for the schedule template.</div>
                 ${isAdmin?`<button class="btn-action" onclick="openSemesterModal(null)" style="margin-top:20px;">+ Add Semester</button>`:''}
             </div>`;
         }
@@ -12547,7 +12547,7 @@
                     '<div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end;">' +
                     '<button onclick="emDeleteExpense(\'' + exp.id + '\')" style="background:none;border:none;color:#FF3B30;cursor:pointer;font-size:0.7rem;font-weight:700;">Delete</button>' +
                     '</div></div></div>';
-            }).join('') || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No expenses yet.</div>';
+            }).join('') || '<div class="em-frosted" style="text-align:center;color:var(--text-muted);padding:40px 24px;border-radius:12px;">No expenses yet.</div>';
         }
     }
 
@@ -12604,7 +12604,7 @@
         var d = emGetData();
         var grid = document.getElementById('em-photos-grid');
         if (!grid) return;
-        if (!d.events.length) { grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:60px;">No events found.</div>'; return; }
+        if (!d.events.length) { grid.innerHTML = '<div class="em-frosted" style="text-align:center;color:var(--text-muted);padding:48px 24px;border-radius:16px;">No events found.</div>'; return; }
         grid.innerHTML = d.events.slice().sort(function(a,b) { return new Date(a.date)-new Date(b.date); }).map(function(ev) {
             return '<div class="em-frosted" style="border-radius:16px;padding:20px;">' +
                 '<div style="font-weight:800;font-size:1rem;margin-bottom:4px;">' + ev.name + '</div>' +
