@@ -12166,6 +12166,546 @@
         document.getElementById('publicAvailForm').innerHTML = html;
     }
 
+    // ============================================================
+    // EVENTS MANAGER SECTION
+    // ============================================================
+
+    const EM_DEFAULT_BUDGETS = [
+        { name: "July", allocated: 0 }, { name: "August", allocated: 0 },
+        { name: "September", allocated: 0 }, { name: "October", allocated: 0 },
+        { name: "November", allocated: 0 }, { name: "December", allocated: 0 },
+        { name: "January", allocated: 0 }, { name: "February", allocated: 0 },
+        { name: "March", allocated: 0 }, { name: "April", allocated: 0 },
+        { name: "May", allocated: 0 }, { name: "June", allocated: 0 }
+    ];
+
+    const EM_COL_LABELS = {
+        checklist: "Event Checklist", marketing: "Marketing Req",
+        amazon: "Amazon", setlist: "Setlist", chalkboards: "Chalkboards", posters: "Posters Up"
+    };
+
+    const EM_COL_OFFSETS = {
+        checklist: 4, marketing: 3, amazon: 2, setlist: 2, chalkboards: 1, posters: 1
+    };
+
+    const EM_MILESTONE_KEYS = ["checklist", "marketing", "amazon", "setlist", "chalkboards", "posters"];
+
+    let _emCurrentSubTab = 'events';
+    let _emCalDate = new Date();
+    let _emEditingEventId = null;
+    let _emSortCol = 'date';
+    let _emSortDir = 'asc';
+    let _emViewMode = 'list';
+
+    function emGetData() { return appData.manager || { events:[], expenses:[], budgets: JSON.parse(JSON.stringify(EM_DEFAULT_BUDGETS)), settings: { columnLabels: Object.assign({}, EM_COL_LABELS), milestoneOffsets: Object.assign({}, EM_COL_OFFSETS) } }; }
+    function emGetSettings() { return emGetData().settings || { columnLabels: Object.assign({}, EM_COL_LABELS), milestoneOffsets: Object.assign({}, EM_COL_OFFSETS) }; }
+    function emColLabel(k) { return (emGetSettings().columnLabels || EM_COL_LABELS)[k] || k; }
+
+    function renderManager() {
+        emSwitchTab(_emCurrentSubTab, false);
+    }
+
+    function emSwitchTab(tab, doRender) {
+        if (doRender === undefined) doRender = true;
+        _emCurrentSubTab = tab;
+        document.querySelectorAll('.em-subtab').forEach(function(b) { b.classList.remove('active'); });
+        var bt = document.getElementById('em-tab-' + tab);
+        if (bt) bt.classList.add('active');
+        ['events','calendar','budget','photos'].forEach(function(t) {
+            var v = document.getElementById('em-view-' + t);
+            if (v) v.classList.toggle('em-hidden', t !== tab);
+        });
+        if (!doRender) return;
+        if (tab === 'events') emRenderEvents();
+        if (tab === 'calendar') emRenderCalendar();
+        if (tab === 'budget') emRenderBudget();
+        if (tab === 'photos') emRenderPhotos();
+    }
+
+    // ---- Date helpers ----
+    function emFormatDate(d) {
+        if (!d) return '';
+        var parts = d.split('-');
+        return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+    }
+
+    function emDeadlineStatus(dateStr, completed) {
+        if (!dateStr) return 'none';
+        if (completed) return 'completed';
+        var today = new Date(); today.setHours(0,0,0,0);
+        var parts = dateStr.split('-');
+        var due = new Date(parts[0], parts[1]-1, parts[2]);
+        var diff = Math.ceil((due - today) / 86400000);
+        if (diff < 0) return 'overdue';
+        if (diff <= 14) return 'warning';
+        return 'safe';
+    }
+
+    function emBadgeClass(status) {
+        if (status === 'completed') return 'em-badge em-badge-ok';
+        if (status === 'overdue') return 'em-badge em-badge-fire';
+        if (status === 'warning') return 'em-badge em-badge-warn';
+        return 'em-badge';
+    }
+
+    // ---- Needs Attention widget ----
+    function emRenderAttentionWidget() {
+        var d = emGetData();
+        var widget = document.getElementById('em-attention-widget');
+        var list = document.getElementById('em-attention-list');
+        if (!widget || !list) return;
+        var items = [];
+        d.events.forEach(function(ev) {
+            EM_MILESTONE_KEYS.forEach(function(k) {
+                var m = ev.deadlines && ev.deadlines[k];
+                if (m && m.date && !m.completed) {
+                    var today = new Date(); today.setHours(0,0,0,0);
+                    var parts = m.date.split('-');
+                    var due = new Date(parts[0], parts[1]-1, parts[2]);
+                    var diff = Math.ceil((due - today) / 86400000);
+                    if (diff <= 14) items.push({ evId: ev.id, evName: ev.name, task: emColLabel(k), date: m.date, diff: diff, assignee: m.assignee || 'Unassigned' });
+                }
+            });
+        });
+        if (!items.length) { widget.style.display = 'none'; return; }
+        widget.style.display = '';
+        items.sort(function(a,b) { return a.diff - b.diff; });
+        list.innerHTML = items.slice(0,8).map(function(item) {
+            var label = item.diff < 0 ? (Math.abs(item.diff) + 'd Overdue') : item.diff === 0 ? 'Due Today' : ('In ' + item.diff + 'd');
+            var col = item.diff < 0 ? '#FF3B30' : item.diff <= 3 ? '#FFD60A' : '#34C759';
+            return '<div class="em-frosted" style="padding:12px;border-radius:12px;cursor:pointer;" onclick="emOpenEventModal(\'' + item.evId + '\')">' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+                '<span style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">' + item.task + '</span>' +
+                '<span style="font-size:0.65rem;font-weight:700;color:' + col + ';">' + label + '</span></div>' +
+                '<div style="font-weight:700;font-size:0.9rem;">' + item.evName + '</div>' +
+                '<div style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;">' + emFormatDate(item.date) + ' • ' + item.assignee + '</div></div>';
+        }).join('');
+    }
+
+    // ---- Events List ----
+    function emRenderEvents() {
+        var d = emGetData();
+        var container = document.getElementById('em-events-inner');
+        if (!container) return;
+        emRenderAttentionWidget();
+
+        var events = d.events;
+        if (!events.length) {
+            container.innerHTML = '<div class="em-frosted" style="text-align:center;padding:60px 20px;color:var(--text-muted);">No events yet. Click + New Event to get started.</div>';
+            return;
+        }
+
+        var sorted = events.slice().sort(function(a,b) {
+            var va = a[_emSortCol], vb = b[_emSortCol];
+            if (_emSortCol === 'budget') { va = Number(va)||0; vb = Number(vb)||0; }
+            else if (_emSortCol === 'date') { va = new Date(va||'2099-01-01'); vb = new Date(vb||'2099-01-01'); }
+            else { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+            if (va < vb) return _emSortDir === 'asc' ? -1 : 1;
+            if (va > vb) return _emSortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        var isAdmin = isAuthenticated && currentUserRole === 'admin';
+
+        if (_emViewMode === 'list') {
+            var milestoneHeaders = EM_MILESTONE_KEYS.map(function(k) {
+                return '<th class="em-th" style="text-align:center;">' + emColLabel(k) + '</th>';
+            }).join('');
+            var sortIcon = function(col) { return _emSortCol === col ? (_emSortDir === 'asc' ? ' ▲' : ' ▼') : ''; };
+
+            var rows = sorted.map(function(ev) {
+                var spent = d.expenses.filter(function(e) { return e.eventId === ev.id; }).reduce(function(s,e) { return s + (Number(e.cost)||0); }, 0);
+                var rem = (Number(ev.budget)||0) - spent;
+                var remCol = rem < 0 ? '#FF3B30' : '#fff';
+
+                var milestones = EM_MILESTONE_KEYS.map(function(k) {
+                    var m = (ev.deadlines && ev.deadlines[k]) || {};
+                    var st = emDeadlineStatus(m.date, m.completed);
+                    var bc = emBadgeClass(st);
+                    return '<td style="text-align:center;">' + (m.date ? '<button class="' + bc + '" style="cursor:pointer;background:none;border:none;" onclick="emToggleDeadline(\'' + ev.id + '\',\'' + k + '\')">' + emFormatDate(m.date) + '</button>' + (m.assignee ? '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">' + m.assignee + '</div>' : '') : '<span style="color:#444">-</span>') + '</td>';
+                }).join('');
+
+                return '<tr>' +
+                    '<td><strong>' + ev.name + '</strong></td>' +
+                    '<td style="color:var(--text-muted);">' + emFormatDate(ev.date) + '</td>' +
+                    '<td style="color:var(--text-muted);">' + (ev.time||'-') + '</td>' +
+                    '<td style="color:var(--text-muted);">' + (ev.location||'-') + '</td>' +
+                    '<td><div style="font-family:monospace;font-weight:700;">$' + (Number(ev.budget)||0).toLocaleString(undefined,{minimumFractionDigits:2}) + '</div><div style="font-family:monospace;font-size:0.8rem;color:' + remCol + ';">$' + rem.toLocaleString(undefined,{minimumFractionDigits:2}) + ' left</div></td>' +
+                    milestones +
+                    '<td><span style="background:rgba(255,212,10,0.12);color:#FFD60A;border:1px solid rgba(255,212,10,0.25);padding:3px 9px;border-radius:20px;font-size:0.68rem;font-weight:800;">' + (ev.cart||'-') + '</span></td>' +
+                    '<td><span style="font-size:0.72rem;font-weight:700;padding:4px 10px;background:rgba(255,255,255,0.07);border-radius:20px;">' + (ev.status||'-') + '</span></td>' +
+                    '<td style="text-align:right;">' +
+                    '<button onclick="emOpenEventModal(\'' + ev.id + '\')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;" title="Edit">✏️</button>' +
+                    (isAdmin ? '<button onclick="emDeleteEvent(\'' + ev.id + '\')" style="background:none;border:none;color:#FF3B30;cursor:pointer;padding:4px;" title="Delete">🗑</button>' : '') +
+                    '</td></tr>';
+            }).join('');
+
+            container.innerHTML = '<div class="em-table-wrap"><table class="em-table"><thead><tr>' +
+                '<th class="em-th" onclick="emSort(\'name\')" style="cursor:pointer;">Event Name' + sortIcon('name') + '</th>' +
+                '<th class="em-th" onclick="emSort(\'date\')" style="cursor:pointer;">Date' + sortIcon('date') + '</th>' +
+                '<th class="em-th" onclick="emSort(\'time\')" style="cursor:pointer;">Time' + sortIcon('time') + '</th>' +
+                '<th class="em-th" onclick="emSort(\'location\')" style="cursor:pointer;">Location' + sortIcon('location') + '</th>' +
+                '<th class="em-th" onclick="emSort(\'budget\')" style="cursor:pointer;">Budget' + sortIcon('budget') + '</th>' +
+                milestoneHeaders +
+                '<th class="em-th">Cart</th><th class="em-th">Status</th><th class="em-th" style="text-align:right;">Actions</th>' +
+                '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+        } else {
+            container.innerHTML = '<div class="em-card-grid">' + sorted.map(function(ev) {
+                var spent = d.expenses.filter(function(e) { return e.eventId === ev.id; }).reduce(function(s,e) { return s + (Number(e.cost)||0); }, 0);
+                var rem = (Number(ev.budget)||0) - spent;
+                var remCol = rem < 0 ? '#FF3B30' : '#fff';
+                return '<div class="em-frosted" style="border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">' +
+                    '<div style="background:rgba(255,255,255,0.04);padding:18px 20px 14px;">' +
+                    '<div style="font-weight:800;font-size:1.05rem;margin-bottom:4px;">' + ev.name + '</div>' +
+                    '<div style="font-size:0.8rem;color:var(--text-muted);">' + emFormatDate(ev.date) + (ev.time?' • '+ev.time:'') + (ev.location?' • '+ev.location:'') + '</div></div>' +
+                    '<div style="padding:14px 20px;flex:1;">' +
+                    '<div style="display:flex;justify-content:space-between;margin-bottom:10px;">' +
+                    '<div><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Budget</div><div style="font-family:monospace;font-weight:700;">$' + (Number(ev.budget)||0).toLocaleString(undefined,{minimumFractionDigits:2}) + '</div></div>' +
+                    '<div style="text-align:right;"><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Remaining</div><div style="font-family:monospace;font-weight:700;color:' + remCol + ';">$' + rem.toLocaleString(undefined,{minimumFractionDigits:2}) + '</div></div></div>' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+                    '<span style="font-size:0.72rem;font-weight:700;padding:4px 10px;background:rgba(255,255,255,0.07);border-radius:20px;">' + (ev.status||'-') + '</span>' +
+                    '<div><button onclick="emOpenEventModal(\'' + ev.id + '\')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;">✏️</button>' +
+                    (isAdmin ? '<button onclick="emDeleteEvent(\'' + ev.id + '\')" style="background:none;border:none;color:#FF3B30;cursor:pointer;padding:4px;">🗑</button>' : '') +
+                    '</div></div></div></div>';
+            }).join('') + '</div>';
+        }
+    }
+
+    function emSort(col) {
+        if (_emSortCol === col) _emSortDir = _emSortDir === 'asc' ? 'desc' : 'asc';
+        else { _emSortCol = col; _emSortDir = 'asc'; }
+        emRenderEvents();
+    }
+
+    function emToggleViewMode(mode) {
+        _emViewMode = mode;
+        document.querySelectorAll('.em-view-toggle').forEach(function(b) { b.classList.remove('active'); });
+        var btn = document.getElementById('em-toggle-' + mode);
+        if (btn) btn.classList.add('active');
+        emRenderEvents();
+    }
+
+    // ---- Calendar ----
+    function emChangeMonth(delta) {
+        _emCalDate.setMonth(_emCalDate.getMonth() + delta);
+        emRenderCalendar();
+    }
+
+    function emRenderCalendar() {
+        var d = emGetData();
+        var grid = document.getElementById('em-cal-grid');
+        var title = document.getElementById('em-cal-title');
+        if (!grid) return;
+        var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        var year = _emCalDate.getFullYear();
+        var month = _emCalDate.getMonth();
+        if (title) title.textContent = MONTHS[month] + ' ' + year;
+
+        var firstDay = new Date(year, month, 1).getDay();
+        var daysInMonth = new Date(year, month+1, 0).getDate();
+        var prevDays = new Date(year, month, 0).getDate();
+        var today = new Date();
+
+        var html = '';
+        for (var i = 0; i < firstDay; i++) {
+            html += '<div class="em-cal-cell" style="opacity:0.25;"><span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">' + (prevDays - firstDay + i + 1) + '</span></div>';
+        }
+        for (var i = 1; i <= daysInMonth; i++) {
+            var ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(i).padStart(2,'0');
+            var dayEvs = d.events.filter(function(e) { return e.date === ds; });
+            var isToday = today.getDate()===i && today.getMonth()===month && today.getFullYear()===year;
+            var inner = '<div style="font-size:0.8rem;font-weight:700;margin-bottom:4px;color:' + (isToday?'#0A84FF':'#ccc') + ';">' + i + '</div>';
+            dayEvs.forEach(function(ev) {
+                inner += '<div class="em-cal-event" onclick="emOpenEventModal(\'' + ev.id + '\')" title="' + ev.name + '">' + ev.name + '</div>';
+            });
+            html += '<div class="em-cal-cell' + (isToday?' em-cal-today':'') + '">' + inner + '</div>';
+        }
+        var total = firstDay + daysInMonth;
+        var rem = 7 - (total % 7);
+        if (rem < 7) { for (var i = 1; i <= rem; i++) html += '<div class="em-cal-cell" style="opacity:0.25;"><span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">' + i + '</span></div>'; }
+        grid.innerHTML = html;
+    }
+
+    // ---- Budget ----
+    function emRenderBudget() {
+        var d = emGetData();
+        var budgets = d.budgets || JSON.parse(JSON.stringify(EM_DEFAULT_BUDGETS));
+        var expenses = d.expenses || [];
+
+        var mbody = document.getElementById('em-budget-months-body');
+        if (mbody) {
+            mbody.innerHTML = budgets.map(function(m, i) {
+                var used = expenses.filter(function(e) { return e.month === m.name; }).reduce(function(s,e) { return s+(Number(e.cost)||0); }, 0);
+                var rem = m.allocated - used;
+                return '<tr>' +
+                    '<td><strong>' + m.name + '</strong></td>' +
+                    '<td><div style="display:flex;align-items:center;gap:6px;"><span style="color:var(--text-muted);">$</span><input type="number" value="' + m.allocated + '" onchange="emUpdateAllocation(' + i + ', this.value)" class="em-input" style="width:100px;padding:6px 10px;font-family:monospace;"></div></td>' +
+                    '<td style="font-family:monospace;">$' + used.toLocaleString(undefined,{minimumFractionDigits:2}) + '</td>' +
+                    '<td style="font-family:monospace;color:' + (rem<0?'#FF3B30':'#fff') + ';">$' + rem.toLocaleString(undefined,{minimumFractionDigits:2}) + '</td>' +
+                    '<td><button onclick="emRemoveBudgetMonth(' + i + ')" style="background:none;border:none;color:#FF3B30;cursor:pointer;">🗑</button></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        var finBody = document.getElementById('em-financials-body');
+        if (finBody) {
+            var sorted = (d.events||[]).slice().sort(function(a,b) { return new Date(a.date) - new Date(b.date); });
+            finBody.innerHTML = sorted.map(function(ev) {
+                var evExps = expenses.filter(function(e) { return e.eventId === ev.id; });
+                var total = evExps.reduce(function(s,e) { return s+(Number(e.cost)||0); }, 0);
+                var food = evExps.filter(function(e) { return e.category==='Food'; }).reduce(function(s,e) { return s+(Number(e.cost)||0); }, 0);
+                var att = Number(ev.attendance)||0;
+                var cpu = att > 0 ? (total/att) : 0;
+                return '<tr>' +
+                    '<td><strong>' + ev.name + '</strong></td>' +
+                    '<td style="font-family:monospace;">$' + total.toLocaleString(undefined,{minimumFractionDigits:2}) + '</td>' +
+                    '<td style="font-family:monospace;color:var(--text-muted);">$' + food.toLocaleString(undefined,{minimumFractionDigits:2}) + '</td>' +
+                    '<td><input type="number" value="' + att + '" class="em-input" style="width:80px;padding:6px;" onchange="emUpdateAttendance(\'' + ev.id + '\', this.value)" placeholder="0"></td>' +
+                    '<td style="font-family:monospace;color:#0A84FF;font-weight:700;">$' + cpu.toFixed(2) + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        var expMonth = document.getElementById('em-exp-month');
+        if (expMonth) {
+            expMonth.innerHTML = budgets.map(function(m) { return '<option value="' + m.name + '">' + m.name + '</option>'; }).join('');
+        }
+
+        var expEvent = document.getElementById('em-exp-event');
+        if (expEvent) {
+            expEvent.innerHTML = '<option value="">-- General Expense --</option>' + (d.events||[]).map(function(ev) { return '<option value="' + ev.id + '">' + ev.name + '</option>'; }).join('');
+        }
+
+        var expList = document.getElementById('em-expenses-list');
+        if (expList) {
+            expList.innerHTML = expenses.slice().reverse().map(function(exp) {
+                var evName = exp.eventId ? ((d.events||[]).find(function(e) { return e.id===exp.eventId; }) || {name:'Unknown'}).name : 'General';
+                return '<div class="em-frosted" style="padding:14px 16px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;">' +
+                    '<div style="flex:1;min-width:0;">' +
+                    '<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + exp.name + '</div>' +
+                    '<div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">' + (exp.date||'-') + ' • ' + evName + ' • ' + exp.month + '</div></div>' +
+                    '<div style="text-align:right;flex-shrink:0;">' +
+                    '<div style="font-family:monospace;font-weight:700;font-size:1rem;">$' + Number(exp.cost).toLocaleString(undefined,{minimumFractionDigits:2}) + '</div>' +
+                    '<div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end;">' +
+                    '<button onclick="emDeleteExpense(\'' + exp.id + '\')" style="background:none;border:none;color:#FF3B30;cursor:pointer;font-size:0.7rem;font-weight:700;">Delete</button>' +
+                    '</div></div></div>';
+            }).join('') || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No expenses yet.</div>';
+        }
+    }
+
+    function emUpdateAllocation(index, value) {
+        if (!appData.manager) return;
+        appData.manager.budgets[index].allocated = Number(value)||0;
+        saveAppData(); emRenderBudget();
+    }
+
+    function emRemoveBudgetMonth(index) {
+        if (!confirm('Remove this month?')) return;
+        appData.manager.budgets.splice(index, 1);
+        saveAppData(); emRenderBudget();
+    }
+
+    function emAddBudgetMonth() {
+        var name = prompt('Month name (e.g. July):');
+        if (!name) return;
+        if (!appData.manager) return;
+        if (!appData.manager.budgets) appData.manager.budgets = JSON.parse(JSON.stringify(EM_DEFAULT_BUDGETS));
+        appData.manager.budgets.push({ name: name, allocated: 0 });
+        saveAppData(); emRenderBudget();
+    }
+
+    function emUpdateAttendance(eventId, val) {
+        var ev = (appData.manager.events||[]).find(function(e) { return e.id === eventId; });
+        if (ev) { ev.attendance = val; saveAppData(); emRenderBudget(); }
+    }
+
+    function emSaveExpense() {
+        var name = document.getElementById('em-exp-name').value;
+        var cost = document.getElementById('em-exp-cost').value;
+        var date = document.getElementById('em-exp-date').value;
+        var month = document.getElementById('em-exp-month').value;
+        var eventId = document.getElementById('em-exp-event').value;
+        var category = document.getElementById('em-exp-category').value;
+        if (!name || !cost) { alert('Name and Cost required'); return; }
+        if (!appData.manager.expenses) appData.manager.expenses = [];
+        appData.manager.expenses.push({ id: 'emexp_'+Date.now(), name: name, cost: Number(cost), date: date, month: month, eventId: eventId, category: category });
+        saveAppData();
+        emRenderBudget();
+        document.getElementById('em-exp-name').value = '';
+        document.getElementById('em-exp-cost').value = '';
+    }
+
+    function emDeleteExpense(id) {
+        if (!confirm('Delete expense?')) return;
+        appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.id !== id; });
+        saveAppData(); emRenderBudget();
+    }
+
+    // ---- Photos ----
+    function emRenderPhotos() {
+        var d = emGetData();
+        var grid = document.getElementById('em-photos-grid');
+        if (!grid) return;
+        if (!d.events.length) { grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:60px;">No events found.</div>'; return; }
+        grid.innerHTML = d.events.slice().sort(function(a,b) { return new Date(a.date)-new Date(b.date); }).map(function(ev) {
+            return '<div class="em-frosted" style="border-radius:16px;padding:20px;">' +
+                '<div style="font-weight:800;font-size:1rem;margin-bottom:4px;">' + ev.name + '</div>' +
+                '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">' + emFormatDate(ev.date) + '</div>' +
+                '<div><div class="em-label">Google Drive / Photos Link</div>' +
+                '<div style="display:flex;gap:8px;">' +
+                '<input type="text" class="em-input" value="' + (ev.photosLink||'') + '" placeholder="Paste link..." onchange="emUpdateEventField(\'' + ev.id + '\',\'photosLink\',this.value)" style="flex:1;">' +
+                (ev.photosLink ? '<a href="' + ev.photosLink + '" target="_blank" style="background:rgba(10,132,255,0.15);color:#0A84FF;border:1px solid rgba(10,132,255,0.3);padding:8px 12px;border-radius:10px;text-decoration:none;font-size:0.75rem;font-weight:700;">Open</a>' : '') +
+                '</div></div></div>';
+        }).join('');
+    }
+
+    function emUpdateEventField(id, field, value) {
+        var ev = (appData.manager.events||[]).find(function(e) { return e.id === id; });
+        if (ev) { ev[field] = value; saveAppData(); }
+    }
+
+    // ---- Event Modal ----
+    function emOpenEventModal(id) {
+        _emEditingEventId = id || null;
+        var d = emGetData();
+        var ev = id ? d.events.find(function(e) { return e.id === id; }) : { name:'', deadlines:{} };
+        if (!ev) ev = { name:'', deadlines:{} };
+        var settings = emGetSettings();
+        var labels = settings.columnLabels || EM_COL_LABELS;
+        var offsets = settings.milestoneOffsets || EM_COL_OFFSETS;
+
+        var modal = document.getElementById('em-event-modal');
+        if (!modal) return;
+
+        var milestonesHTML = EM_MILESTONE_KEYS.map(function(k) {
+            var m = (ev.deadlines && ev.deadlines[k]) || {};
+            return '<div class="em-frosted" style="padding:14px;border-radius:12px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+                '<label class="em-label" style="margin:0;">' + (labels[k]||k) + '</label>' +
+                '<input type="checkbox" id="em-c-' + k + '" ' + (m.completed?'checked':'') + ' style="width:18px;height:18px;accent-color:#0A84FF;cursor:pointer;"></div>' +
+                '<input type="date" id="em-d-' + k + '" class="em-input" value="' + (m.date||'') + '" style="margin-bottom:8px;">' +
+                '<input id="em-a-' + k + '" class="em-input" value="' + (m.assignee||'') + '" placeholder="Assignee..."></div>';
+        }).join('');
+
+        document.getElementById('em-modal-title').textContent = id ? 'Edit Event' : 'New Event';
+        document.getElementById('em-modal-body').innerHTML =
+            '<div style="display:flex;flex-direction:column;gap:16px;">' +
+            '<div><label class="em-label">Event Name</label><input id="em-form-name" class="em-input" value="' + (ev.name||'') + '"></div>' +
+            '<div class="em-grid-2">' +
+            '<div><label class="em-label">Date</label><input type="date" id="em-form-date" class="em-input" value="' + (ev.date||'') + '" onchange="emAutoFillDeadlines(this.value, false)"></div>' +
+            '<div><label class="em-label">Time</label><input id="em-form-time" class="em-input" value="' + (ev.time||'') + '"></div></div>' +
+            '<div class="em-grid-2">' +
+            '<div><label class="em-label">Location</label><input id="em-form-location" class="em-input" value="' + (ev.location||'') + '"></div>' +
+            '<div><label class="em-label">Budget ($)</label><input type="number" id="em-form-budget" class="em-input" value="' + (ev.budget||'') + '"></div></div>' +
+            '<div class="em-grid-3">' +
+            '<div><label class="em-label">Cart</label><select id="em-form-cart" class="em-input"><option ' + (ev.cart==='Caddy'?'selected':'') + '>Caddy</option><option ' + (ev.cart==='Clubs Cart'?'selected':'') + '>Clubs Cart</option><option ' + (ev.cart==='None'?'selected':'') + '>None</option></select></div>' +
+            '<div><label class="em-label">Coordinator</label><input id="em-form-contact" class="em-input" value="' + (ev.contact||'') + '"></div>' +
+            '<div><label class="em-label">Status</label><select id="em-form-status" class="em-input"><option ' + (ev.status==='Submit'?'selected':'') + '>Submit</option><option ' + (ev.status==='Pending'?'selected':'') + '>Pending</option><option ' + (ev.status==='Approved'?'selected':'') + '>Approved</option><option ' + (ev.status==='Denied'?'selected':'') + '>Denied</option></select></div></div>' +
+            '<div>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+            '<label class="em-label" style="margin:0;">Deadlines</label>' +
+            '<button onclick="emAutoFillDeadlines(document.getElementById(\'em-form-date\').value, true)" style="background:rgba(10,132,255,0.12);color:#0A84FF;border:1px solid rgba(10,132,255,0.3);padding:5px 12px;border-radius:20px;font-size:0.68rem;font-weight:700;cursor:pointer;">Auto-Fill All</button></div>' +
+            '<div class="em-grid-3">' + milestonesHTML + '</div></div>' +
+            '<div><label class="em-label">Notes</label><textarea id="em-form-notes" class="em-input" style="min-height:80px;resize:vertical;">' + (ev.notes||'') + '</textarea></div>' +
+            '</div>';
+        modal.style.display = 'flex';
+    }
+
+    function emAutoFillDeadlines(val, force) {
+        var settings = emGetSettings();
+        var offsets = settings.milestoneOffsets || EM_COL_OFFSETS;
+        if (!val) return;
+        var eventDate = new Date(val + 'T12:00:00');
+        EM_MILESTONE_KEYS.forEach(function(k) {
+            var inp = document.getElementById('em-d-' + k);
+            if (inp && (force || !inp.value)) {
+                var target = new Date(eventDate);
+                target.setDate(target.getDate() - ((offsets[k]||1) * 7));
+                inp.value = target.toISOString().split('T')[0];
+            }
+        });
+    }
+
+    function emCloseEventModal() {
+        var m = document.getElementById('em-event-modal');
+        if (m) m.style.display = 'none';
+        _emEditingEventId = null;
+    }
+
+    function emSaveEvent() {
+        var name = document.getElementById('em-form-name').value;
+        if (!name) { alert('Event name required'); return; }
+        var d = emGetData();
+        var existing = _emEditingEventId ? (d.events||[]).find(function(e) { return e.id === _emEditingEventId; }) : null;
+        var ev = {
+            id: _emEditingEventId || ('emev_' + Date.now()),
+            name: name,
+            date: document.getElementById('em-form-date').value,
+            time: document.getElementById('em-form-time').value,
+            location: document.getElementById('em-form-location').value,
+            budget: Number(document.getElementById('em-form-budget').value)||0,
+            cart: document.getElementById('em-form-cart').value,
+            contact: document.getElementById('em-form-contact').value,
+            status: document.getElementById('em-form-status').value,
+            notes: document.getElementById('em-form-notes').value,
+            attendance: existing ? existing.attendance : 0,
+            photosLink: existing ? existing.photosLink : '',
+            deadlines: {}
+        };
+        EM_MILESTONE_KEYS.forEach(function(k) {
+            ev.deadlines[k] = {
+                date: document.getElementById('em-d-' + k).value,
+                assignee: document.getElementById('em-a-' + k).value,
+                completed: document.getElementById('em-c-' + k).checked
+            };
+        });
+        if (!appData.manager.events) appData.manager.events = [];
+        if (_emEditingEventId) {
+            var idx = appData.manager.events.findIndex(function(e) { return e.id === _emEditingEventId; });
+            if (idx !== -1) appData.manager.events[idx] = ev; else appData.manager.events.push(ev);
+        } else {
+            appData.manager.events.push(ev);
+        }
+        saveAppData();
+        emCloseEventModal();
+        emRenderEvents();
+    }
+
+    function emDeleteEvent(id) {
+        if (!confirm('Delete this event? All associated data will be lost.')) return;
+        appData.manager.events = (appData.manager.events||[]).filter(function(e) { return e.id !== id; });
+        appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.eventId !== id; });
+        saveAppData(); emRenderEvents();
+    }
+
+    function emToggleDeadline(eventId, key) {
+        var ev = (appData.manager.events||[]).find(function(e) { return e.id === eventId; });
+        if (ev) {
+            if (!ev.deadlines) ev.deadlines = {};
+            if (!ev.deadlines[key]) ev.deadlines[key] = {};
+            ev.deadlines[key].completed = !ev.deadlines[key].completed;
+            saveAppData(); emRenderEvents();
+        }
+    }
+
+    function emExportCSV() {
+        var d = emGetData();
+        if (!d.events.length) { alert('No events to export'); return; }
+        var csv = 'Event Name,Date,Time,Location,Budget,Coordinator,Status,Cart\n';
+        d.events.slice().sort(function(a,b) { return new Date(a.date)-new Date(b.date); }).forEach(function(ev) {
+            csv += '"' + (ev.name||'').replace(/"/g,'""') + '","' + (ev.date||'') + '","' + (ev.time||'') + '","' + (ev.location||'').replace(/"/g,'""') + '","' + (ev.budget||0) + '","' + (ev.contact||'').replace(/"/g,'""') + '","' + (ev.status||'') + '","' + (ev.cart||'') + '"\n';
+        });
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'events_export.csv';
+        a.click();
+    }
+
+    // ============================================================
+    // END EVENTS MANAGER SECTION
+    // ============================================================
+
     async function submitPublicAvailability() {
         const token = new URLSearchParams(window.location.search).get('avail');
         const btn = document.querySelector('#publicAvailOverlay .btn-action');
@@ -12223,5 +12763,20 @@
         }
     }
 </script>
+
+<!-- EVENTS MANAGER MODAL -->
+<div id="em-event-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);">
+    <div class="em-frosted" style="width:100%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+            <h2 id="em-modal-title" style="margin:0;font-weight:800;background:var(--gradient-accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">New Event</h2>
+            <button onclick="emCloseEventModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;">✕</button>
+        </div>
+        <div id="em-modal-body" style="padding:24px;overflow-y:auto;flex:1;"></div>
+        <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);">
+            <button onclick="emSaveEvent()" class="em-btn-save">Save Event</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
