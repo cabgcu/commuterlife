@@ -1151,30 +1151,39 @@
             }
             .notif-panel.open { transform: translateY(0); right: 0; }
 
-            /* Bottom Bar Navigation */
+            /* Bottom Bar Navigation — full-width flush bar */
             .nav-tabs {
-                bottom: 0; left: 0; width: 100%; transform: none; 
-                border-radius: 20px 20px 0 0; 
-                padding: 12px 10px calc(15px + env(safe-area-inset-bottom)) 10px; 
+                bottom: 0; left: 0; right: 0; width: 100%; max-width: 100%; transform: none;
+                border-radius: 0;
+                padding: 8px 4px calc(8px + env(safe-area-inset-bottom)) 4px;
                 justify-content: space-around;
-                background: rgba(15, 15, 15, 0.98);
+                background: rgba(12, 12, 12, 0.98);
+                border-top: 1px solid rgba(255,255,255,0.09);
                 border-bottom: none; border-left: none; border-right: none;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+                box-shadow: 0 -2px 16px rgba(0,0,0,0.4);
+                gap: 2px;
             }
-        .nav-tab {
-                padding: 8px 4px; flex: 1; text-align: center; white-space: nowrap;
+            .nav-tab {
+                padding: 6px 2px; flex: 1; text-align: center; white-space: nowrap;
                 min-height: 44px; display: flex; align-items: center; justify-content: center;
-                font-size: 0.72rem;
+                font-size: 0.68rem; border-radius: 10px; border: none;
+                background: transparent;
             }
+            .nav-tab.active { background: rgba(10,132,255,0.18); color: #0A84FF; box-shadow: none; border: none; }
 
-            .app-view { 
-                padding-top: calc(60px + env(safe-area-inset-top, 0px)) !important;
-                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
-            } 
+            .app-view {
+                padding-top: env(safe-area-inset-top, 0px) !important;
+                padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important;
+                overflow-x: hidden !important;
+            }
+            /* Views that need full-page vertical scroll on mobile */
+            #view-duesoon, #view-storage, #view-schedule, #view-manager, #view-settings {
+                overflow-y: auto !important;
+            }
 
             /* Snap-scrolling Kanban Columns */
             .board-container {
-                padding: calc(40px + env(safe-area-inset-top, 0px)) 7.5vw calc(110px + env(safe-area-inset-bottom)) 7.5vw !important;
+                padding: calc(16px + env(safe-area-inset-top, 0px)) 7.5vw calc(80px + env(safe-area-inset-bottom)) 7.5vw !important;
                 scroll-snap-type: x mandatory; scroll-padding: 7.5vw; gap: 16px;
                 align-items: stretch !important;
             }
@@ -1290,9 +1299,12 @@
             .schedule-month-chip .chip-label { display: none; }
             .month-cell-num { font-size: 0.78rem; }
 
-            /* Schedule sub-mode pill bar scrollable on mobile */
-            #view-schedule .schedule-wrapper > div:first-child { overflow-x: auto; scrollbar-width: none; }
+            /* Schedule: full-height scroll, auto height wrapper, sub-mode bar scrolls horizontally */
+            .schedule-wrapper { height: auto; min-height: 0; padding: 12px 10px 20px; }
+            #view-schedule .schedule-wrapper > div:first-child { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
             #view-schedule .schedule-wrapper > div:first-child::-webkit-scrollbar { display: none; }
+            /* Manager: fix inner content padding */
+            #view-manager > div { padding: 12px 10px 20px !important; }
 
             /* Due-soon: bigger touch targets, readable text */
             .due-row { min-height: 52px; padding: 12px 14px; gap: 12px; border-radius: 16px; }
