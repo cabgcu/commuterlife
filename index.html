@@ -89,10 +89,10 @@
         }
 
         .frosted {
-            background: var(--glass-surface);
-            backdrop-filter: blur(var(--blur));
-            -webkit-backdrop-filter: blur(var(--blur));
-            border: 1px solid var(--glass-border);
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         #login-overlay {
@@ -189,6 +189,8 @@
         }
         .nav-tab:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .nav-tab.active { background: var(--gradient-accent); color: #fff; border: none; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.2); }
+        .ntab-icon { display: block; font-size: 1.1rem; line-height: 1; }
+        .ntab-label { display: none; }
 
         .app-view { display: none; flex-grow: 1; overflow: hidden; padding-bottom: 80px; }
         .app-view.active { display: flex; }
@@ -206,16 +208,18 @@
         .btn-action:active { transform: scale(0.96); }
 
         .btn-outline {
-            background: rgba(255,255,255,0.06); 
-            border: 1px solid rgba(255,255,255,0.08); 
+            background: rgba(20, 20, 20, 0.85);
+            border: 1px solid rgba(255,255,255,0.12);
             color: #fff;
-            padding: 10px 20px; 
-            border-radius: var(--radius-button); 
-            font-weight: 600; 
-            cursor: pointer; 
+            padding: 10px 20px;
+            border-radius: var(--radius-button);
+            font-weight: 600;
+            cursor: pointer;
             transition: 0.2s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
-        .btn-outline:hover { background: rgba(255,255,255,0.1); }
+        .btn-outline:hover { background: rgba(40, 40, 40, 0.9); border-color: rgba(255,255,255,0.2); }
         .cl-btn { padding: 4px 10px !important; font-size: 0.75rem !important; min-height: 0 !important; border-radius: 8px !important; white-space: nowrap; }
 
         /* Enforce 16px to stop iOS auto-zoom on inputs */
@@ -1155,21 +1159,28 @@
             /* Bottom Bar Navigation */
             .nav-tabs {
                 bottom: 0; left: 0; right: 0; width: 100%; max-width: 100%; transform: none;
-                border-radius: 20px 20px 0 0;
-                padding: 6px 4px calc(10px + env(safe-area-inset-bottom)) 4px;
-                justify-content: flex-start;
-                background: rgba(15, 15, 15, 0.98);
-                border-top: none; border-bottom: none; border-left: none; border-right: none;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-                overflow-x: auto; scrollbar-width: none; gap: 2px;
+                border-radius: 0;
+                padding: 6px 0 calc(6px + env(safe-area-inset-bottom)) 0;
+                justify-content: space-around;
+                background: rgba(14, 14, 14, 0.97);
+                border: none; border-top: 1px solid rgba(255,255,255,0.08);
+                box-shadow: 0 -1px 0 rgba(0,0,0,0.4), 0 -4px 24px rgba(0,0,0,0.5);
+                backdrop-filter: blur(20px) saturate(180%);
+                -webkit-backdrop-filter: blur(20px) saturate(180%);
+                overflow-x: auto; scrollbar-width: none; gap: 0;
             }
             .nav-tabs::-webkit-scrollbar { display: none; }
             .nav-tab {
-                padding: 8px 10px; font-size: 0.72rem; flex: 1 0 auto; min-width: 56px; text-align: center; white-space: nowrap;
-                min-height: 44px; display: flex; align-items: center; justify-content: center;
-                border-radius: 12px;
+                padding: 6px 4px 4px; font-size: 0.58rem; flex: 1; min-width: 42px; max-width: 70px;
+                text-align: center; white-space: nowrap;
+                min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+                border-radius: 0; border: none; background: transparent; color: rgba(255,255,255,0.45);
+                font-weight: 600; letter-spacing: 0.01em;
             }
-            .nav-tab.active { background: rgba(10,132,255,0.15); color: #0A84FF; }
+            .nav-tab:hover { background: transparent; color: rgba(255,255,255,0.75); }
+            .nav-tab.active { background: transparent; color: #0A84FF; box-shadow: none; border: none; }
+            .ntab-icon { display: block; font-size: 1.25rem; line-height: 1; }
+            .ntab-label { display: block; font-size: 0.58rem; font-weight: 600; line-height: 1; margin-top: 2px; }
 
             .app-view {
                 padding-top: env(safe-area-inset-top, 0px) !important;
@@ -1886,18 +1897,18 @@
         .em-hidden { display: none !important; }
         .em-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
         .em-frosted {
-            background: var(--glass-surface);
-            backdrop-filter: blur(var(--blur));
-            -webkit-backdrop-filter: blur(var(--blur));
-            border: 1px solid var(--glass-border);
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.12);
             border-radius: 16px;
         }
         .em-table-wrap { overflow-x: auto; }
         .em-table { width: 100%; border-collapse: collapse; }
         .em-table th, .em-th {
-            background: rgba(255,255,255,0.06); padding: 14px 16px;
+            background: rgba(255,255,255,0.04); padding: 14px 16px;
             font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted);
-            border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; white-space: nowrap;
+            border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; white-space: nowrap;
         }
         .em-table td { padding: 14px 16px; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .em-table tr:hover td { background: rgba(255,255,255,0.025); }
@@ -1956,8 +1967,9 @@
         .em-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
         .em-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .em-view-toggle {
-            padding: 7px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.15);
-            background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.78rem; font-weight: 700;
+            padding: 7px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(20,20,20,0.88); color: var(--text-muted); cursor: pointer; font-size: 0.78rem; font-weight: 700;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
         .em-view-toggle.active {
             background: var(--gradient-accent); color: #fff; border-color: transparent;
@@ -2137,14 +2149,14 @@
 
     <!-- Shortened tabs for better mobile fit -->
     <div class="nav-tabs">
-        <button class="nav-tab active" id="tab-board" onclick="switchView('board')">🏠 Home</button>
-        <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">📅 Cal</button>
-        <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')">⚡ Due</button>
-        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">📦 Storage</button>
-        <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')">🗓 Schedule</button>
-        <button class="nav-tab" id="tab-manager" onclick="switchView('manager')">📊 Manager</button>
-        <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;">🔔<span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
-        <button class="nav-tab" id="tab-settings" onclick="switchView('settings')">⚙️ Settings</button>
+        <button class="nav-tab active" id="tab-board" onclick="switchView('board')"><span class="ntab-icon">🏠</span><span class="ntab-label">Home</span></button>
+        <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')"><span class="ntab-icon">📅</span><span class="ntab-label">Cal</span></button>
+        <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')"><span class="ntab-icon">⚡</span><span class="ntab-label">Due</span></button>
+        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')"><span class="ntab-icon">📦</span><span class="ntab-label">Storage</span></button>
+        <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')"><span class="ntab-icon">🗓</span><span class="ntab-label">Schedule</span></button>
+        <button class="nav-tab" id="tab-manager" onclick="switchView('manager')"><span class="ntab-icon">📊</span><span class="ntab-label">Manager</span></button>
+        <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;"><span class="ntab-icon">🔔</span><span class="ntab-label">Notifs</span><span class="notif-badge" id="notifBadgeMobile" style="display:none;position:absolute;top:4px;right:50%;transform:translateX(120%);">0</span></button>
+        <button class="nav-tab" id="tab-settings" onclick="switchView('settings')"><span class="ntab-icon">⚙️</span><span class="ntab-label">Settings</span></button>
     </div>
 
     <div class="app-view active board-container" id="view-board"></div>
@@ -2197,7 +2209,7 @@
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button id="em-toggle-list" class="em-view-toggle active" onclick="emToggleViewMode('list')">List</button>
                         <button id="em-toggle-card" class="em-view-toggle" onclick="emToggleViewMode('card')">Card</button>
-                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
+                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.12); background:rgba(20,20,20,0.88); backdrop-filter:blur(10px); color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
                     </div>
                 </div>
                 <div id="em-events-inner"></div>
@@ -12012,9 +12024,9 @@
             else if (start > today) { sc = '#0A84FF'; sl = 'Upcoming'; }
             const weeks = Math.ceil((end - start) / (7*24*60*60*1000));
             html += `<div class="frosted" style="padding:16px 20px;border-radius:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-                <div style="flex:1;min-width:0;">
-                    <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">${escapeHtml(s.name)}</div>
-                    <div style="font-size:0.8rem;color:var(--text-muted);">
+                <div style="flex:1;min-width:0;overflow:hidden;">
+                    <div style="font-weight:800;font-size:1rem;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(s.name)}</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                         ${start.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} – ${end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
                         · ${weeks} week${weeks!==1?'s':''}
                     </div>
