@@ -178,7 +178,7 @@
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.08);
             color: var(--text-muted);
-            padding: 10px 14px;
+            padding: 8px 12px;
             border-radius: var(--radius-button);
             font-weight: 600;
             cursor: pointer;
@@ -186,11 +186,15 @@
             font-size: 0.88rem;
             white-space: nowrap;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
         .nav-tab:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .nav-tab.active { background: var(--gradient-accent); color: #fff; border: none; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.2); }
-        .ntab-icon { display: block; font-size: 1.1rem; line-height: 1; }
-        .ntab-label { display: none; }
+        .ntab-icon { display: block; font-size: 1rem; line-height: 1; }
+        .ntab-label { display: block; font-size: 0.65rem; font-weight: 600; line-height: 1; margin-top: 3px; opacity: 0.85; }
 
         .app-view { display: none; flex-grow: 1; overflow: hidden; padding-bottom: 80px; }
         .app-view.active { display: flex; }
@@ -3932,7 +3936,14 @@
         if (viewName === 'duesoon') renderDueSoon();
         if (viewName === 'events') renderEvents();
         if (viewName === 'storage') renderStorage();
-        if (viewName === 'schedule') renderSchedule();
+        if (viewName === 'schedule') {
+            const _isAdminUser = currentUserRole === 'admin';
+            const _isWorkerUser = !!(appData.workers || []).find(w =>
+                w.email && currentUserEmail && w.email.toLowerCase() === currentUserEmail.toLowerCase()
+            );
+            if (!_isAdminUser && !_isWorkerUser) { switchView('board'); return; }
+            renderSchedule();
+        }
         if (viewName === 'manager') renderManager();
     }
 
@@ -4037,7 +4048,18 @@
         checkDueSoonAutomations();
         applyBoardBackground();
         renderTopbar();
+        _updateScheduleTabVisibility();
         switchView(currentView);
+    }
+
+    function _updateScheduleTabVisibility() {
+        const schedTab = document.getElementById('tab-schedule');
+        if (!schedTab) return;
+        const isAdmin = currentUserRole === 'admin';
+        const isWorker = !!(appData.workers || []).find(w =>
+            w.email && currentUserEmail && w.email.toLowerCase() === currentUserEmail.toLowerCase()
+        );
+        schedTab.style.display = (isAdmin || isWorker) ? '' : 'none';
     }
 
     function applyBoardBackground() {
@@ -11784,6 +11806,16 @@
         if (!container) return;
         const isAdmin = currentUserRole === 'admin';
         const currentWorker = _getCurrentWorker();
+
+        // Access guard: only admins and workers with linked accounts may view the scheduler
+        if (!isAdmin && !currentWorker) {
+            container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;gap:16px;">
+                <div style="font-size:2.5rem;">🔒</div>
+                <div style="font-weight:800;font-size:1.1rem;">Access Restricted</div>
+                <div style="color:var(--text-muted);font-size:0.9rem;max-width:320px;">The shift scheduler is only accessible to workers with a linked account. Contact your admin to get access.</div>
+            </div>`;
+            return;
+        }
 
         const mTab = (m) =>
             `padding:6px 16px; border-radius:8px; font-size:0.8rem; font-weight:700;` +
