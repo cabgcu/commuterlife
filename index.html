@@ -11382,16 +11382,25 @@
     }
 
     function _shiftCard(shift, workers, isAdmin, compact = false) {
-        const worker = workers.find(w => w.id === shift.workerId);
-        const color  = worker ? (worker.color || '#0A84FF') : '#636366';
-        const wName  = worker ? (compact ? worker.name.split(' ')[0][0] + (worker.name.split(' ')[1]?.[0]||'') : worker.name.split(' ')[0]) : '?';
+        const isOpen = !shift.workerId || shift.workerId === 'open';
+        const worker = isOpen ? null : workers.find(w => w.id === shift.workerId);
+        const color  = isOpen ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
+        const wName  = isOpen ? 'OPEN' : (worker ? (compact ? worker.name.split(' ')[0][0] + (worker.name.split(' ')[1]?.[0]||'') : worker.name.split(' ')[0]) : '?');
+        const currentWorker = _getCurrentWorker();
+        const canClaim = isOpen && !isAdmin && currentWorker;
+        const bgStyle = isOpen
+            ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
+            : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
         return `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
-            style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
-            border-color:${color}66; border-top-color:${color}99;
+            style="${bgStyle} border-color:${color}66; border-top-color:${color}99;
             box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);">
             <div class="shift-time" style="color:${color}; font-size:${compact?'0.58':'0.65'}rem;">${_fmtTime(shift.startTime)}${!compact && shift.endTime ? ` – ${_fmtTime(shift.endTime)}` : ''}</div>
-            <div class="shift-worker" style="font-size:${compact?'0.7':'0.8'}rem;">${escapeHtml(wName)}</div>
+            <div class="shift-worker" style="font-size:${compact?'0.7':'0.8'}rem; ${isOpen ? `color:${color}; font-weight:800;` : ''}">${escapeHtml(wName)}</div>
             ${!compact && shift.role ? `<div class="shift-role">${escapeHtml(shift.role)}</div>` : ''}
+            ${canClaim && !compact ? `<button onclick="event.stopPropagation();claimOpenShift('${shift.id}')"
+                style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
+                background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
+                Sign Up →</button>` : ''}
         </div>`;
     }
 
@@ -11430,11 +11439,14 @@
                 <div class="month-cell-num">${dayNum}</div>`;
 
             dayShifts.forEach(shift => {
-                const worker = workers.find(w => w.id === shift.workerId);
-                const color  = worker ? (worker.color || '#0A84FF') : '#636366';
-                const wName  = worker ? worker.name.split(' ')[0] : '?';
-                html += `<div class="schedule-month-chip" onclick="event.stopPropagation();${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
-                    style="background:${color}33; border-color:${color}66; color:var(--text-main);">
+                const isOpen = !shift.workerId || shift.workerId === 'open';
+                const worker = isOpen ? null : workers.find(w => w.id === shift.workerId);
+                const color  = isOpen ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
+                const wName  = isOpen ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
+                const currentWorker = _getCurrentWorker();
+                const chipClick = isAdmin ? `openShiftModal('${shift.id}')` : (isOpen && currentWorker ? `claimOpenShift('${shift.id}')` : '');
+                html += `<div class="schedule-month-chip" onclick="event.stopPropagation();${chipClick}"
+                    style="background:${color}33; border-color:${color}66; color:var(--text-main); ${isOpen ? 'border-style:dashed;' : ''}">
                     <span class="chip-dot" style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>
                     <span class="chip-label">${escapeHtml(wName)} ${_fmtTime(shift.startTime)}</span>
                 </div>`;
@@ -11675,6 +11687,7 @@
     }
 
     function saveWorker() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         const name = document.getElementById('workerModalName').value.trim();
         const email = document.getElementById('workerModalEmail').value.trim();
         if (!name) { showToast('Name is required'); return; }
@@ -11708,6 +11721,7 @@
     }
 
     async function deleteWorker() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_workerEditId) return;
         const ok = await showConfirm('Delete Worker', 'Delete this worker? Their shifts will also be removed.', 'Delete', true);
         if (!ok) return;
@@ -11739,18 +11753,19 @@
         const accountEmails = new Set(users.map(u => (u.email || '').toLowerCase()).filter(Boolean));
         const schedulableWorkers = workers.filter(w => w.email && accountEmails.has(w.email.toLowerCase()));
         const sel = document.getElementById('shiftModalWorker');
-        sel.innerHTML = schedulableWorkers.length
-            ? schedulableWorkers.map(w => `<option value="${w.id}" ${(s ? s.workerId : prefWorkerId) === w.id ? 'selected' : ''}>${escapeHtml(w.name)}</option>`).join('')
-            : '<option value="">No workers with accounts — link an email in worker settings</option>';
+        const curVal = s ? (s.workerId || 'open') : (prefWorkerId || 'open');
+        sel.innerHTML = `<option value="open" ${curVal === 'open' ? 'selected' : ''}>🟢 Open — workers can sign up</option>`
+            + schedulableWorkers.map(w => `<option value="${w.id}" ${curVal === w.id ? 'selected' : ''}>${escapeHtml(w.name)}</option>`).join('');
 
         openModal('shiftModal');
     }
 
     function saveShift() {
-        const workerId  = document.getElementById('shiftModalWorker').value;
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
+        const workerId  = document.getElementById('shiftModalWorker').value || 'open';
         const date      = document.getElementById('shiftModalDate').value;
         const startTime = document.getElementById('shiftModalStart').value;
-        if (!workerId || !date || !startTime) { showToast('Worker, date and start time are required'); return; }
+        if (!date || !startTime) { showToast('Date and start time are required'); return; }
         if (!appData.shifts) appData.shifts = [];
 
         const id = _shiftEditId || ('shift_' + Date.now());
@@ -11771,11 +11786,54 @@
     }
 
     function deleteShift() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_shiftEditId) return;
         appData.shifts = (appData.shifts || []).filter(s => s.id !== _shiftEditId);
         closeModal(null, 'shiftModal');
         saveData();
         renderSchedule();
+    }
+
+    function claimOpenShift(shiftId) {
+        const currentWorker = _getCurrentWorker();
+        if (!currentWorker) { showToast('You need a linked worker account to sign up for shifts'); return; }
+        const shift = (appData.shifts || []).find(s => s.id === shiftId);
+        if (!shift) return;
+        if (shift.workerId && shift.workerId !== 'open') { showToast('This shift has already been claimed'); renderSchedule(); return; }
+        shift.workerId = currentWorker.id;
+        saveData();
+        renderSchedule();
+        showToast("You're signed up! ✅");
+    }
+
+    function claimOpenTemplateShift(templateShiftId, shiftId, weekStartDate) {
+        const currentWorker = _getCurrentWorker();
+        if (!currentWorker) { showToast('You need a linked worker account to sign up for shifts'); return; }
+        if (templateShiftId) {
+            // Template shift: create/update a weekly override to assign this worker
+            if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+            const ts = (appData.templateShifts || []).find(t => t.id === templateShiftId);
+            const existing = appData.weeklyOverrides.find(o =>
+                o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate
+            );
+            if (existing && existing.workerId && existing.workerId !== 'open') {
+                showToast('This shift has already been claimed'); renderSchedule(); return;
+            }
+            if (existing) {
+                existing.workerId = currentWorker.id;
+            } else {
+                appData.weeklyOverrides.push({
+                    id: 'wo_' + Date.now(), templateShiftId, weekStartDate,
+                    workerId: currentWorker.id, cancelled: false,
+                    startTime: ts ? ts.startTime : '', endTime: ts ? ts.endTime : '', notes: ''
+                });
+            }
+        } else {
+            claimOpenShift(shiftId); return;
+        }
+        saveData();
+        renderSchedule();
+        showToast("You're signed up! ✅");
     }
 
     // ══════════════════════════════════════════════════════════
@@ -11980,30 +12038,40 @@
                 const isCompact = row.length > 1;
                 if (isCompact) html += `<div style="display:grid; grid-template-columns:repeat(${row.length},1fr); gap:4px;">`;
                 row.forEach(shift => {
-                    const worker = workers.find(w => w.id === shift.workerId);
-                    const color = worker ? (worker.color || '#0A84FF') : '#636366';
-                    const wName = worker ? (isCompact
+                    const isOpenShift = !shift.workerId || shift.workerId === 'open';
+                    const worker = isOpenShift ? null : workers.find(w => w.id === shift.workerId);
+                    const color = isOpenShift ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
+                    const wName = isOpenShift ? 'OPEN' : (worker ? (isCompact
                         ? (worker.name.split(' ')[0][0] + (worker.name.split(' ')[1]?.[0]||''))
-                        : worker.name.split(' ')[0]) : '?';
-                    const isMyShift = currentWorker && shift.workerId === currentWorker.id;
+                        : worker.name.split(' ')[0]) : '?');
+                    const isMyShift = !isOpenShift && currentWorker && shift.workerId === currentWorker.id;
                     const hasPendingSwap = shift.templateShiftId &&
                         swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
+                    const canClaim = isOpenShift && !isAdmin && currentWorker;
                     const clickAction = isAdmin
                         ? (shift.templateShiftId
                             ? `openWeekOverrideModal('${shift.templateShiftId}','${weekStartStr}')`
                             : `openShiftModal('${shift.id||''}')`)
                         : '';
+                    const bgStyle = isOpenShift
+                        ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
+                        : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
                     html += `<div class="schedule-shift-card${shift.isOverridden?' is-overridden':''}"
                         onclick="${clickAction}"
-                        style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
+                        style="${bgStyle}
                         border-color:${color}${shift.isOverridden?'aa':'66'}; border-top-color:${color}${shift.isOverridden?'ff':'99'};
                         box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);
-                        cursor:${isAdmin||isMyShift?'pointer':'default'};">
+                        cursor:${isAdmin||isMyShift||canClaim?'pointer':'default'};">
                         ${shift.isOverridden?`<div style="font-size:0.58rem;color:${color};font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">Override</div>`:''}
                         <div class="shift-time" style="color:${color}; font-size:${isCompact?'0.58':'0.65'}rem;">${_fmtTime(shift.startTime)}${!isCompact&&shift.endTime?` – ${_fmtTime(shift.endTime)}`:''}</div>
-                        <div class="shift-worker" style="font-size:${isCompact?'0.7':'0.8'}rem;">${escapeHtml(wName)}</div>
+                        <div class="shift-worker" style="font-size:${isCompact?'0.7':'0.8'}rem; ${isOpenShift?`color:${color};font-weight:800;`:''}">
+                            ${escapeHtml(wName)}</div>
                         ${!isCompact&&shift.role?`<div class="shift-role">${escapeHtml(shift.role)}</div>`:''}
                         ${hasPendingSwap?`<div style="font-size:0.58rem;color:#FF9500;font-weight:800;text-transform:uppercase;">⏳ Swap Pending</div>`:''}
+                        ${canClaim&&!isCompact?`<button onclick="event.stopPropagation();claimOpenTemplateShift('${shift.templateShiftId||''}','${shift.id||''}','${weekStartStr}')"
+                            style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
+                            background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
+                            Sign Up →</button>`:''}
                         ${isMyShift&&!isAdmin&&!hasPendingSwap&&shift.templateShiftId?`
                         <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId}','${weekStartStr}')"
                             style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
@@ -12309,6 +12377,7 @@
     }
 
     async function deleteSemester() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_semesterEditId) return;
         const ok = await showConfirm('Delete Semester', 'Delete this semester?', 'Delete', true);
         if (!ok) return;
@@ -12335,17 +12404,18 @@
         document.getElementById('tsDeleteBtn').style.display = ts ? 'inline-flex' : 'none';
         const workers = appData.workers || [];
         const sel = document.getElementById('tsModalWorker');
-        sel.innerHTML = workers.length
-            ? workers.map(w => `<option value="${w.id}" ${ts && ts.workerId===w.id?'selected':''}>${escapeHtml(w.name)}</option>`).join('')
-            : '<option value="">No workers — add one first</option>';
+        const curTsWorker = ts ? (ts.workerId || 'open') : 'open';
+        sel.innerHTML = `<option value="open" ${curTsWorker === 'open' ? 'selected' : ''}>🟢 Open — workers can sign up</option>`
+            + workers.map(w => `<option value="${w.id}" ${curTsWorker === w.id ? 'selected' : ''}>${escapeHtml(w.name)}</option>`).join('');
         openModal('templateShiftModal');
     }
 
     function saveTemplateShift() {
-        const workerId  = document.getElementById('tsModalWorker').value;
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
+        const workerId  = document.getElementById('tsModalWorker').value || 'open';
         const dayOfWeek = parseInt(document.getElementById('tsModalDay').value);
         const startTime = document.getElementById('tsModalStart').value;
-        if (!workerId || startTime === '') { showToast('Worker and start time are required'); return; }
+        if (startTime === '') { showToast('Start time is required'); return; }
         if (!appData.templateShifts) appData.templateShifts = [];
         const id = _templateShiftEditId || ('ts_' + Date.now());
         const obj = {
@@ -12364,6 +12434,7 @@
     }
 
     async function deleteTemplateShift() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_templateShiftEditId) return;
         const ok = await showConfirm('Delete Template Shift', 'Delete this template shift? It will be removed from all future generated weeks.', 'Delete', true);
         if (!ok) return;
@@ -12408,6 +12479,7 @@
     }
 
     function saveWeekOverride() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_overrideEditKey) return;
         const { templateShiftId, weekStartDate } = _overrideEditKey;
         const workerId   = document.getElementById('overrideModalWorker').value;
@@ -12428,6 +12500,7 @@
     }
 
     function deleteWeekOverride() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_overrideEditKey) return;
         const { templateShiftId, weekStartDate } = _overrideEditKey;
         appData.weeklyOverrides = (appData.weeklyOverrides || []).filter(o =>
