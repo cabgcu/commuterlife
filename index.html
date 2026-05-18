@@ -1213,10 +1213,7 @@
             
             .modern-input, .rich-text-editor, .checklist-text { max-width: 100%; box-sizing: border-box; }
             #modalTabDetails > div > div { max-width: 100%; } 
-            #taskDueDateNative { min-width: 0 !important; width: 100%; }
-            /* On mobile hide native datetime-local, show custom trigger button */
-            #taskDueDateNative { display: none !important; }
-            #taskDueDateBtn   { display: flex !important; }
+            #taskDueDate { min-width: 0 !important; width: 100%; }
 
             .modal-cover { margin: -24px -20px 15px -20px; width: calc(100% + 40px); border-radius: 28px 28px 0 0; height: 140px; }
             .close-modal { top: 12px; right: 12px; z-index: 100; width: 40px; height: 40px; font-size: 1.8rem; }
@@ -6052,8 +6049,8 @@
             try {
                 const importedData = JSON.parse(e.target.result);
                 if(importedData.boards && importedData.tasks) { appData = importedData; saveData(); showToast("Workspace Imported Successfully!"); renderApp(); }
-                else { alert("Invalid backup file format."); }
-            } catch(err) { alert("Error reading file."); }
+                else { showToast("Invalid backup file format."); }
+            } catch(err) { showToast("Error reading file."); }
         };
         reader.readAsText(file);
     }
@@ -10763,10 +10760,11 @@
         renderStorage();
     }
 
-    function deleteBinFromModal() {
+    async function deleteBinFromModal() {
         const binId = document.getElementById('storageBinId').value;
         if (!binId) return;
-        if (!confirm('Delete this storage bin and all its checkout history?')) return;
+        const ok = await showConfirm('Delete Bin', 'Delete this storage bin and all its checkout history?', 'Delete', true);
+        if (!ok) return;
         appData.storageBins = (appData.storageBins || []).filter(b => b.id !== binId);
         saveData();
         closeModal(null, 'storageBinModal');
@@ -11132,7 +11130,7 @@
     async function submitPublicBinCheckout(binId) {
         const name  = (document.getElementById('pubName')?.value || '').trim();
         const notes = (document.getElementById('pubNotes')?.value || '').trim();
-        if (!name) { alert('Please enter your name.'); return; }
+        if (!name) { showToast('Please enter your name.'); return; }
         const bin = (appData.storageBins || []).find(b => b.id === binId);
         if (!bin) return;
         if (!bin.checkouts) bin.checkouts = [];
@@ -11146,7 +11144,7 @@
             else bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes, itemIds: [] });
         } else {
             const selIds = [..._pubSelectedIds];
-            if (!selIds.length) { alert('Please select at least one item.'); return; }
+            if (!selIds.length) { showToast('Please select at least one item.'); return; }
             const outSel = selIds.filter(id => _itemActiveCheckout(bin, id));
             const inSel  = selIds.filter(id => !_itemActiveCheckout(bin, id));
             if (inSel.length)  bin.checkouts.push({ id: generateId(), user: name, checkedOutAt: now, checkedInAt: null, notes, itemIds: inSel });
@@ -11616,9 +11614,10 @@
         showToast(existing ? 'Worker updated' : 'Worker added');
     }
 
-    function deleteWorker() {
+    async function deleteWorker() {
         if (!_workerEditId) return;
-        if (!confirm('Delete this worker? Their shifts will also be removed.')) return;
+        const ok = await showConfirm('Delete Worker', 'Delete this worker? Their shifts will also be removed.', 'Delete', true);
+        if (!ok) return;
         appData.workers  = (appData.workers  || []).filter(w => w.id !== _workerEditId);
         appData.shifts   = (appData.shifts   || []).filter(s => s.workerId !== _workerEditId);
         closeModal(null, 'workerModal');
@@ -12206,9 +12205,10 @@
         showToast(existing ? 'Semester updated' : 'Semester created!');
     }
 
-    function deleteSemester() {
+    async function deleteSemester() {
         if (!_semesterEditId) return;
-        if (!confirm('Delete this semester?')) return;
+        const ok = await showConfirm('Delete Semester', 'Delete this semester?', 'Delete', true);
+        if (!ok) return;
         appData.semesters = (appData.semesters || []).filter(s => s.id !== _semesterEditId);
         if (_activeSemesterId === _semesterEditId) _activeSemesterId = null;
         closeModal(null, 'semesterModal');
@@ -12260,9 +12260,10 @@
         showToast('Template shift saved');
     }
 
-    function deleteTemplateShift() {
+    async function deleteTemplateShift() {
         if (!_templateShiftEditId) return;
-        if (!confirm('Delete this template shift? It will be removed from all future generated weeks.')) return;
+        const ok = await showConfirm('Delete Template Shift', 'Delete this template shift? It will be removed from all future generated weeks.', 'Delete', true);
+        if (!ok) return;
         appData.templateShifts  = (appData.templateShifts  || []).filter(ts => ts.id !== _templateShiftEditId);
         appData.weeklyOverrides = (appData.weeklyOverrides || []).filter(o  => o.templateShiftId !== _templateShiftEditId);
         closeModal(null, 'templateShiftModal');
@@ -12426,8 +12427,9 @@
         showToast('Swap denied.');
     }
 
-    function deleteSwapRequest(swapId) {
-        if (!confirm('Delete this swap request?')) return;
+    async function deleteSwapRequest(swapId) {
+        const ok = await showConfirm('Delete Swap Request', 'Delete this swap request?', 'Delete', true);
+        if (!ok) return;
         appData.swapRequests = (appData.swapRequests || []).filter(r => r.id !== swapId);
         saveData();
         renderSwapRequests();
@@ -12793,8 +12795,9 @@
         saveData(); emRenderBudget();
     }
 
-    function emRemoveBudgetMonth(index) {
-        if (!confirm('Remove this month?')) return;
+    async function emRemoveBudgetMonth(index) {
+        const ok = await showConfirm('Remove Month', 'Remove this month?', 'Remove', true);
+        if (!ok) return;
         appData.manager.budgets.splice(index, 1);
         saveData(); emRenderBudget();
     }
@@ -12820,7 +12823,7 @@
         var month = document.getElementById('em-exp-month').value;
         var eventId = document.getElementById('em-exp-event').value;
         var category = document.getElementById('em-exp-category').value;
-        if (!name || !cost) { alert('Name and Cost required'); return; }
+        if (!name || !cost) { showToast('Name and Cost required'); return; }
         if (!appData.manager.expenses) appData.manager.expenses = [];
         appData.manager.expenses.push({ id: 'emexp_'+Date.now(), name: name, cost: Number(cost), date: date, month: month, eventId: eventId, category: category });
         saveData();
@@ -12829,8 +12832,9 @@
         document.getElementById('em-exp-cost').value = '';
     }
 
-    function emDeleteExpense(id) {
-        if (!confirm('Delete expense?')) return;
+    async function emDeleteExpense(id) {
+        const ok = await showConfirm('Delete Expense', 'Delete expense?', 'Delete', true);
+        if (!ok) return;
         appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.id !== id; });
         saveData(); emRenderBudget();
     }
@@ -12928,7 +12932,7 @@
 
     function emSaveEvent() {
         var name = document.getElementById('em-form-name').value;
-        if (!name) { alert('Event name required'); return; }
+        if (!name) { showToast('Event name required'); return; }
         var d = emGetData();
         var existing = _emEditingEventId ? (d.events||[]).find(function(e) { return e.id === _emEditingEventId; }) : null;
         var ev = {
@@ -12965,8 +12969,9 @@
         emRenderEvents();
     }
 
-    function emDeleteEvent(id) {
-        if (!confirm('Delete this event? All associated data will be lost.')) return;
+    async function emDeleteEvent(id) {
+        const ok = await showConfirm('Delete Event', 'Delete this event? All associated data will be lost.', 'Delete', true);
+        if (!ok) return;
         appData.manager.events = (appData.manager.events||[]).filter(function(e) { return e.id !== id; });
         appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.eventId !== id; });
         saveData(); emRenderEvents();
@@ -12984,7 +12989,7 @@
 
     function emExportCSV() {
         var d = emGetData();
-        if (!d.events.length) { alert('No events to export'); return; }
+        if (!d.events.length) { showToast('No events to export'); return; }
         var csv = 'Event Name,Date,Time,Location,Budget,Coordinator,Status,Cart\n';
         d.events.slice().sort(function(a,b) { return new Date(a.date)-new Date(b.date); }).forEach(function(ev) {
             csv += '"' + (ev.name||'').replace(/"/g,'""') + '","' + (ev.date||'') + '","' + (ev.time||'') + '","' + (ev.location||'').replace(/"/g,'""') + '","' + (ev.budget||0) + '","' + (ev.contact||'').replace(/"/g,'""') + '","' + (ev.status||'') + '","' + (ev.cart||'') + '"\n';
