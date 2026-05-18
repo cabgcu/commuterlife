@@ -10051,8 +10051,12 @@
         <h3 id="workerModalTitle" style="margin:0 0 20px; font-weight:800;">Add Worker</h3>
         <input type="hidden" id="workerModalId">
         <div style="display:flex; flex-direction:column; gap:12px;">
-            <input class="modern-input" id="workerModalName" placeholder="Full name *" style="width:100%;">
-            <input class="modern-input" id="workerModalEmail" placeholder="Email" type="email" style="width:100%;">
+            <div>
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Account *</label>
+                <select class="modern-input" id="workerModalEmail" style="width:100%;" onchange="workerModalAccountSelected(this.value)"></select>
+                <div id="workerModalEmailNote" style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; display:none;">All accounts are already linked to a worker.</div>
+            </div>
+            <input class="modern-input" id="workerModalName" placeholder="Display name *" style="width:100%;">
             <input class="modern-input" id="workerModalPhone" placeholder="Phone" style="width:100%;">
             <div>
                 <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:8px;">Color</div>
@@ -11606,11 +11610,30 @@
         document.getElementById('workerModalTitle').textContent = w ? 'Edit Worker' : 'Add Worker';
         document.getElementById('workerModalId').value = w ? w.id : '';
         document.getElementById('workerModalName').value  = w ? w.name  : '';
-        document.getElementById('workerModalEmail').value = w ? (w.email || '') : '';
         document.getElementById('workerModalPhone').value = w ? (w.phone || '') : '';
         document.getElementById('workerModalNotes').value = w ? (w.notes || '') : '';
         _workerColor = w ? (w.color || WORKER_COLORS[0]) : WORKER_COLORS[0];
         document.getElementById('workerDeleteBtn').style.display = w ? 'inline-flex' : 'none';
+
+        // Populate account dropdown — only accounts with active passwords
+        const emailSel = document.getElementById('workerModalEmail');
+        const linkedEmails = new Set((appData.workers || [])
+            .filter(x => x.email && (!w || x.id !== w.id))
+            .map(x => x.email.toLowerCase()));
+        const accounts = (appData.settings.users || []).filter(u => u.email && u.password);
+        const available = accounts.filter(u => !linkedEmails.has(u.email.toLowerCase()));
+        const note = document.getElementById('workerModalEmailNote');
+        if (w && w.email) {
+            // Editing: show current email + all unlinked options
+            emailSel.innerHTML = `<option value="${escapeHtml(w.email)}">${escapeHtml(w.name || w.email)} (${escapeHtml(w.email)})</option>`
+                + available.map(u => `<option value="${escapeHtml(u.email)}">${escapeHtml(u.name || u.email)} (${escapeHtml(u.email)})</option>`).join('');
+            emailSel.value = w.email;
+            note.style.display = 'none';
+        } else {
+            emailSel.innerHTML = `<option value="">-- Select account --</option>`
+                + available.map(u => `<option value="${escapeHtml(u.email)}">${escapeHtml(u.name || u.email)} (${escapeHtml(u.email)})</option>`).join('');
+            note.style.display = available.length === 0 ? 'block' : 'none';
+        }
 
         // Color picker
         const picker = document.getElementById('workerColorPicker');
@@ -11626,6 +11649,15 @@
         document.getElementById('workerAvailLink').textContent = availUrl;
 
         openModal('workerModal');
+    }
+
+    function workerModalAccountSelected(email) {
+        if (!email) return;
+        const account = (appData.settings.users || []).find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (account && account.name) {
+            const nameField = document.getElementById('workerModalName');
+            if (!nameField.value) nameField.value = account.name;
+        }
     }
 
     function _selectWorkerColor(color) {
@@ -11644,7 +11676,9 @@
 
     function saveWorker() {
         const name = document.getElementById('workerModalName').value.trim();
+        const email = document.getElementById('workerModalEmail').value.trim();
         if (!name) { showToast('Name is required'); return; }
+        if (!email) { showToast('Select an account to link this worker to'); return; }
         if (!appData.workers) appData.workers = [];
 
         const id = _workerEditId || ('worker_' + Date.now());
@@ -11654,7 +11688,7 @@
         const workerObj = {
             id, token,
             name,
-            email:   document.getElementById('workerModalEmail').value.trim(),
+            email,
             phone:   document.getElementById('workerModalPhone').value.trim(),
             notes:   document.getElementById('workerModalNotes').value.trim(),
             color:   _workerColor,
