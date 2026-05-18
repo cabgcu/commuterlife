@@ -11392,6 +11392,7 @@
             ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
             : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
         const isMyShift = !isOpen && currentWorker2 && shift.workerId === currentWorker2.id;
+        const isVolunteerSlot = !!shift.volunteerSlot;
         return `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
             style="${bgStyle} border-color:${color}66; border-top-color:${color}99;
             box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);">
@@ -11402,10 +11403,14 @@
                 style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
                 background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
                 Sign Up →</button>` : ''}
-            ${isMyShift && !isAdmin && !compact ? `<button onclick="event.stopPropagation();unclaimShift('${shift.id}')"
+            ${isMyShift && !isAdmin && !compact && isVolunteerSlot ? `<button onclick="event.stopPropagation();unclaimShift('${shift.id}')"
                 style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                 border:1px solid rgba(255,59,48,0.25);background:rgba(255,59,48,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
                 ✕ Un-sign-up</button>` : ''}
+            ${isMyShift && !isAdmin && !compact && !isVolunteerSlot ? `<button onclick="event.stopPropagation();openSwapRequestModal('shift:${shift.id}',null)"
+                style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
+                border:1px solid rgba(10,132,255,0.25);background:rgba(10,132,255,0.08);color:#0A84FF;cursor:pointer;font-family:inherit;width:100%;">
+                ⇄ Swap</button>` : ''}
         </div>`;
     }
 
@@ -11774,14 +11779,16 @@
         if (!appData.shifts) appData.shifts = [];
 
         const id = _shiftEditId || ('shift_' + Date.now());
+        const existing = appData.shifts.find(s => s.id === id);
         const shiftObj = {
             id, workerId, date, startTime,
             endTime: document.getElementById('shiftModalEnd').value,
             role:    document.getElementById('shiftModalRole').value.trim(),
-            notes:   document.getElementById('shiftModalNotes').value.trim()
+            notes:   document.getElementById('shiftModalNotes').value.trim(),
+            // Preserve or set volunteerSlot flag — open slots are volunteer sign-ups, not worker assignments
+            volunteerSlot: workerId === 'open' ? true : (existing ? !!existing.volunteerSlot : false)
         };
 
-        const existing = appData.shifts.find(s => s.id === id);
         if (existing) { Object.assign(existing, shiftObj); }
         else { appData.shifts.push(shiftObj); }
 
@@ -12090,6 +12097,9 @@
                     const hasPendingSwap = shift.templateShiftId &&
                         swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
                     const canClaim = isOpenShift && !isAdmin && currentWorker;
+                    // volunteerSlot: sign-up shifts get un-sign-up; assigned shifts get swap
+                    const parentTs = shift.templateShiftId ? (appData.templateShifts||[]).find(t => t.id === shift.templateShiftId) : null;
+                    const isVolunteerSlot = !!(shift.volunteerSlot || (parentTs && parentTs.volunteerSlot));
                     const clickAction = isAdmin
                         ? (shift.templateShiftId
                             ? `openWeekOverrideModal('${shift.templateShiftId}','${weekStartStr}')`
@@ -12114,13 +12124,13 @@
                             style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
                             background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
                             Sign Up →</button>`:''}
-                        ${isMyShift&&!isAdmin&&!hasPendingSwap?`
+                        ${isMyShift&&!isAdmin&&!isVolunteerSlot&&!hasPendingSwap?`
                         <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
                             style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                             border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
                             ↔ Request Swap
                         </button>`:''}
-                        ${isMyShift&&!isAdmin?`
+                        ${isMyShift&&!isAdmin&&isVolunteerSlot?`
                         <button onclick="event.stopPropagation();${shift.templateShiftId?`unclaimTemplateShift('${shift.templateShiftId}','${weekStartStr}')`:`unclaimShift('${shift.id||''}')`}"
                             style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                             border:1px solid rgba(255,59,48,0.25);background:rgba(255,59,48,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
@@ -12471,13 +12481,15 @@
         if (startTime === '') { showToast('Start time is required'); return; }
         if (!appData.templateShifts) appData.templateShifts = [];
         const id = _templateShiftEditId || ('ts_' + Date.now());
+        const existingTs = appData.templateShifts.find(ts => ts.id === id);
         const obj = {
             id, workerId, dayOfWeek, startTime,
             endTime: document.getElementById('tsModalEnd').value,
             role:    document.getElementById('tsModalRole').value.trim(),
-            notes:   document.getElementById('tsModalNotes').value.trim()
+            notes:   document.getElementById('tsModalNotes').value.trim(),
+            volunteerSlot: workerId === 'open' ? true : (existingTs ? !!existingTs.volunteerSlot : false)
         };
-        const existing = appData.templateShifts.find(ts => ts.id === id);
+        const existing = existingTs;
         if (existing) Object.assign(existing, obj);
         else appData.templateShifts.push(obj);
         closeModal(null, 'templateShiftModal');
@@ -12594,20 +12606,20 @@
         const tsSelect = document.getElementById('swapModalShift');
         let options = '';
 
-        // Template shifts assigned to this worker
+        // Template shifts assigned to this worker (exclude volunteer slots — those use un-sign-up, not swap)
         const myTemplateShifts = prefId && prefId.startsWith('ts:')
-            ? [templateShifts.find(ts => ts.id === prefId.slice(3))].filter(Boolean)
-            : (currentWorker ? templateShifts.filter(ts => ts.workerId === currentWorker.id) : templateShifts);
+            ? [templateShifts.find(ts => ts.id === prefId.slice(3))].filter(t => t && !t.volunteerSlot)
+            : (currentWorker ? templateShifts.filter(ts => ts.workerId === currentWorker.id && !ts.volunteerSlot) : templateShifts.filter(ts => !ts.volunteerSlot));
         myTemplateShifts.forEach(ts => {
             const val = 'ts:' + ts.id;
             const sel = (prefId === val || prefId === ts.id) ? 'selected' : '';
             options += `<option value="${val}" ${sel}>🔁 ${DAY_FULL[ts.dayOfWeek]} ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${ts.role||'Shift'} (recurring)</option>`;
         });
 
-        // One-off shifts assigned to this worker (today or future)
+        // One-off shifts assigned to this worker (today or future, exclude volunteer slots)
         const myOneOffShifts = prefId && prefId.startsWith('shift:')
-            ? [(appData.shifts || []).find(s => s.id === prefId.slice(6))].filter(Boolean)
-            : (currentWorker ? (appData.shifts || []).filter(s => s.workerId === currentWorker.id && s.date >= today) : []);
+            ? [(appData.shifts || []).find(s => s.id === prefId.slice(6))].filter(s => s && !s.volunteerSlot)
+            : (currentWorker ? (appData.shifts || []).filter(s => s.workerId === currentWorker.id && s.date >= today && !s.volunteerSlot) : []);
         myOneOffShifts.sort((a,b) => a.date.localeCompare(b.date));
         myOneOffShifts.forEach(s => {
             const val = 'shift:' + s.id;
@@ -13157,14 +13169,17 @@
         var modal = document.getElementById('em-event-modal');
         if (!modal) return;
 
+        var registeredUsers = ((appData.settings && appData.settings.users) || []).filter(function(u) { return u.email && u.passwordHash; });
+        var userOptions = '<option value="">— Unassigned —</option>' + registeredUsers.map(function(u) { return '<option value="' + u.email + '">' + (u.name || u.email) + '</option>'; }).join('');
         var milestonesHTML = EM_MILESTONE_KEYS.map(function(k) {
             var m = (ev.deadlines && ev.deadlines[k]) || {};
+            var assigneeOpts = userOptions.replace('value="' + (m.assignee||'') + '"', 'value="' + (m.assignee||'') + '" selected');
             return '<div class="em-frosted" style="padding:14px;border-radius:12px;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
                 '<label class="em-label" style="margin:0;">' + (labels[k]||k) + '</label>' +
                 '<input type="checkbox" id="em-c-' + k + '" ' + (m.completed?'checked':'') + ' style="width:18px;height:18px;accent-color:#0A84FF;cursor:pointer;"></div>' +
                 '<input type="date" id="em-d-' + k + '" class="em-input" value="' + (m.date||'') + '" style="margin-bottom:8px;">' +
-                '<input id="em-a-' + k + '" class="em-input" value="' + (m.assignee||'') + '" placeholder="Assignee..."></div>';
+                '<select id="em-a-' + k + '" class="em-input">' + assigneeOpts + '</select></div>';
         }).join('');
 
         document.getElementById('em-modal-title').textContent = id ? 'Edit Event' : 'New Event';
