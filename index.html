@@ -1154,25 +1154,26 @@
 
             /* Bottom Bar Navigation */
             .nav-tabs {
-                bottom: 0; left: 0; width: 100%; max-width: 100%; transform: none;
+                bottom: 0; left: 0; right: 0; width: 100%; max-width: 100%; transform: none;
                 border-radius: 20px 20px 0 0;
-                padding: 8px 6px calc(12px + env(safe-area-inset-bottom)) 6px;
-                justify-content: space-around;
+                padding: 6px 4px calc(10px + env(safe-area-inset-bottom)) 4px;
+                justify-content: flex-start;
                 background: rgba(15, 15, 15, 0.98);
-                border-bottom: none; border-left: none; border-right: none;
+                border-top: none; border-bottom: none; border-left: none; border-right: none;
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-                overflow-x: auto; scrollbar-width: none;
+                overflow-x: auto; scrollbar-width: none; gap: 2px;
             }
             .nav-tabs::-webkit-scrollbar { display: none; }
             .nav-tab {
-                padding: 8px 4px; font-size: 0.68rem; flex: 1; min-width: 44px; text-align: center; white-space: nowrap;
+                padding: 8px 10px; font-size: 0.72rem; flex: 1 0 auto; min-width: 56px; text-align: center; white-space: nowrap;
                 min-height: 44px; display: flex; align-items: center; justify-content: center;
+                border-radius: 12px;
             }
+            .nav-tab.active { background: rgba(10,132,255,0.15); color: #0A84FF; }
 
             .app-view {
                 padding-top: env(safe-area-inset-top, 0px) !important;
                 padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
-                overflow-x: hidden !important;
             }
             /* Views that need full-page vertical scroll on mobile */
             #view-duesoon, #view-storage, #view-schedule, #view-manager, #view-settings {
@@ -2115,14 +2116,14 @@
 
     <!-- Shortened tabs for better mobile fit -->
     <div class="nav-tabs">
-        <button class="nav-tab active" id="tab-board" onclick="switchView('board')">Home</button>
-        <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">Calendar</button>
-        <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')">Due</button>
-        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">Storage</button>
-        <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')">Schedule</button>
-        <button class="nav-tab" id="tab-manager" onclick="switchView('manager')">Manager</button>
-        <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;">Alerts<span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
-        <button class="nav-tab" id="tab-settings" onclick="switchView('settings')">Settings</button>
+        <button class="nav-tab active" id="tab-board" onclick="switchView('board')">🏠 Home</button>
+        <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">📅 Cal</button>
+        <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')">⚡ Due</button>
+        <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">📦 Storage</button>
+        <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')">🗓 Schedule</button>
+        <button class="nav-tab" id="tab-manager" onclick="switchView('manager')">📊 Manager</button>
+        <button class="nav-tab notif-tab-bell" onclick="toggleNotifPanel()" id="notifBellTab" style="position:relative;">🔔<span class="notif-badge" id="notifBadgeMobile" style="display:none;">0</span></button>
+        <button class="nav-tab" id="tab-settings" onclick="switchView('settings')">⚙️ Settings</button>
     </div>
 
     <div class="app-view active board-container" id="view-board"></div>
@@ -3879,13 +3880,16 @@
         clearBulkSelection();
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         const tabEl = document.getElementById('tab-' + viewName);
-        if (tabEl) tabEl.classList.add('active');
+        if (tabEl) {
+            tabEl.classList.add('active');
+            tabEl.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        }
         document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
         const viewEl = document.getElementById('view-' + viewName);
         if (viewEl) viewEl.classList.add('active');
         
         const topbar = document.querySelector('.topbar');
-        if (topbar) {
+        if (topbar && window.innerWidth > 900) {
             topbar.style.display = viewName === 'calendar' ? 'none' : 'flex';
         }
 
