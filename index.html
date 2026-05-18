@@ -1831,7 +1831,11 @@
         /* Public availability page */
         #publicAvailOverlay {
             position: fixed; inset: 0; z-index: 9999999;
-            background: #050505; display: none;
+            background: #050505;
+            background-image:
+                radial-gradient(circle at 5% 5%, rgba(10, 132, 255, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 95% 95%, rgba(191, 90, 242, 0.12) 0%, transparent 45%);
+            display: none;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
         .public-avail-card { max-width: 520px; margin: 0 auto; padding: 40px 20px 80px; }
@@ -11505,10 +11509,13 @@
         document.getElementById('shiftDeleteBtn').style.display = s ? 'inline-flex' : 'none';
 
         const workers = appData.workers || [];
+        const users = (appData.settings && appData.settings.users) || [];
+        const accountEmails = new Set(users.map(u => (u.email || '').toLowerCase()).filter(Boolean));
+        const schedulableWorkers = workers.filter(w => w.email && accountEmails.has(w.email.toLowerCase()));
         const sel = document.getElementById('shiftModalWorker');
-        sel.innerHTML = workers.length
-            ? workers.map(w => `<option value="${w.id}" ${(s ? s.workerId : prefWorkerId) === w.id ? 'selected' : ''}>${escapeHtml(w.name)}</option>`).join('')
-            : '<option value="">No workers — add one first</option>';
+        sel.innerHTML = schedulableWorkers.length
+            ? schedulableWorkers.map(w => `<option value="${w.id}" ${(s ? s.workerId : prefWorkerId) === w.id ? 'selected' : ''}>${escapeHtml(w.name)}</option>`).join('')
+            : '<option value="">No workers with accounts — link an email in worker settings</option>';
 
         openModal('shiftModal');
     }
@@ -11932,18 +11939,29 @@
         const sc = r.status==='approved'?'#34C759': r.status==='denied'?'#FF3B30':'#FF9500';
         const sl = r.status==='approved'?'Approved': r.status==='denied'?'Denied':'Pending';
         const canAct = r.status==='pending' && (isAdmin || (currentWorker && r.targetId===currentWorker.id));
+        const shiftLabel = ts ? `${ts.role||'Shift'} · ${DAY_FULL[ts.dayOfWeek]}s ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''}` : '';
         return `<div class="frosted" style="padding:16px 20px;border-radius:16px;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:0;">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-                        <span style="font-weight:800;font-size:0.95rem;">${escapeHtml(requester?.name||'Unknown')} → ${escapeHtml(target?.name||'Unknown')}</span>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                         <span style="font-size:0.7rem;font-weight:800;padding:3px 8px;border-radius:100px;background:${sc}22;border:1px solid ${sc}44;color:${sc};">${sl}</span>
+                        ${weekLabel?`<span style="font-size:0.75rem;color:var(--text-muted);">${weekLabel}</span>`:''}
                     </div>
-                    ${weekLabel?`<div style="font-size:0.8rem;color:var(--text-muted);">${weekLabel}</div>`:''}
-                    ${ts?`<div style="font-size:0.8rem;color:var(--text-muted);">${ts.role||'Shift'} · ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${DAY_FULL[ts.dayOfWeek]}s</div>`:''}
-                    ${r.note?`<div style="font-size:0.8rem;color:var(--text-main);margin-top:6px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">"${escapeHtml(r.note)}"</div>`:''}
+                    <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:120px;">
+                            <div style="font-size:0.68rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;">Requesting</div>
+                            <div style="font-weight:800;font-size:0.92rem;">${escapeHtml(requester?.name||'Unknown')}</div>
+                            ${shiftLabel?`<div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">${shiftLabel}</div>`:''}
+                        </div>
+                        <div style="padding-top:18px;color:var(--text-muted);font-size:0.9rem;">→</div>
+                        <div style="flex:1;min-width:120px;">
+                            <div style="font-size:0.68rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;">Cover by</div>
+                            <div style="font-weight:800;font-size:0.92rem;">${escapeHtml(target?.name||'Unknown')}</div>
+                        </div>
+                    </div>
+                    ${r.note?`<div style="font-size:0.82rem;color:var(--text-main);margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">"${escapeHtml(r.note)}"</div>`:''}
                 </div>
-                <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start;">
+                <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start;padding-top:2px;">
                     ${canAct?`<button class="btn-action" onclick="approveSwapRequest('${r.id}')" style="font-size:0.8rem;padding:6px 14px;background:var(--gradient-success);">Approve</button>
                     <button class="btn-outline" onclick="denySwapRequest('${r.id}')" style="font-size:0.8rem;padding:6px 14px;border-color:rgba(255,59,48,0.4);color:#FF3B30;">Deny</button>`:''}
                     ${isAdmin?`<button class="btn-outline" onclick="deleteSwapRequest('${r.id}')" style="font-size:0.72rem;padding:4px 10px;border-color:rgba(255,255,255,0.12);color:var(--text-muted);">×</button>`:''}
