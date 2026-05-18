@@ -10208,10 +10208,10 @@
         <div style="display:flex; flex-direction:column; gap:12px;">
             <div>
                 <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">My Shift *</label>
-                <select class="modern-input" id="swapModalShift" style="width:100%;"></select>
+                <select class="modern-input" id="swapModalShift" style="width:100%;" onchange="swapModalShiftChanged(this.value)"></select>
             </div>
-            <div>
-                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;">Week (enter any date in that week) *</label>
+            <div id="swapModalWeekRow">
+                <label style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:4px;" id="swapModalWeekLabel">Week (enter any date in that week) *</label>
                 <input class="modern-input" type="date" id="swapModalWeek" style="width:100%;">
             </div>
             <div>
@@ -11386,11 +11386,12 @@
         const worker = isOpen ? null : workers.find(w => w.id === shift.workerId);
         const color  = isOpen ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
         const wName  = isOpen ? 'OPEN' : (worker ? (compact ? worker.name.split(' ')[0][0] + (worker.name.split(' ')[1]?.[0]||'') : worker.name.split(' ')[0]) : '?');
-        const currentWorker = _getCurrentWorker();
-        const canClaim = isOpen && !isAdmin && currentWorker;
+        const currentWorker2 = _getCurrentWorker();
+        const canClaim = isOpen && !isAdmin && currentWorker2;
         const bgStyle = isOpen
             ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
             : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
+        const isMyShift = !isOpen && currentWorker2 && shift.workerId === currentWorker2.id;
         return `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
             style="${bgStyle} border-color:${color}66; border-top-color:${color}99;
             box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);">
@@ -11401,6 +11402,10 @@
                 style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
                 background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
                 Sign Up →</button>` : ''}
+            ${isMyShift && !isAdmin && !compact ? `<button onclick="event.stopPropagation();unclaimShift('${shift.id}')"
+                style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
+                border:1px solid rgba(255,59,48,0.25);background:rgba(255,59,48,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
+                ✕ Un-sign-up</button>` : ''}
         </div>`;
     }
 
@@ -11836,6 +11841,43 @@
         showToast("You're signed up! ✅");
     }
 
+    function unclaimShift(shiftId) {
+        const shift = (appData.shifts || []).find(s => s.id === shiftId);
+        if (!shift) return;
+        shift.workerId = 'open';
+        saveData();
+        renderSchedule();
+        showToast('You have been removed from this shift.');
+    }
+
+    function unclaimTemplateShift(templateShiftId, weekStartDate) {
+        if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+        const ts = (appData.templateShifts || []).find(t => t.id === templateShiftId);
+        const existing = appData.weeklyOverrides.find(o =>
+            o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate
+        );
+        if (existing) {
+            // Override exists — set workerId back to open (or delete if template is already open)
+            if (!ts || !ts.workerId || ts.workerId === 'open') {
+                appData.weeklyOverrides = appData.weeklyOverrides.filter(o =>
+                    !(o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate)
+                );
+            } else {
+                existing.workerId = 'open';
+            }
+        } else if (ts && ts.workerId && ts.workerId !== 'open') {
+            // No override yet — create one that marks it open for this week
+            appData.weeklyOverrides.push({
+                id: 'wo_' + Date.now(), templateShiftId, weekStartDate,
+                workerId: 'open', cancelled: false,
+                startTime: ts.startTime || '', endTime: ts.endTime || '', notes: ''
+            });
+        }
+        saveData();
+        renderSchedule();
+        showToast('You have been removed from this shift.');
+    }
+
     // ══════════════════════════════════════════════════════════
     // SEMESTER & TEMPLATE SCHEDULING SYSTEM
     // ══════════════════════════════════════════════════════════
@@ -12072,11 +12114,17 @@
                             style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
                             background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
                             Sign Up →</button>`:''}
-                        ${isMyShift&&!isAdmin&&!hasPendingSwap&&shift.templateShiftId?`
-                        <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId}','${weekStartStr}')"
+                        ${isMyShift&&!isAdmin&&!hasPendingSwap?`
+                        <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
                             style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                             border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
                             ↔ Request Swap
+                        </button>`:''}
+                        ${isMyShift&&!isAdmin?`
+                        <button onclick="event.stopPropagation();${shift.templateShiftId?`unclaimTemplateShift('${shift.templateShiftId}','${weekStartStr}')`:`unclaimShift('${shift.id||''}')`}"
+                            style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
+                            border:1px solid rgba(255,59,48,0.25);background:rgba(255,59,48,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
+                            ✕ Un-sign-up
                         </button>`:''}
                     </div>`;
                 });
@@ -12237,13 +12285,18 @@
     function _renderSwapCard(r, workers, templateShifts, isAdmin, currentWorker) {
         const requester = workers.find(w => w.id === r.requesterId);
         const target    = workers.find(w => w.id === r.targetId);
-        const ts        = templateShifts.find(t => t.id === r.templateShiftId);
+        const ts        = r.templateShiftId ? templateShifts.find(t => t.id === r.templateShiftId) : null;
+        const oneOff    = r.shiftId ? (appData.shifts || []).find(s => s.id === r.shiftId) : null;
         const weekDate  = r.weekStartDate ? new Date(r.weekStartDate + 'T12:00:00') : null;
         const weekLabel = weekDate ? `Week of ${weekDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}` : '';
         const sc = r.status==='approved'?'#34C759': r.status==='denied'?'#FF3B30':'#FF9500';
         const sl = r.status==='approved'?'Approved': r.status==='denied'?'Denied':'Pending';
         const canAct = r.status==='pending' && (isAdmin || (currentWorker && r.targetId===currentWorker.id));
-        const shiftLabel = ts ? `${ts.role||'Shift'} · ${DAY_FULL[ts.dayOfWeek]}s ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''}` : '';
+        const shiftLabel = ts
+            ? `${ts.role||'Shift'} · ${DAY_FULL[ts.dayOfWeek]}s ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''}`
+            : oneOff
+            ? `📅 ${oneOff.date} ${_fmtTime(oneOff.startTime)}${oneOff.endTime?' – '+_fmtTime(oneOff.endTime):''} · ${oneOff.role||'Shift'}`
+            : '';
         return `<div class="frosted" style="padding:16px 20px;border-radius:16px;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:0;">
@@ -12514,7 +12567,22 @@
 
     // ── Swap Request CRUD ──
 
-    function openSwapRequestModal(templateShiftId, weekStartDate) {
+    function swapModalShiftChanged(val) {
+        const isOneOff = val.startsWith('shift:');
+        const row = document.getElementById('swapModalWeekRow');
+        const lbl = document.getElementById('swapModalWeekLabel');
+        if (isOneOff) {
+            const shiftId = val.slice(6);
+            const shift = (appData.shifts || []).find(s => s.id === shiftId);
+            if (shift) document.getElementById('swapModalWeek').value = shift.date;
+            row.style.display = 'none';
+        } else {
+            row.style.display = '';
+            lbl.textContent = 'Week (enter any date in that week) *';
+        }
+    }
+
+    function openSwapRequestModal(prefId, weekStartDate) {
         const workers = appData.workers || [];
         const templateShifts = appData.templateShifts || [];
         const currentWorker = _getCurrentWorker();
@@ -12522,15 +12590,40 @@
             showToast('You must be listed as a worker to request swaps. Ask an admin to link your email to a worker profile.');
             return;
         }
-        const myShifts = templateShiftId
-            ? [templateShifts.find(ts => ts.id === templateShiftId)].filter(Boolean)
-            : (currentWorker ? templateShifts.filter(ts => ts.workerId === currentWorker.id) : templateShifts);
+        const today = _fmtDate(new Date());
         const tsSelect = document.getElementById('swapModalShift');
-        tsSelect.innerHTML = myShifts.length
-            ? myShifts.map(ts => `<option value="${ts.id}" ${ts.id===templateShiftId?'selected':''}>${DAY_FULL[ts.dayOfWeek]} ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${ts.role||'Shift'}</option>`).join('')
-            : '<option value="">No template shifts assigned to you</option>';
-        const weekInp = document.getElementById('swapModalWeek');
-        weekInp.value = weekStartDate || _fmtDate(_schedWeekStart || _getWeekStart(new Date()));
+        let options = '';
+
+        // Template shifts assigned to this worker
+        const myTemplateShifts = prefId && prefId.startsWith('ts:')
+            ? [templateShifts.find(ts => ts.id === prefId.slice(3))].filter(Boolean)
+            : (currentWorker ? templateShifts.filter(ts => ts.workerId === currentWorker.id) : templateShifts);
+        myTemplateShifts.forEach(ts => {
+            const val = 'ts:' + ts.id;
+            const sel = (prefId === val || prefId === ts.id) ? 'selected' : '';
+            options += `<option value="${val}" ${sel}>🔁 ${DAY_FULL[ts.dayOfWeek]} ${_fmtTime(ts.startTime)}${ts.endTime?' – '+_fmtTime(ts.endTime):''} · ${ts.role||'Shift'} (recurring)</option>`;
+        });
+
+        // One-off shifts assigned to this worker (today or future)
+        const myOneOffShifts = prefId && prefId.startsWith('shift:')
+            ? [(appData.shifts || []).find(s => s.id === prefId.slice(6))].filter(Boolean)
+            : (currentWorker ? (appData.shifts || []).filter(s => s.workerId === currentWorker.id && s.date >= today) : []);
+        myOneOffShifts.sort((a,b) => a.date.localeCompare(b.date));
+        myOneOffShifts.forEach(s => {
+            const val = 'shift:' + s.id;
+            const sel = prefId === val ? 'selected' : '';
+            options += `<option value="${val}" ${sel}>📅 ${s.date} ${_fmtTime(s.startTime)}${s.endTime?' – '+_fmtTime(s.endTime):''} · ${s.role||'Shift'}</option>`;
+        });
+
+        tsSelect.innerHTML = options || '<option value="">No upcoming shifts found</option>';
+
+        // Week row visibility
+        const firstVal = tsSelect.value || '';
+        swapModalShiftChanged(firstVal);
+        if (!firstVal.startsWith('shift:')) {
+            document.getElementById('swapModalWeek').value = weekStartDate || _fmtDate(_schedWeekStart || _getWeekStart(new Date()));
+        }
+
         const otherWorkers = workers.filter(w => !currentWorker || w.id !== currentWorker.id);
         const targetSel = document.getElementById('swapModalTarget');
         targetSel.innerHTML = `<option value="">Select who will cover…</option>` +
@@ -12540,21 +12633,27 @@
     }
 
     function saveSwapRequest() {
-        const templateShiftId = document.getElementById('swapModalShift').value;
-        const weekRaw         = document.getElementById('swapModalWeek').value;
-        const targetId        = document.getElementById('swapModalTarget').value;
-        const note            = document.getElementById('swapModalNote').value.trim();
-        if (!templateShiftId || !weekRaw || !targetId) { showToast('Please fill in all required fields'); return; }
+        const shiftVal  = document.getElementById('swapModalShift').value;
+        const weekRaw   = document.getElementById('swapModalWeek').value;
+        const targetId  = document.getElementById('swapModalTarget').value;
+        const note      = document.getElementById('swapModalNote').value.trim();
+        const isOneOff  = shiftVal.startsWith('shift:');
+        const isTemplate = shiftVal.startsWith('ts:');
+        if (!shiftVal || (!isOneOff && !weekRaw) || !targetId) { showToast('Please fill in all required fields'); return; }
         const currentWorker = _getCurrentWorker();
         const requesterId = currentWorker ? currentWorker.id : (currentUserRole==='admin' ? 'admin' : null);
         if (!requesterId) { showToast('Could not find your worker profile'); return; }
-        const weekStartDate = _fmtDate(_getWeekStart(new Date(weekRaw + 'T12:00:00')));
         if (!appData.swapRequests) appData.swapRequests = [];
-        appData.swapRequests.push({
-            id: 'swap_' + Date.now(),
-            requesterId, targetId, templateShiftId, weekStartDate, note,
-            status: 'pending', createdAt: new Date().toISOString()
-        });
+        const req = { id: 'swap_' + Date.now(), requesterId, targetId, note, status: 'pending', createdAt: new Date().toISOString() };
+        if (isOneOff) {
+            req.shiftId = shiftVal.slice(6);
+            const s = (appData.shifts || []).find(x => x.id === req.shiftId);
+            req.weekStartDate = s ? _fmtDate(_getWeekStart(new Date(s.date + 'T12:00:00'))) : null;
+        } else {
+            req.templateShiftId = isTemplate ? shiftVal.slice(3) : shiftVal;
+            req.weekStartDate = _fmtDate(_getWeekStart(new Date(weekRaw + 'T12:00:00')));
+        }
+        appData.swapRequests.push(req);
         closeModal(null, 'swapRequestModal');
         saveData();
         renderSwapRequests();
@@ -12564,25 +12663,32 @@
     function approveSwapRequest(swapId) {
         const req = (appData.swapRequests || []).find(r => r.id === swapId);
         if (!req) return;
-        if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
-        const existing = appData.weeklyOverrides.find(o =>
-            o.templateShiftId === req.templateShiftId && o.weekStartDate === req.weekStartDate
-        );
-        const ts = (appData.templateShifts || []).find(t => t.id === req.templateShiftId);
         const reqName = (appData.workers||[]).find(w=>w.id===req.requesterId)?.name || '?';
         const tgtName = (appData.workers||[]).find(w=>w.id===req.targetId)?.name || '?';
-        if (existing) {
-            existing.workerId = req.targetId;
+        if (req.shiftId) {
+            // One-off shift swap: reassign workerId directly
+            const shift = (appData.shifts || []).find(s => s.id === req.shiftId);
+            if (shift) shift.workerId = req.targetId;
         } else {
-            appData.weeklyOverrides.push({
-                id: 'wo_' + Date.now(),
-                templateShiftId: req.templateShiftId,
-                weekStartDate: req.weekStartDate,
-                workerId: req.targetId,
-                startTime: ts?.startTime || '',
-                endTime:   ts?.endTime   || '',
-                notes: `Swap: ${reqName} → ${tgtName}`
-            });
+            // Template shift swap: create/update weekly override
+            if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+            const existing = appData.weeklyOverrides.find(o =>
+                o.templateShiftId === req.templateShiftId && o.weekStartDate === req.weekStartDate
+            );
+            const ts = (appData.templateShifts || []).find(t => t.id === req.templateShiftId);
+            if (existing) {
+                existing.workerId = req.targetId;
+            } else {
+                appData.weeklyOverrides.push({
+                    id: 'wo_' + Date.now(),
+                    templateShiftId: req.templateShiftId,
+                    weekStartDate: req.weekStartDate,
+                    workerId: req.targetId,
+                    startTime: ts?.startTime || '',
+                    endTime:   ts?.endTime   || '',
+                    notes: `Swap: ${reqName} → ${tgtName}`
+                });
+            }
         }
         req.status = 'approved';
         req.respondedAt = new Date().toISOString();
