@@ -3937,11 +3937,7 @@
         if (viewName === 'events') renderEvents();
         if (viewName === 'storage') renderStorage();
         if (viewName === 'schedule') {
-            const _isAdminUser = currentUserRole === 'admin';
-            const _isWorkerUser = !!(appData.workers || []).find(w =>
-                w.email && currentUserEmail && w.email.toLowerCase() === currentUserEmail.toLowerCase()
-            );
-            if (!_isAdminUser && !_isWorkerUser) { switchView('board'); return; }
+            if (!isAuthenticated) { switchView('board'); return; }
             renderSchedule();
         }
         if (viewName === 'manager') renderManager();
@@ -4055,11 +4051,7 @@
     function _updateScheduleTabVisibility() {
         const schedTab = document.getElementById('tab-schedule');
         if (!schedTab) return;
-        const isAdmin = currentUserRole === 'admin';
-        const isWorker = !!(appData.workers || []).find(w =>
-            w.email && currentUserEmail && w.email.toLowerCase() === currentUserEmail.toLowerCase()
-        );
-        schedTab.style.display = (isAdmin || isWorker) ? '' : 'none';
+        schedTab.style.display = isAuthenticated ? '' : 'none';
     }
 
     function applyBoardBackground() {
@@ -11403,10 +11395,6 @@
                 style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
                 background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
                 Sign Up →</button>` : ''}
-            ${isMyShift && !isAdmin && !compact && isVolunteerSlot ? `<button onclick="event.stopPropagation();unclaimShift('${shift.id}')"
-                style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
-                border:1px solid rgba(255,59,48,0.25);background:rgba(255,59,48,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
-                ✕ Un-sign-up</button>` : ''}
             ${isMyShift && !isAdmin && !compact && !isVolunteerSlot ? `<button onclick="event.stopPropagation();openSwapRequestModal('shift:${shift.id}',null)"
                 style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                 border:1px solid rgba(10,132,255,0.25);background:rgba(10,132,255,0.08);color:#0A84FF;cursor:pointer;font-family:inherit;width:100%;">
@@ -11948,15 +11936,6 @@
         const isAdmin = currentUserRole === 'admin';
         const currentWorker = _getCurrentWorker();
 
-        // Access guard: only admins and workers with linked accounts may view the scheduler
-        if (!isAdmin && !currentWorker) {
-            container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;gap:16px;">
-                <div style="font-size:2.5rem;">🔒</div>
-                <div style="font-weight:800;font-size:1.1rem;">Access Restricted</div>
-                <div style="color:var(--text-muted);font-size:0.9rem;max-width:320px;">The shift scheduler is only accessible to workers with a linked account. Contact your admin to get access.</div>
-            </div>`;
-            return;
-        }
 
         const mTab = (m) =>
             `padding:6px 16px; border-radius:8px; font-size:0.8rem; font-weight:700;` +
@@ -12129,12 +12108,6 @@
                             style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                             border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
                             ↔ Request Swap
-                        </button>`:''}
-                        ${isMyShift&&!isAdmin&&isVolunteerSlot?`
-                        <button onclick="event.stopPropagation();${shift.templateShiftId?`unclaimTemplateShift('${shift.templateShiftId}','${weekStartStr}')`:`unclaimShift('${shift.id||''}')`}"
-                            style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
-                            border:1px solid rgba(255,59,48,0.25);background:rgba(255,59,48,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
-                            ✕ Un-sign-up
                         </button>`:''}
                     </div>`;
                 });
