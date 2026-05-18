@@ -669,7 +669,7 @@
             .nav-item {
                 padding: 8px 12px;
                 white-space: nowrap;
-                flex-shrink: 1;
+                flex-shrink: 0;
                 font-size: 0.85rem;
                 min-height: 40px;
                 display: flex;
@@ -694,6 +694,7 @@
 
             .settings-content-area {
                 padding-right: 0;
+                max-height: calc(100vh - 320px);
             }
 
             .settings-card {
@@ -1153,27 +1154,34 @@
 
             /* Bottom Bar Navigation */
             .nav-tabs {
-                bottom: 0; left: 0; width: 100%; transform: none;
+                bottom: 0; left: 0; width: 100%; max-width: 100%; transform: none;
                 border-radius: 20px 20px 0 0;
-                padding: 12px 10px calc(15px + env(safe-area-inset-bottom)) 10px;
+                padding: 8px 6px calc(12px + env(safe-area-inset-bottom)) 6px;
                 justify-content: space-around;
                 background: rgba(15, 15, 15, 0.98);
                 border-bottom: none; border-left: none; border-right: none;
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+                overflow-x: auto; scrollbar-width: none;
             }
+            .nav-tabs::-webkit-scrollbar { display: none; }
             .nav-tab {
-                padding: 10px 5px; font-size: 0.75rem; flex: 1; text-align: center; white-space: nowrap;
+                padding: 8px 4px; font-size: 0.68rem; flex: 1; min-width: 44px; text-align: center; white-space: nowrap;
                 min-height: 44px; display: flex; align-items: center; justify-content: center;
             }
 
             .app-view {
-                padding-top: calc(60px + env(safe-area-inset-top, 0px)) !important;
-                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+                padding-top: env(safe-area-inset-top, 0px) !important;
+                padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+                overflow-x: hidden !important;
+            }
+            /* Views that need full-page vertical scroll on mobile */
+            #view-duesoon, #view-storage, #view-schedule, #view-manager, #view-settings {
+                overflow-y: auto !important;
             }
 
             /* Snap-scrolling Kanban Columns */
             .board-container {
-                padding: calc(40px + env(safe-area-inset-top, 0px)) 7.5vw calc(110px + env(safe-area-inset-bottom)) 7.5vw !important;
+                padding: calc(16px + env(safe-area-inset-top, 0px)) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
                 scroll-snap-type: x mandatory; scroll-padding: 7.5vw; gap: 16px;
                 align-items: stretch !important;
             }
@@ -2033,6 +2041,7 @@
         <input type="password" id="loginPassword" class="modern-input" placeholder="Password" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') checkLogin()">
         <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="checkLogin()">Unlock</button>
         <button class="btn-outline" style="width:100%; border: none;" onclick="goBackToEmail()">Back</button>
+        <button class="btn-outline" style="width:100%; border: none; margin-top: 6px; font-size: 0.85rem; opacity: 0.65;" onclick="showForgotPassword()">Forgot Password?</button>
     </div>
 
     <div class="login-box frosted" id="login-overlay-setup" style="display: none;">
@@ -2058,6 +2067,24 @@
 
         <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="createNewPassword()">Save &amp; Enter</button>
         <button class="btn-outline" style="width:100%; border: none;" onclick="cancelSetup()">Cancel</button>
+    </div>
+
+    <!-- FORGOT PASSWORD PANEL -->
+    <div class="login-box frosted" id="login-overlay-forgot" style="display: none;">
+        <h1 style="margin-top:0; font-weight:800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Forgot Password</h1>
+        <p style="color:var(--text-muted); margin-bottom: 25px;">Enter your email and we'll send you a reset link.</p>
+        <input type="email" id="forgotEmail" class="modern-input" placeholder="Email" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') submitForgotPassword()">
+        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="submitForgotPassword()">Send Reset Link</button>
+        <button class="btn-outline" style="width:100%; border: none;" onclick="goBackFromForgot()">Back to Login</button>
+    </div>
+
+    <!-- RESET PASSWORD PANEL (shown when ?reset=TOKEN is in URL) -->
+    <div class="login-box frosted" id="login-overlay-reset" style="display: none;">
+        <h1 style="margin-top:0; font-weight:800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">New Password</h1>
+        <p style="color:var(--text-muted); margin-bottom: 25px;" id="resetEmailDisplay"></p>
+        <input type="password" id="resetPassword1" class="modern-input" placeholder="New Password" style="margin-bottom: 10px; text-align: center;">
+        <input type="password" id="resetPassword2" class="modern-input" placeholder="Confirm Password" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') submitResetPassword()">
+        <button class="btn-action" style="width:100%;" onclick="submitResetPassword()">Set New Password</button>
     </div>
 </div>
 
@@ -3561,6 +3588,114 @@
         document.getElementById('login-overlay-email').style.display = 'block';
         document.getElementById('login-overlay').style.display = 'flex';
         setTimeout(() => { document.getElementById('login-overlay').style.opacity = '1'; }, 10);
+    }
+
+    function showForgotPassword() {
+        const email = pendingLoginEmail || document.getElementById('loginEmail')?.value?.trim() || '';
+        document.getElementById('login-overlay-password').style.display = 'none';
+        document.getElementById('login-overlay-email').style.display = 'none';
+        document.getElementById('login-overlay-forgot').style.display = 'block';
+        if (email) document.getElementById('forgotEmail').value = email;
+        setTimeout(() => document.getElementById('forgotEmail').focus(), 100);
+    }
+
+    function goBackFromForgot() {
+        document.getElementById('login-overlay-forgot').style.display = 'none';
+        document.getElementById('login-overlay-email').style.display = 'block';
+        setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+    }
+
+    async function submitForgotPassword() {
+        const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+        if (!email) { showToast("Please enter your email."); return; }
+
+        const btn = document.querySelector('#login-overlay-forgot .btn-action');
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+        try {
+            const appUrl = window.location.origin + window.location.pathname;
+            const { data: result, error } = await _supabase.rpc('send_password_reset_email', {
+                p_email: email,
+                p_app_url: appUrl
+            });
+
+            if (error || !result?.success) {
+                showToast(result?.error || error?.message || "Failed to send reset email.");
+                if (btn) { btn.disabled = false; btn.textContent = 'Send Reset Link'; }
+                return;
+            }
+
+            document.getElementById('login-overlay-forgot').innerHTML = `
+                <h1 style="margin-top:0;font-weight:800;background:var(--gradient-accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Check Your Email</h1>
+                <p style="color:var(--text-muted);margin-bottom:25px;">
+                    If <strong style="color:var(--text-primary);">${email}</strong> is registered,
+                    a reset link has been sent. Check your inbox (and spam folder).
+                </p>
+                <button class="btn-outline" style="width:100%;border:none;" onclick="goBackFromForgot()">Back to Login</button>
+            `;
+        } catch (err) {
+            showToast("Network error. Please try again.");
+            if (btn) { btn.disabled = false; btn.textContent = 'Send Reset Link'; }
+        }
+    }
+
+    let _pendingResetToken = null;
+
+    async function handleResetToken(token) {
+        let attempts = 0;
+        while (!isDatabaseLoaded && attempts < 20) {
+            await new Promise(r => setTimeout(r, 500));
+            attempts++;
+        }
+        if (!isDatabaseLoaded) { showToast("Database not loaded. Please refresh."); return; }
+
+        const tokens = appData.settings?.passwordResetTokens || [];
+        const entry = tokens.find(t => t.token === token);
+
+        if (!entry) { showToast("Reset link is invalid or has already been used."); return; }
+        if (Date.now() > entry.expiry) { showToast("Reset link has expired. Please request a new one."); return; }
+
+        _pendingResetToken = token;
+        document.getElementById('login-overlay-email').style.display = 'none';
+        document.getElementById('resetEmailDisplay').textContent = entry.email;
+        document.getElementById('login-overlay-reset').style.display = 'block';
+        setTimeout(() => document.getElementById('resetPassword1').focus(), 100);
+
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    async function submitResetPassword() {
+        const pass1 = document.getElementById('resetPassword1').value;
+        const pass2 = document.getElementById('resetPassword2').value;
+
+        if (!pass1) { showToast("Please enter a new password."); return; }
+        if (pass1 !== pass2) { showToast("Passwords do not match."); return; }
+        if (pass1.length < 6) { showToast("Password must be at least 6 characters."); return; }
+
+        const tokens = appData.settings?.passwordResetTokens || [];
+        const entry = tokens.find(t => t.token === _pendingResetToken);
+
+        if (!entry) { showToast("Reset token not found. Please request a new link."); return; }
+        if (Date.now() > entry.expiry) { showToast("Reset link has expired. Please request a new one."); return; }
+
+        const email = entry.email;
+        const user = appData.settings.users?.find(u => u.email?.toLowerCase() === email);
+        if (!user) { showToast("User not found."); return; }
+
+        user.password = pass1;
+        appData.settings.passwordResetTokens = tokens.filter(t => t.token !== _pendingResetToken);
+        _pendingResetToken = null;
+
+        saveData();
+
+        isAuthenticated = true;
+        currentUserRole = 'user';
+        currentUserEmail = email;
+        currentUserName = user.name || email.split('@')[0];
+        localStorage.setItem('cab_auth_email', email);
+        localStorage.setItem('cab_auth_pass', pass1);
+        closeLoginOverlay();
+        showToast("Password updated! You're now logged in.");
     }
 
     async function changePassword() {
@@ -9371,6 +9506,12 @@
                 isAuthenticated = true;
             }
             return;
+        }
+
+        // Check for password reset token in URL (?reset=TOKEN)
+        const resetToken = shareParams.get('reset');
+        if (resetToken) {
+            handleResetToken(resetToken);
         }
 
         tryAutoLogin();
