@@ -1298,10 +1298,12 @@
             .schedule-month-chip .chip-label { display: none; }
             .month-cell-num { font-size: 0.78rem; }
 
-            /* Schedule: full-height scroll, auto height wrapper, sub-mode bar scrolls horizontally */
+            /* Schedule: full-height scroll, top bar wraps on mobile */
             .schedule-wrapper { height: auto; min-height: 0; padding: 12px 10px 20px; }
-            #view-schedule .schedule-wrapper > div:first-child { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
-            #view-schedule .schedule-wrapper > div:first-child::-webkit-scrollbar { display: none; }
+            .schedule-top-bar { gap: 8px; }
+            .schedule-week-nav { flex: 1 0 auto; }
+            .sched-mode-toggle { width: 100%; }
+            .sched-mode-toggle > button { flex: 1; }
             /* Manager: fix inner content padding */
             #view-manager > div { padding: 12px 10px 20px !important; }
 
@@ -1656,11 +1658,13 @@
         }
         .schedule-week-nav {
             display: flex; align-items: center; gap: 6px;
-            background: linear-gradient(160deg, rgba(35,35,35,0.7), rgba(15,15,15,0.6));
+            background: rgba(20, 20, 20, 0.88);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.2);
             border-radius: 12px; padding: 4px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
         }
         .schedule-week-nav button {
             background: none; border: none; color: var(--text-main); cursor: pointer;
@@ -1684,12 +1688,12 @@
         .schedule-day-header {
             text-align: center; padding: 8px 4px;
             border-radius: 10px;
-            background: linear-gradient(160deg, rgba(42,42,42,0.92), rgba(22,22,22,0.88));
-            backdrop-filter: blur(16px) saturate(160%);
-            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.22);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
         }
         .schedule-day-header .day-name {
             font-size: 0.65rem; font-weight: 800; letter-spacing: 0.07em;
@@ -1741,12 +1745,12 @@
         .worker-card {
             display: flex; align-items: flex-start; gap: 12px;
             padding: 14px 16px; border-radius: 16px;
-            background: linear-gradient(160deg, rgba(38,38,38,0.92), rgba(18,18,18,0.88));
+            background: rgba(20, 20, 20, 0.88);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-top: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
             transition: transform 0.12s, box-shadow 0.12s;
         }
         .worker-card:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.38); }
@@ -1784,12 +1788,12 @@
         }
         .schedule-month-cell {
             min-height: 140px; border-radius: 12px; padding: 10px 8px 8px;
-            background: linear-gradient(160deg, rgba(38,38,38,0.90), rgba(20,20,20,0.85));
-            backdrop-filter: blur(14px) saturate(150%);
-            -webkit-backdrop-filter: blur(14px) saturate(150%);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-top: 1px solid rgba(255,255,255,0.14);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
             cursor: pointer; display: flex; flex-direction: column; gap: 4px;
             transition: transform 0.12s;
         }
@@ -1822,9 +1826,26 @@
         /* ── Semester info banner ── */
         .semester-banner {
             display:flex; align-items:center; gap:10px;
-            padding:8px 14px;
-            background:rgba(10,132,255,0.08); border:1px solid rgba(10,132,255,0.2);
-            border-radius:10px; font-size:0.82rem; flex-wrap:wrap;
+            padding:10px 16px;
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-radius:12px; font-size:0.82rem; flex-wrap:wrap;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            margin-bottom: 14px;
+        }
+
+        .sched-mode-toggle {
+            display: flex; gap: 4px;
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px; padding: 4px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
         }
 
         /* Public availability page */
@@ -11233,10 +11254,10 @@
                 <button onclick="${nextFn}" title="Next">&#8250;</button>
             </div>
             <button class="btn-outline" onclick="schedGoToday()" style="font-size:0.8rem; padding:6px 14px;">Today</button>
-            <div style="display:flex; gap:4px; background:rgba(255,255,255,0.06); border-radius:10px; padding:3px; border:1px solid rgba(255,255,255,0.1);">
-                <button onclick="schedSetView('week')" style="padding:5px 14px; border-radius:8px; font-size:0.78rem; font-weight:700; border:none; cursor:pointer; transition:0.12s;
+            <div class="sched-mode-toggle">
+                <button onclick="schedSetView('week')" style="padding:5px 14px; border-radius:8px; font-size:0.78rem; font-weight:700; border:none; cursor:pointer; transition:0.12s; font-family:inherit;
                     background:${isWeek ? 'rgba(10,132,255,0.25)' : 'none'}; color:${isWeek ? '#0A84FF' : 'var(--text-muted)'};">Week</button>
-                <button onclick="schedSetView('month')" style="padding:5px 14px; border-radius:8px; font-size:0.78rem; font-weight:700; border:none; cursor:pointer; transition:0.12s;
+                <button onclick="schedSetView('month')" style="padding:5px 14px; border-radius:8px; font-size:0.78rem; font-weight:700; border:none; cursor:pointer; transition:0.12s; font-family:inherit;
                     background:${!isWeek ? 'rgba(10,132,255,0.25)' : 'none'}; color:${!isWeek ? '#0A84FF' : 'var(--text-muted)'};">Month</button>
             </div>
             <div style="flex:1;"></div>
@@ -11773,7 +11794,7 @@
             <button class="btn-outline" onclick="schedGoToday()" style="font-size:0.8rem; padding:6px 14px;">Today</button>`;
         }
 
-        html += `<div style="display:flex; gap:4px; background:rgba(255,255,255,0.06); border-radius:10px; padding:3px; border:1px solid rgba(255,255,255,0.1);">
+        html += `<div class="sched-mode-toggle">
             <button onclick="schedSetMode('week')" style="${mTab('week')}">Week</button>
             <button onclick="schedSetMode('month')" style="${mTab('month')}">Month</button>
             <button onclick="schedSetMode('swaps')" style="${mTab('swaps')}" id="sched-swaps-btn">Swaps</button>
