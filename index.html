@@ -1151,39 +1151,29 @@
             }
             .notif-panel.open { transform: translateY(0); right: 0; }
 
-            /* Bottom Bar Navigation — full-width flush bar */
+            /* Bottom Bar Navigation */
             .nav-tabs {
-                bottom: 0; left: 0; right: 0; width: 100%; max-width: 100%; transform: none;
-                border-radius: 0;
-                padding: 8px 4px calc(8px + env(safe-area-inset-bottom)) 4px;
+                bottom: 0; left: 0; width: 100%; transform: none;
+                border-radius: 20px 20px 0 0;
+                padding: 12px 10px calc(15px + env(safe-area-inset-bottom)) 10px;
                 justify-content: space-around;
-                background: rgba(12, 12, 12, 0.98);
-                border-top: 1px solid rgba(255,255,255,0.09);
+                background: rgba(15, 15, 15, 0.98);
                 border-bottom: none; border-left: none; border-right: none;
-                box-shadow: 0 -2px 16px rgba(0,0,0,0.4);
-                gap: 2px;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
             }
             .nav-tab {
-                padding: 6px 2px; flex: 1; text-align: center; white-space: nowrap;
+                padding: 10px 5px; font-size: 0.75rem; flex: 1; text-align: center; white-space: nowrap;
                 min-height: 44px; display: flex; align-items: center; justify-content: center;
-                font-size: 0.68rem; border-radius: 10px; border: none;
-                background: transparent;
             }
-            .nav-tab.active { background: rgba(10,132,255,0.18); color: #0A84FF; box-shadow: none; border: none; }
 
             .app-view {
-                padding-top: env(safe-area-inset-top, 0px) !important;
-                padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important;
-                overflow-x: hidden !important;
-            }
-            /* Views that need full-page vertical scroll on mobile */
-            #view-duesoon, #view-storage, #view-schedule, #view-manager, #view-settings {
-                overflow-y: auto !important;
+                padding-top: calc(60px + env(safe-area-inset-top, 0px)) !important;
+                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
             }
 
             /* Snap-scrolling Kanban Columns */
             .board-container {
-                padding: calc(16px + env(safe-area-inset-top, 0px)) 7.5vw calc(80px + env(safe-area-inset-bottom)) 7.5vw !important;
+                padding: calc(40px + env(safe-area-inset-top, 0px)) 7.5vw calc(110px + env(safe-area-inset-bottom)) 7.5vw !important;
                 scroll-snap-type: x mandatory; scroll-padding: 7.5vw; gap: 16px;
                 align-items: stretch !important;
             }
@@ -1202,7 +1192,7 @@
                 border-radius: 28px 28px 0 0;
                 padding: 24px 20px calc(40px + env(safe-area-inset-bottom)) 20px;
                 max-height: 96dvh !important;
-                min-height: 60dvh;
+                min-height: 85dvh;
                 height: auto;
                 margin-top: auto; width: 100%; max-width: 100%; 
                 overflow-x: hidden; 
@@ -1215,7 +1205,10 @@
             
             .modern-input, .rich-text-editor, .checklist-text { max-width: 100%; box-sizing: border-box; }
             #modalTabDetails > div > div { max-width: 100%; } 
-            #taskDueDate { min-width: 0 !important; width: 100%; } 
+            #taskDueDateNative { min-width: 0 !important; width: 100%; }
+            /* On mobile hide native datetime-local, show custom trigger button */
+            #taskDueDateNative { display: none !important; }
+            #taskDueDateBtn   { display: flex !important; }
 
             .modal-cover { margin: -24px -20px 15px -20px; width: calc(100% + 40px); border-radius: 28px 28px 0 0; height: 140px; }
             .close-modal { top: 12px; right: 12px; z-index: 100; width: 40px; height: 40px; font-size: 1.8rem; }
