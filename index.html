@@ -1935,7 +1935,7 @@
             font-size: 0.68rem; font-weight: 800; border: none; cursor: pointer;
         }
         .em-badge-ok { background: linear-gradient(135deg, #34C759, #30B0C7); color: #fff; }
-        .em-badge-warn { background: linear-gradient(135deg, #FFD60A, #FF9F0A); color: #000; }
+        .em-badge-warn { background: linear-gradient(135deg, #FFD60A, #FF9F0A); color: #1a1a1a; }
         .em-badge-fire { background: linear-gradient(135deg, #FF9500, #FF3B30); color: #fff; }
         .em-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .em-modal {
@@ -12883,7 +12883,7 @@
             return 0;
         });
 
-        var isAdmin = isAuthenticated && currentUserRole === 'admin';
+        var isAdmin = isAuthenticated; // any authenticated user with manager access can edit/delete events
 
         if (_emViewMode === 'list') {
             var milestoneHeaders = EM_MILESTONE_KEYS.map(function(k) {
@@ -12900,7 +12900,7 @@
                     var m = (ev.deadlines && ev.deadlines[k]) || {};
                     var st = emDeadlineStatus(m.date, m.completed);
                     var bc = emBadgeClass(st);
-                    return '<td style="text-align:center;">' + (m.date ? '<button class="' + bc + '" style="cursor:pointer;background:none;border:none;" onclick="emToggleDeadline(\'' + ev.id + '\',\'' + k + '\')">' + emFormatDate(m.date) + '</button>' + (m.assignee ? '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">' + m.assignee + '</div>' : '') : '<span style="color:#444">-</span>') + '</td>';
+                    return '<td style="text-align:center;">' + (m.date ? '<button class="' + bc + '" style="cursor:pointer;border:none;font-family:inherit;" onclick="emToggleDeadline(\'' + ev.id + '\',\'' + k + '\')">' + emFormatDate(m.date) + '</button>' + (m.assignee ? '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">' + m.assignee + '</div>' : '') : '<span style="color:var(--text-muted);">-</span>') + '</td>';
                 }).join('');
 
                 return '<tr>' +
@@ -13252,11 +13252,14 @@
     }
 
     async function emDeleteEvent(id) {
-        const ok = await showConfirm('Delete Event', 'Delete this event? All associated data will be lost.', 'Delete', true);
+        const ok = await showConfirm('Delete Event', 'Delete this event and all its data?', 'Delete', true);
         if (!ok) return;
+        if (!appData.manager) appData.manager = {};
         appData.manager.events = (appData.manager.events||[]).filter(function(e) { return e.id !== id; });
         appData.manager.expenses = (appData.manager.expenses||[]).filter(function(e) { return e.eventId !== id; });
-        saveData(); emRenderEvents();
+        saveData();
+        emRenderEvents();
+        showToast('Event deleted');
     }
 
     function emToggleDeadline(eventId, key) {
