@@ -12740,7 +12740,7 @@
     function emColLabel(k) { return (emGetSettings().columnLabels || EM_COL_LABELS)[k] || k; }
 
     function renderManager() {
-        emSwitchTab(_emCurrentSubTab, false);
+        emSwitchTab(_emCurrentSubTab, true);
     }
 
     function emSwitchTab(tab, doRender) {
