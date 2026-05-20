@@ -32,8 +32,8 @@
     <style>
         :root {
             --bg-dark: #000000;
-            --glass-surface: rgba(20, 20, 20, 0.55);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-surface: #1e1e1e;
+            --glass-border: #2e2e2e;
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --gradient-accent: linear-gradient(135deg, #0A84FF, #BF5AF2);
@@ -89,10 +89,8 @@
         }
 
         .frosted {
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
         }
 
         #login-overlay {
@@ -110,11 +108,9 @@
         }
 
         .login-box {
-            background: rgba(20, 20, 20, 0.65); border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #1e1e1e; border: 1px solid #2e2e2e;
             padding: 40px; border-radius: var(--radius-card); width: 100%; max-width: 400px;
-            text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.1);
-            backdrop-filter: blur(30px) saturate(150%);
-            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             animation: pulseGlow 4s infinite alternate ease-in-out;
         }
 
@@ -215,15 +211,14 @@
         .btn-action:active { transform: scale(0.96); }
 
         .btn-outline {
-            background: rgba(20, 20, 20, 0.85);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             color: #fff;
             padding: 10px 20px;
             border-radius: var(--radius-button);
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
         .btn-outline:hover { background: rgba(40, 40, 40, 0.9); border-color: rgba(255,255,255,0.2); }
@@ -278,17 +273,15 @@
         .board-container::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
         .kanban-column {
-            background: rgba(15, 15, 15, 0.3);
+            background: #1a1a1a;
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-card);
-            min-width: 340px; 
+            min-width: 340px;
             width: 340px;
-            display: flex; 
+            display: flex;
             flex-direction: column;
             max-height: 100%;
             flex-shrink: 0;
-            backdrop-filter: blur(12px) saturate(120%);
-            -webkit-backdrop-filter: blur(12px) saturate(120%);
             transition: border-color 0.2s;
         }
 
@@ -340,28 +333,24 @@
         }
 
         .task-card {
-            background: linear-gradient(160deg, rgba(35, 35, 35, 0.6) 0%, rgba(15, 15, 15, 0.4) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px; 
+            background: #222222;
+            border: 1px solid #2e2e2e;
+            border-radius: 20px;
             padding: 18px;
-            cursor: grab; 
+            cursor: grab;
             transition: all 0.15s ease;
-            color: var(--text-main); 
-            font-size: 0.95rem; 
+            color: var(--text-main);
+            font-size: 0.95rem;
             line-height: 1.5;
             position: relative;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
 
-        .task-card:hover { 
-            background: linear-gradient(160deg, rgba(45, 45, 45, 0.7) 0%, rgba(20, 20, 20, 0.5) 100%);
-            border-color: rgba(255, 255, 255, 0.2); 
-            border-top-color: rgba(255, 255, 255, 0.3);
+        .task-card:hover {
+            background: #2a2a2a;
+            border-color: #3f3f46;
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
         }
 
         .task-card:active { cursor: grabbing; transform: scale(0.98); }
@@ -393,13 +382,13 @@
         }
         .add-col-btn:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: #0A84FF; }
 
-        .calendar-wrapper { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: rgba(15, 15, 15, 0.3); border: 1px solid var(--glass-border); border-radius: var(--radius-card); backdrop-filter: blur(12px) saturate(120%); -webkit-backdrop-filter: blur(12px) saturate(120%); padding: 15px 20px; overflow: hidden; margin-top: 15px; }
+        .calendar-wrapper { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: #1a1a1a; border: 1px solid var(--glass-border); border-radius: var(--radius-card); padding: 15px 20px; overflow: hidden; margin-top: 15px; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: max-content repeat(6, minmax(0, 1fr)); gap: 8px; flex: 1; min-height: 0; }
         .calendar-day-header { text-align: center; font-weight: 800; color: var(--text-muted); padding: 4px 0 8px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
         
-        .calendar-cell { background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 5px; backdrop-filter: blur(20px) saturate(200%); -webkit-backdrop-filter: blur(20px) saturate(200%); box-shadow: inset 0 1px 2px rgba(255,255,255,0.05); overflow-y: auto; min-height: 0; }
+        .calendar-cell { background: #1e1e1e; border: 1px solid #2e2e2e; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; min-height: 0; }
         .calendar-cell::-webkit-scrollbar { width: 4px; }
         .calendar-cell::-webkit-scrollbar-track { background: transparent; }
         .calendar-cell::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
@@ -439,7 +428,7 @@
         .post-date-empty { font-size: 0.78rem; color: var(--text-muted); padding: 6px 2px; font-style: italic; }
 
         .settings-wrapper { width: 100%; max-width: 600px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; overflow-y: auto; }
-        .settings-card { background: rgba(20,20,20,0.6); border: 1px solid var(--glass-border); padding: 30px; border-radius: var(--radius-card); margin-bottom: 20px; backdrop-filter: blur(var(--blur)); }
+        .settings-card { background: #1e1e1e; border: 1px solid var(--glass-border); padding: 30px; border-radius: var(--radius-card); margin-bottom: 20px; }
 
         .user-profile-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 20px; }
         .user-profile-picture { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 600; color: white; border: 3px solid rgba(255,255,255,0.2); overflow: hidden; position: relative; flex-shrink: 0; }
@@ -475,11 +464,10 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            background: rgba(20,20,20,0.6);
+            background: #1e1e1e;
             border: 1px solid var(--glass-border);
             padding: 20px;
             border-radius: var(--radius-card);
-            backdrop-filter: blur(var(--blur));
         }
 
         .settings-nav {
@@ -635,10 +623,9 @@
                 padding: 12px 16px;
                 margin-bottom: 16px;
                 border: none;
-                background: rgba(20,20,20,0.6);
-                border: 1px solid rgba(255,255,255,0.1);
+                background: #1e1e1e;
+                border: 1px solid #2e2e2e;
                 border-radius: 12px;
-                backdrop-filter: blur(10px);
                 width: 100%;
                 margin-left: 0;
                 padding-right: 16px;
@@ -733,12 +720,10 @@
             padding: 20px;
             opacity: 0; transition: opacity 0.2s ease;
         }
-        .modal-content { 
-            background: rgba(20, 20, 20, 0.65);
-            backdrop-filter: blur(40px) saturate(150%);
-            -webkit-backdrop-filter: blur(40px) saturate(150%);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.1);
-            border: 1px solid var(--glass-border); padding: 30px; 
+        .modal-content {
+            background: #1e1e1e;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            border: 1px solid #2e2e2e; padding: 30px;
             border-radius: var(--radius-card); width: 100%; max-width: 900px; position: relative; 
             transform: translateY(30px) scale(0.95); transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
             max-height: 90vh;
@@ -749,7 +734,7 @@
         .modal-overlay.show { opacity: 1; }
         .modal-overlay.show .modal-content { transform: translateY(0) scale(1); }
 
-        .close-modal { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: none; color: #fff; font-size: 1.5rem; cursor: pointer; z-index: 10; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: 0.2s;}
+        .close-modal { position: absolute; top: 15px; right: 15px; background: #2a2a2a; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; z-index: 10; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
         .close-modal:hover { background: rgba(0,0,0,0.8); transform: scale(1.05); }
         .stat-label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; font-weight: 700; display: block; margin-bottom: 10px; margin-top: 15px;}
 
@@ -929,15 +914,14 @@
             position: absolute;
             bottom: 15px;
             right: 15px;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             color: white;
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
-            backdrop-filter: blur(4px);
             transition: 0.2s;
         }
         .remove-cover-btn:hover { background: rgba(255, 59, 48, 0.8); border-color: #FF3B30; }
@@ -962,11 +946,9 @@
         .notif-badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; font-size: 0.65rem; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid rgba(15,15,15,0.9); }
         .notif-tab-bell { display: none; }
         .notif-panel { position: fixed; top: 0; right: -400px; width: 380px; max-width: 92vw; height: 100vh;
-            background: rgba(20, 20, 20, 0.65);
-            backdrop-filter: blur(40px) saturate(150%);
-            -webkit-backdrop-filter: blur(40px) saturate(150%);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.1);
-            border-left: 1px solid var(--glass-border);
+            background: #1e1e1e;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            border-left: 1px solid #2e2e2e;
             z-index: 10001; transition: right 0.3s ease; display: flex; flex-direction: column; }
         .notif-panel.open { right: 0; }
         .notif-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
@@ -987,19 +969,18 @@
         .notif-pref-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.85rem; color: #ccc; }
 
         #sync-indicator {
-            display: none; 
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            background: rgba(0,0,0,0.8); 
-            border: 1px solid var(--glass-border); 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            z-index: 9999; 
-            font-size: 0.85rem; 
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            z-index: 9999;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: #a1a1aa; 
-            backdrop-filter: blur(10px);
+            color: #a1a1aa;
         }
 
         .member-chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; padding: 6px 12px; font-size: 0.85rem; }
@@ -1059,10 +1040,10 @@
         /* BULK SELECT */
         .bulk-bar {
             position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-            background: rgba(15,15,15,0.95); border: 1px solid rgba(255,255,255,0.15);
+            background: #1e1e1e; border: 1px solid #2e2e2e;
             border-radius: 100px; padding: 10px 20px;
             display: none; align-items: center; gap: 14px;
-            z-index: 200; backdrop-filter: blur(20px);
+            z-index: 200;
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             font-size: 0.9rem; color: #fff; font-weight: 600;
         }
@@ -1169,11 +1150,9 @@
                 border-radius: 0;
                 padding: 6px 0 calc(6px + env(safe-area-inset-bottom)) 0;
                 justify-content: space-around;
-                background: rgba(14, 14, 14, 0.97);
-                border: none; border-top: 1px solid rgba(255,255,255,0.08);
+                background: #1e1e1e;
+                border: none; border-top: 1px solid #2e2e2e;
                 box-shadow: 0 -1px 0 rgba(0,0,0,0.4), 0 -4px 24px rgba(0,0,0,0.5);
-                backdrop-filter: blur(20px) saturate(180%);
-                -webkit-backdrop-filter: blur(20px) saturate(180%);
                 overflow-x: auto; scrollbar-width: none; gap: 0;
             }
             .nav-tabs::-webkit-scrollbar { display: none; }
@@ -1441,15 +1420,13 @@
             border-radius: 16px;
             cursor: pointer;
             transition: all 0.15s ease;
-            backdrop-filter: blur(var(--blur));
-            -webkit-backdrop-filter: blur(var(--blur));
             overflow: hidden;
             display: flex; flex-direction: column;
             position: relative;
         }
         .storage-bin-card:hover {
-            background: rgba(30,30,30,0.65);
-            border-color: rgba(255,255,255,0.2);
+            background: #252525;
+            border-color: #3f3f46;
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
@@ -1676,13 +1653,9 @@
         }
         .schedule-week-nav {
             display: flex; align-items: center; gap: 6px;
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             border-radius: 12px; padding: 4px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
         }
         .schedule-week-nav button {
             background: none; border: none; color: var(--text-main); cursor: pointer;
@@ -1706,12 +1679,8 @@
         .schedule-day-header {
             text-align: center; padding: 8px 4px;
             border-radius: 10px;
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
         }
         .schedule-day-header .day-name {
             font-size: 0.65rem; font-weight: 800; letter-spacing: 0.07em;
@@ -1730,11 +1699,8 @@
             border-radius: 12px; padding: 9px 11px;
             display: flex; flex-direction: column; gap: 3px;
             cursor: pointer; transition: transform 0.12s, box-shadow 0.12s;
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(16px) saturate(160%);
-            -webkit-backdrop-filter: blur(16px) saturate(160%);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+            border: 1px solid #2e2e2e;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
             position: relative;
         }
         .schedule-shift-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
@@ -1763,11 +1729,8 @@
         .worker-card {
             display: flex; align-items: flex-start; gap: 12px;
             padding: 14px 16px; border-radius: 16px;
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             box-shadow: 0 6px 18px rgba(0,0,0,0.35);
             transition: transform 0.12s, box-shadow 0.12s;
         }
@@ -1806,12 +1769,8 @@
         }
         .schedule-month-cell {
             min-height: 140px; border-radius: 12px; padding: 10px 8px 8px;
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             cursor: pointer; display: flex; flex-direction: column; gap: 4px;
             transition: transform 0.12s;
         }
@@ -1845,25 +1804,17 @@
         .semester-banner {
             display:flex; align-items:center; gap:10px;
             padding:10px 16px;
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             border-radius:12px; font-size:0.82rem; flex-wrap:wrap;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
             margin-bottom: 14px;
         }
 
         .sched-mode-toggle {
             display: flex; gap: 4px;
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 1px solid rgba(255,255,255,0.2);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             border-radius: 12px; padding: 4px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
         }
 
         /* Public availability page */
@@ -1904,10 +1855,8 @@
         .em-hidden { display: none !important; }
         .em-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
         .em-frosted {
-            background: rgba(20, 20, 20, 0.88);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e;
             border-radius: 16px;
         }
         .em-table-wrap { overflow-x: auto; }
@@ -1924,7 +1873,6 @@
             min-height: 100px; background: var(--glass-surface);
             border: 1px solid var(--glass-border); border-radius: 10px;
             padding: 8px; overflow: hidden;
-            backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
         }
         .em-cal-today { border-color: #0A84FF !important; background: rgba(10,132,255,0.08) !important; }
         .em-cal-event {
@@ -1947,8 +1895,8 @@
             background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
         }
         .em-modal-content {
-            background: rgba(20,20,20,0.55); backdrop-filter: blur(40px);
-            border: 1px solid rgba(255,255,255,0.12); border-radius: 20px;
+            background: #1e1e1e;
+            border: 1px solid #2e2e2e; border-radius: 20px;
             width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;
         }
         .em-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -1974,9 +1922,8 @@
         .em-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
         .em-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .em-view-toggle {
-            padding: 7px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(20,20,20,0.88); color: var(--text-muted); cursor: pointer; font-size: 0.78rem; font-weight: 700;
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 7px 14px; border-radius: 100px; border: 1px solid #2e2e2e;
+            background: #1e1e1e; color: var(--text-muted); cursor: pointer; font-size: 0.78rem; font-weight: 700;
         }
         .em-view-toggle.active {
             background: var(--gradient-accent); color: #fff; border-color: transparent;
@@ -2242,7 +2189,7 @@
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button id="em-toggle-list" class="em-view-toggle active" onclick="emToggleViewMode('list')">List</button>
                         <button id="em-toggle-card" class="em-view-toggle" onclick="emToggleViewMode('card')">Card</button>
-                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.12); background:rgba(20,20,20,0.88); backdrop-filter:blur(10px); color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
+                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid #2e2e2e; background:#1e1e1e; color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
                     </div>
                 </div>
                 <div id="em-events-inner"></div>
