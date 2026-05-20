@@ -168,24 +168,26 @@
         .nav-tabs::-webkit-scrollbar { display: none; }
 
         .nav-tab {
-            background-color: #8c8c8c;
-            border: none;
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #ffffff;
             padding: 12px 28px;
             border-radius: 9999px;
-            font-weight: 400;
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: background 0.2s ease;
             font-size: 16px;
             white-space: nowrap;
             flex-shrink: 0;
             display: inline-block;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: var(--font-stack);
         }
-        .nav-tab:hover { background-color: #7a7a7a; }
-        .nav-tab.active { background-color: #5a5a5a; }
+        .nav-tab:hover { background: rgba(40, 40, 40, 0.92); }
+        .nav-tab.active { background: var(--gradient-accent); border-color: transparent; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.25); }
         .ntab-icon { display: none; }
-        .ntab-label { display: inline; font-size: 16px; font-weight: 400; line-height: 1; margin-top: 0; opacity: 1; }
+        .ntab-label { display: inline; font-size: 16px; font-weight: 500; line-height: 1; margin-top: 0; opacity: 1; }
 
         .app-view { display: none; flex-grow: 1; overflow: hidden; padding-bottom: 80px; }
         .app-view.active { display: flex; }
@@ -2145,7 +2147,7 @@
     <!-- Shortened tabs for better mobile fit -->
     <div class="nav-tabs">
         <button class="nav-tab active" id="tab-board" onclick="switchView('board')"><span class="ntab-icon">🏠</span><span class="ntab-label">Home</span></button>
-        <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')"><span class="ntab-icon">📅</span><span class="ntab-label">Cal</span></button>
+        <button class="nav-tab" id="tab-calendar" onclick="switchView('calendar')"><span class="ntab-icon">📅</span><span class="ntab-label">Calendar</span></button>
         <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')"><span class="ntab-icon">⚡</span><span class="ntab-label">Due</span></button>
         <button class="nav-tab" id="tab-storage" onclick="switchView('storage')"><span class="ntab-icon">📦</span><span class="ntab-label">Storage</span></button>
         <button class="nav-tab" id="tab-schedule" onclick="switchView('schedule')"><span class="ntab-icon">🗓</span><span class="ntab-label">Schedule</span></button>
