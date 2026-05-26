@@ -393,7 +393,7 @@
         }
         .add-col-btn:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: #0A84FF; }
 
-        .calendar-wrapper { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: #1a1a1a; border: 1px solid var(--glass-border); border-radius: var(--radius-card); padding: 15px 20px; overflow: hidden; margin-top: 15px; }
+        .calendar-wrapper { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: rgba(24, 24, 28, 0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-card); padding: 15px 20px; overflow: hidden; margin-top: 15px; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: max-content repeat(6, minmax(0, 1fr)); gap: 8px; flex: 1; min-height: 0; }
@@ -1250,11 +1250,48 @@
             .modal-sidebar button { font-size: 0.85rem; padding: 8px 12px; }
             #autoSaveIndicator { grid-column: span 2; }
 
-            /* Scrollable Calendar */
-            .calendar-header { flex-direction: column; gap: 15px; }
-            .calendar-wrapper { padding: 15px; overflow-x: auto; overflow-y: auto; margin-top: 10px; flex: none; height: auto; }
-            .calendar-grid { min-width: 800px; grid-template-rows: max-content repeat(6, minmax(120px, 1fr)); height: auto; min-height: 100%; padding-bottom: 15px; flex: none; }
-            .calendar-day-header { font-size: 0.75rem; }
+            /* Calendar mobile — compact fit-to-screen */
+            .calendar-wrapper {
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 20px !important;
+                padding: 14px 10px !important;
+                margin-top: 0 !important;
+                overflow: visible !important;
+                height: auto !important;
+                flex: none !important;
+            }
+            .calendar-header {
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                align-items: center !important;
+                margin-bottom: 10px !important;
+            }
+            .calendar-header h2 { font-size: 1.1rem !important; flex: none !important; width: 100% !important; text-align: left !important; order: -1; }
+            .calendar-header > div:first-child { gap: 6px !important; flex-wrap: nowrap !important; }
+            .calendar-header .view-toggle-wrap { flex: 1 !important; }
+            .calendar-grid {
+                min-width: 0 !important;
+                grid-template-rows: max-content repeat(6, minmax(52px, auto)) !important;
+                gap: 3px !important;
+                height: auto !important;
+                padding-bottom: 4px !important;
+                flex: none !important;
+            }
+            .calendar-day-header { font-size: 0.6rem !important; padding: 2px 0 5px 0 !important; letter-spacing: 0.5px !important; }
+            .calendar-cell { padding: 4px 4px 3px !important; border-radius: 8px !important; gap: 2px !important; min-height: 48px !important; overflow: hidden !important; }
+            .calendar-date { font-size: 0.75rem !important; margin-bottom: 1px !important; }
+            .calendar-task-pill {
+                font-size: 0 !important;
+                padding: 0 !important;
+                height: 5px !important;
+                min-height: 5px !important;
+                border-radius: 3px !important;
+                width: 100% !important;
+            }
             
             .bulk-bar { bottom: calc(90px + env(safe-area-inset-bottom)); width: 90%; flex-wrap: wrap; justify-content: center; }
             
