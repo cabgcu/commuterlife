@@ -1241,8 +1241,16 @@
             .modal-overlay.show .modal-content { transform: translateY(0) !important; }
             
             .modern-input, .rich-text-editor, .checklist-text { max-width: 100%; box-sizing: border-box; }
-            #modalTabDetails > div > div { max-width: 100%; } 
+            #modalTabDetails > div > div { max-width: 100%; }
             #taskDueDate { min-width: 0 !important; width: 100%; }
+            /* Shift modal — normalize date/time inputs to same size as text inputs */
+            #shiftModal .modern-input[type="date"],
+            #shiftModal .modern-input[type="time"] {
+                -webkit-appearance: none; appearance: none;
+                min-width: 0; width: 100%; box-sizing: border-box;
+                height: 50px; padding: 0 14px;
+            }
+            #shiftModal [style*="display:flex"] > div { min-width: 0; flex: 1; }
 
             .modal-cover { margin: -24px -20px 15px -20px; width: calc(100% + 40px); border-radius: 28px 28px 0 0; height: 140px; }
             .close-modal { top: 12px; right: 12px; z-index: 100; width: 40px; height: 40px; font-size: 1.8rem; }
@@ -2076,7 +2084,15 @@
             position: relative;
         }
         .schedule-shift-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-        .schedule-shift-card .shift-time { font-size: 0.65rem; font-weight: 700; }
+        .schedule-shift-card .shift-time {
+            font-size: 0.65rem; font-weight: 700;
+            display: inline-block;
+            padding: 2px 7px; border-radius: 6px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
         .schedule-shift-card .shift-worker { font-size: 0.8rem; font-weight: 800; line-height: 1.2; }
         .schedule-shift-card .shift-role { font-size: 0.65rem; opacity: 0.8; line-height: 1.2; }
         .schedule-add-shift-btn {
