@@ -1656,8 +1656,8 @@
             }
             .sched-time-col {
                 display: flex; flex-direction: column; align-items: flex-end;
-                min-width: 68px; font-size: 0.8rem; font-weight: 700;
-                color: var(--text-main); gap: 3px; padding-top: 14px;
+                min-width: 72px; font-size: 0.8rem; font-weight: 700;
+                color: var(--text-main); gap: 4px; padding-top: 10px;
                 position: relative; flex-shrink: 0;
             }
             .sched-time-col::after {
@@ -1665,8 +1665,17 @@
                 top: 26px; bottom: -14px; width: 2px;
                 background: rgba(255, 255, 255, 0.08);
             }
-            .sched-time-end {
-                color: rgba(255,255,255,0.4); font-weight: 400; font-size: 0.75rem;
+            .sched-time-col .sched-time-start,
+            .sched-time-col .sched-time-end {
+                display: inline-block;
+                padding: 3px 8px; border-radius: 7px;
+                background: rgba(255, 255, 255, 0.09);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .sched-time-col .sched-time-end {
+                color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.72rem;
             }
             .sched-mobile-card {
                 flex: 1; padding: 14px 16px; border-radius: 14px;
@@ -12607,7 +12616,7 @@
                         swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
                     html += `<div class="sched-timeline-event">
                         <div class="sched-time-col">
-                            <span>${_fmtTime(shift.startTime)}</span>
+                            <span class="sched-time-start">${_fmtTime(shift.startTime)}</span>
                             ${shift.endTime ? `<span class="sched-time-end">${_fmtTime(shift.endTime)}</span>` : ''}
                         </div>
                         <div class="sched-mobile-card" onclick="${clickAction}"
