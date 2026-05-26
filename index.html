@@ -32,8 +32,8 @@
     <style>
         :root {
             --bg-dark: #000000;
-            --glass-surface: #1e1e1e;
-            --glass-border: #2e2e2e;
+            --glass-surface: rgba(24, 24, 28, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --gradient-accent: linear-gradient(135deg, #0A84FF, #BF5AF2);
@@ -89,8 +89,10 @@
         }
 
         .frosted {
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         #login-overlay {
@@ -108,7 +110,10 @@
         }
 
         .login-box {
-            background: #1e1e1e; border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 40px; border-radius: var(--radius-card); width: 100%; max-width: 400px;
             text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             animation: pulseGlow 4s infinite alternate ease-in-out;
@@ -157,8 +162,10 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            background-color: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(20, 20, 24, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 14px;
             padding: 6px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -273,8 +280,10 @@
         .board-container::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
         .kanban-column {
-            background: #1a1a1a;
-            border: 1px solid var(--glass-border);
+            background: rgba(14, 14, 18, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: var(--radius-card);
             min-width: 340px;
             width: 340px;
@@ -333,8 +342,10 @@
         }
 
         .task-card {
-            background: #222222;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.80);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 18px;
             cursor: grab;
@@ -388,7 +399,7 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: max-content repeat(6, minmax(0, 1fr)); gap: 8px; flex: 1; min-height: 0; }
         .calendar-day-header { text-align: center; font-weight: 800; color: var(--text-muted); padding: 4px 0 8px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
         
-        .calendar-cell { background: #1e1e1e; border: 1px solid #2e2e2e; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; min-height: 0; }
+        .calendar-cell { background: rgba(24, 24, 28, 0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; min-height: 0; }
         .calendar-cell::-webkit-scrollbar { width: 4px; }
         .calendar-cell::-webkit-scrollbar-track { background: transparent; }
         .calendar-cell::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
@@ -428,7 +439,7 @@
         .post-date-empty { font-size: 0.78rem; color: var(--text-muted); padding: 6px 2px; font-style: italic; }
 
         .settings-wrapper { width: 100%; max-width: 600px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; overflow-y: auto; }
-        .settings-card { background: #1e1e1e; border: 1px solid var(--glass-border); padding: 30px; border-radius: var(--radius-card); margin-bottom: 20px; }
+        .settings-card { background: rgba(24, 24, 28, 0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: var(--radius-card); margin-bottom: 20px; }
 
         .user-profile-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 20px; }
         .user-profile-picture { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 600; color: white; border: 3px solid rgba(255,255,255,0.2); overflow: hidden; position: relative; flex-shrink: 0; }
@@ -464,7 +475,9 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            background: #1e1e1e;
+            background: rgba(24, 24, 28, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             padding: 20px;
             border-radius: var(--radius-card);
@@ -721,9 +734,11 @@
             opacity: 0; transition: opacity 0.2s ease;
         }
         .modal-content {
-            background: #1e1e1e;
+            background: rgba(18, 18, 22, 0.92);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-            border: 1px solid #2e2e2e; padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px;
             border-radius: var(--radius-card); width: 100%; max-width: 900px; position: relative; 
             transform: translateY(30px) scale(0.95); transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
             max-height: 90vh;
@@ -1955,8 +1970,10 @@
         }
         .schedule-week-nav {
             display: flex; align-items: center; gap: 6px;
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px; padding: 4px;
         }
         .schedule-week-nav button {
@@ -1981,8 +1998,10 @@
         .schedule-day-header {
             text-align: center; padding: 8px 4px;
             border-radius: 10px;
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .schedule-day-header .day-name {
             font-size: 0.65rem; font-weight: 800; letter-spacing: 0.07em;
@@ -2037,8 +2056,10 @@
         .worker-card {
             display: flex; align-items: flex-start; gap: 12px;
             padding: 14px 16px; border-radius: 16px;
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 6px 18px rgba(0,0,0,0.35);
             transition: transform 0.12s, box-shadow 0.12s;
         }
@@ -2077,8 +2098,10 @@
         }
         .schedule-month-cell {
             min-height: 140px; border-radius: 12px; padding: 10px 8px 8px;
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             cursor: pointer; display: flex; flex-direction: column; gap: 4px;
             transition: transform 0.12s;
         }
@@ -2112,8 +2135,10 @@
         .semester-banner {
             display:flex; align-items:center; gap:10px;
             padding:10px 16px;
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
+            background: rgba(24, 24, 28, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius:12px; font-size:0.82rem; flex-wrap:wrap;
             margin-bottom: 14px;
         }
@@ -10531,6 +10556,10 @@
         <div id="binLightboxContent"></div>
     </div>
 </div>
+<div id="itemPhotoOverlay" onclick="closeItemPhoto()" style="display:none; position:fixed; inset:0; z-index:99999999; background:rgba(0,0,0,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+    <button onclick="closeItemPhoto()" style="position:fixed; top:20px; right:16px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">✕</button>
+    <img id="itemPhotoImg" src="" alt="" style="max-width:100%; max-height:90vh; border-radius:18px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+</div>
 
 <!-- PUBLIC BIN CARD (accessed via ?bin=ID) -->
 <div id="publicBinOverlay">
@@ -10875,7 +10904,7 @@
                     const statusClass = co ? 'out' : 'available';
                     const statusText  = co ? `Out: ${escapeHtml(co.user)}` : 'Available';
                     return `<div class="bin-lightbox-item">
-                        <div class="bin-lightbox-item-img">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
+                        <div class="bin-lightbox-item-img" ${it.picture ? `onclick="event.stopPropagation();openItemPhoto('${it.picture}')" style="cursor:pointer;"` : ''}>${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
                         <div class="bin-lightbox-item-name">${escapeHtml(it.name)}</div>
                         ${it.qty ? `<div class="bin-lightbox-item-qty">×${escapeHtml(it.qty)}</div>` : ''}
                         <div class="bin-lightbox-item-status ${statusClass}">${statusText}</div>
@@ -10899,6 +10928,16 @@
 
     function closeBinPhotoLightbox() {
         document.getElementById('binPhotoLightbox').style.display = 'none';
+    }
+
+    function openItemPhoto(src) {
+        const el = document.getElementById('itemPhotoOverlay');
+        document.getElementById('itemPhotoImg').src = src;
+        el.style.display = 'flex';
+    }
+
+    function closeItemPhoto() {
+        document.getElementById('itemPhotoOverlay').style.display = 'none';
     }
 
     // ── Bin Editor Modal ──
@@ -11226,7 +11265,7 @@
 
             itemRows += `<div class="checkout-item-row ${selClass}" onclick="_toggleCoItem('${bin.id}','${it.id}')">
                 <div class="checkout-item-check">${checkMark}</div>
-                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
+                <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="" onclick="event.stopPropagation();openItemPhoto('${it.picture}')" style="cursor:pointer;">` : ''}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-size:0.9rem;font-weight:700;line-height:1.2;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;font-weight:600;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
                     <div style="margin-top:3px;">${statusBadge}</div>
@@ -11410,7 +11449,7 @@
                     : `<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(52,199,89,0.15);color:#34C759;">Available</span>`;
                 itemRows += `<div class="checkout-item-row ${selClass}" onclick="_togglePubItem('${bin.id}','${it.id}')">
                     <div class="checkout-item-check">${checkMark}</div>
-                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="">` : ''}</div>
+                    <div class="checkout-item-thumb">${it.picture ? `<img src="${it.picture}" alt="" onclick="event.stopPropagation();openItemPhoto('${it.picture}')" style="cursor:pointer;">` : ''}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:0.9rem;font-weight:700;">${escapeHtml(it.name)}${it.qty ? `<span style="color:var(--text-muted);font-size:0.78rem;margin-left:5px;">×${escapeHtml(it.qty)}</span>` : ''}</div>
                         <div style="margin-top:3px;">${badge}</div>
