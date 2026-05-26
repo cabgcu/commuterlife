@@ -1345,6 +1345,159 @@
 
             /* Checkout item rows bigger on mobile */
             .checkout-item-row { min-height: 56px; padding: 12px 10px; border-radius: 16px; }
+
+            /* ── Schedule Mobile Glassmorphism ── */
+            .sched-nav-row {
+                display: flex; align-items: center; gap: 8px; width: 100%;
+            }
+            #view-schedule .schedule-week-nav {
+                flex: 1;
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 16px !important;
+                padding: 10px 14px !important;
+            }
+            .sched-today-btn {
+                flex-shrink: 0;
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 16px !important;
+                padding: 10px 16px !important;
+                font-size: 0.9rem !important;
+                min-height: 44px; color: var(--text-main) !important;
+            }
+            #view-schedule .sched-mode-toggle {
+                width: 100%;
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 16px !important;
+                padding: 4px !important;
+            }
+            #view-schedule .sched-mode-toggle button {
+                border-radius: 12px !important;
+                padding: 10px 0 !important;
+            }
+            #view-schedule .semester-banner {
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 16px !important;
+                padding: 10px 16px !important;
+            }
+            /* Day picker pill - stacked layout */
+            .sched-day-pill {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 64px !important;
+                min-height: 64px !important;
+                border-radius: 20px !important;
+                padding: 10px 8px !important;
+                gap: 2px !important;
+                flex-shrink: 0 !important;
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                cursor: pointer; transition: all 0.2s; font-family: inherit;
+            }
+            .sched-day-pill.active-pill {
+                background: #3b82f6 !important;
+                border-color: #3b82f6 !important;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+            }
+            .sched-pill-name {
+                font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+                color: var(--text-muted); line-height: 1.2;
+            }
+            .sched-pill-num {
+                font-size: 1.15rem; font-weight: 800;
+                color: var(--text-main); line-height: 1.2;
+            }
+            .sched-day-pill.active-pill .sched-pill-name,
+            .sched-day-pill.active-pill .sched-pill-num { color: #ffffff; }
+            /* Mobile timeline area */
+            #view-schedule .schedule-grid { display: none; }
+            .sched-mobile-timeline {
+                display: none; flex-direction: column; gap: 14px;
+            }
+            .sched-mobile-timeline.active-tl { display: flex; }
+            .sched-timeline-event {
+                display: flex; gap: 0 20px; align-items: stretch;
+            }
+            .sched-time-col {
+                display: flex; flex-direction: column; align-items: flex-end;
+                min-width: 68px; font-size: 0.8rem; font-weight: 700;
+                color: var(--text-main); gap: 3px; padding-top: 14px;
+                position: relative; flex-shrink: 0;
+            }
+            .sched-time-col::after {
+                content: ''; position: absolute; right: -10px;
+                top: 26px; bottom: -14px; width: 2px;
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .sched-time-end {
+                color: rgba(255,255,255,0.4); font-weight: 400; font-size: 0.75rem;
+            }
+            .sched-mobile-card {
+                flex: 1; padding: 14px 16px; border-radius: 14px;
+                background: rgba(24, 24, 28, 0.72);
+                backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-left-width: 4px;
+                display: flex; flex-direction: column; gap: 4px; cursor: pointer;
+            }
+            .smc-name { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+            .smc-role { font-size: 0.8rem; color: var(--text-muted); }
+            .smc-action {
+                margin-top: 6px; padding: 5px 0; border-radius: 8px;
+                font-size: 0.72rem; font-weight: 800; text-align: center;
+                cursor: pointer; border: none; font-family: inherit; width: 100%;
+            }
+            .sched-no-shifts {
+                padding: 24px 16px; text-align: center; color: var(--text-muted);
+                font-size: 0.88rem; border-radius: 14px;
+                background: rgba(24,24,28,0.4); border: 1px solid rgba(255,255,255,0.06);
+            }
+            /* Mobile worker cards */
+            #view-schedule .worker-card {
+                background: rgba(24, 24, 28, 0.72) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 20px !important;
+                padding: 0 !important;
+                gap: 0 !important;
+                overflow: hidden;
+                box-shadow: none !important;
+            }
+            #view-schedule .worker-card:hover { transform: none; box-shadow: none !important; }
+            .wc-top { display: flex; align-items: center; gap: 14px; padding: 16px; }
+            .wc-divider { height: 1px; background: rgba(255, 255, 255, 0.08); }
+            .wc-avail-section { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
+            .wc-avail-label {
+                font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
+                letter-spacing: 0.08em; color: rgba(255,255,255,0.35);
+            }
+            #view-schedule .worker-avatar { width: 48px !important; height: 48px !important; font-size: 1.05rem !important; }
+            #view-schedule .workers-panel { border-top: none; margin-top: 8px; }
+            #view-schedule .workers-grid { margin-top: 8px; gap: 10px; }
+            #schedMobileDayPicker {
+                padding: 8px 0 12px 0 !important;
+                margin-bottom: 16px !important;
+                min-height: 80px !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 10px !important;
+            }
         }
         /* @mention autocomplete dropdown */
         .mention-dropdown {
@@ -11449,11 +11602,8 @@
                     ? days.reduce((n,d) => n + shifts.filter(s => s.date===_fmtDate(d) && s.workerId===w.id).length, 0)
                     : shifts.filter(s => s.workerId===w.id && s.date.startsWith(`${_schedMonthDate.getFullYear()}-${String(_schedMonthDate.getMonth()+1).padStart(2,'0')}`)).length;
                 const avail = w.availability || [];
-                const availText = avail.length
-                    ? avail.sort((a,b)=>a.day-b.day).map(a=>`${DAY_NAMES[a.day]} ${_fmtTime(a.startTime)}–${_fmtTime(a.endTime)}`).join(' · ')
-                    : 'No availability set';
                 html += `<div class="worker-card" style="cursor:${isAdmin?'pointer':'default'}; flex-direction:column; align-items:flex-start; gap:10px;" ${isAdmin?`onclick="openWorkerModal('${w.id}')"`:''}>
-                    <div style="display:flex; align-items:center; gap:12px; width:100%;">
+                    <div class="wc-top">
                         <div class="worker-avatar" style="background:${color};">${initials}</div>
                         <div class="worker-info">
                             <div class="worker-name">${escapeHtml(w.name)}</div>
@@ -11461,8 +11611,9 @@
                             <div class="worker-sub">${weekShifts} shift${weekShifts!==1?'s':''} ${days?'this week':'this month'}</div>
                         </div>
                     </div>
-                    <div style="width:100%; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
-                        <div style="font-size:0.65rem; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Availability</div>
+                    <div class="wc-divider"></div>
+                    <div class="wc-avail-section">
+                        <div class="wc-avail-label">Availability</div>
                         ${avail.length ? avail.sort((a,b)=>a.day-b.day).map(a=>`
                             <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
                                 <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); width:32px;">${DAY_NAMES[a.day]}</span>
@@ -11507,8 +11658,13 @@
             col.classList.toggle('active-day', i === idx);
         });
         document.querySelectorAll('[id^="schedDayPill_"]').forEach((btn, i) => {
-            btn.style.background = i===idx ? 'rgba(10,132,255,0.2)' : 'rgba(255,255,255,0.05)';
-            btn.style.borderColor = i===idx ? 'rgba(10,132,255,0.4)' : 'rgba(255,255,255,0.08)';
+            const isActive = i === idx;
+            btn.classList.toggle('active-pill', isActive);
+            btn.style.background = isActive ? 'rgba(10,132,255,0.2)' : 'rgba(255,255,255,0.05)';
+            btn.style.borderColor = isActive ? 'rgba(10,132,255,0.4)' : 'rgba(255,255,255,0.08)';
+        });
+        document.querySelectorAll('[id^="schedMobileTL_"]').forEach((tl, i) => {
+            tl.classList.toggle('active-tl', i === idx);
         });
     }
 
@@ -11925,12 +12081,14 @@
             let navLabel = isWeek
                 ? (() => { const d = _getWeekDays(); return `${d[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${d[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`; })()
                 : _schedMonthDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-            html += `<div class="schedule-week-nav">
-                <button onclick="${isWeek?'schedChangeWeek(-1)':'schedChangeMonth(-1)'}" title="Previous">&#8249;</button>
-                <span class="schedule-week-label">${navLabel}</span>
-                <button onclick="${isWeek?'schedChangeWeek(1)':'schedChangeMonth(1)'}" title="Next">&#8250;</button>
-            </div>
-            <button class="btn-outline" onclick="schedGoToday()" style="font-size:0.8rem; padding:6px 14px;">Today</button>`;
+            html += `<div class="sched-nav-row">
+                <div class="schedule-week-nav">
+                    <button onclick="${isWeek?'schedChangeWeek(-1)':'schedChangeMonth(-1)'}" title="Previous">&#8249;</button>
+                    <span class="schedule-week-label">${navLabel}</span>
+                    <button onclick="${isWeek?'schedChangeWeek(1)':'schedChangeMonth(1)'}" title="Next">&#8250;</button>
+                </div>
+                <button class="btn-outline sched-today-btn" onclick="schedGoToday()">Today</button>
+            </div>`;
         }
 
         html += `<div class="sched-mode-toggle">
@@ -12006,11 +12164,16 @@
         let html = `<div id="schedMobileDayPicker" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none; margin-bottom:12px;">`;
         days.forEach((d, i) => {
             const isToday = _fmtDate(d) === todayStr;
+            const isActive = i === activeDayIdx;
             html += `<button onclick="schedSetActiveDay(${i})" id="schedDayPill_${i}"
+                class="sched-day-pill${isActive?' active-pill':''}"
                 style="flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; cursor:pointer; transition:0.12s;
-                background:${i===activeDayIdx?'rgba(10,132,255,0.2)':'rgba(255,255,255,0.05)'};
-                border:1px solid ${i===activeDayIdx?'rgba(10,132,255,0.4)':'rgba(255,255,255,0.08)'};
-                color:${isToday?'#0A84FF':'var(--text-main)'}; min-height:36px;">${DAY_NAMES[d.getDay()]} ${d.getDate()}</button>`;
+                background:${isActive?'rgba(10,132,255,0.2)':'rgba(255,255,255,0.05)'};
+                border:1px solid ${isActive?'rgba(10,132,255,0.4)':'rgba(255,255,255,0.08)'};
+                color:${isToday?'#0A84FF':'var(--text-main)'}; min-height:36px;">
+                <span class="sched-pill-name">${DAY_NAMES[d.getDay()]}</span>
+                <span class="sched-pill-num"${isToday?' style="color:#3b82f6;"':''}>${d.getDate()}</span>
+            </button>`;
         });
         html += `</div><div class="schedule-grid" id="schedGrid">`;
 
@@ -12097,7 +12260,63 @@
             }
             html += `</div>`;
         });
-        return html + `</div>`;
+        html += `</div>`; // close schedule-grid
+
+        // Mobile timeline sections (one per day, CSS shows active one)
+        days.forEach((d, i) => {
+            const dateStr = _fmtDate(d);
+            const isActive = i === activeDayIdx;
+            const dayShifts = effectiveShifts.filter(s => s.date === dateStr)
+                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+            html += `<div class="sched-mobile-timeline${isActive?' active-tl':''}" id="schedMobileTL_${i}">`;
+            if (!dayShifts.length) {
+                html += `<div class="sched-no-shifts">No shifts scheduled</div>`;
+                if (isAdmin) {
+                    const addFn = useTemplate ? `openWeekOverrideModal(null,'${dateStr}')` : `openShiftModal(null,'${dateStr}')`;
+                    html += `<button onclick="${addFn}" style="margin-top:8px;padding:12px;border-radius:14px;width:100%;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);color:var(--text-muted);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Add Shift</button>`;
+                }
+            } else {
+                dayShifts.forEach(shift => {
+                    const isOpenShift = !shift.workerId || shift.workerId === 'open';
+                    const worker = isOpenShift ? null : workers.find(w => w.id === shift.workerId);
+                    const color = isOpenShift ? '#34C759' : (worker ? (worker.color || '#a855f7') : '#636366');
+                    const wName = isOpenShift ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
+                    const isMyShift = !isOpenShift && currentWorker && shift.workerId === currentWorker.id;
+                    const canClaim = isOpenShift && !isAdmin && currentWorker;
+                    const parentTs = shift.templateShiftId ? (appData.templateShifts||[]).find(t => t.id === shift.templateShiftId) : null;
+                    const isVolunteerSlot = !!(shift.volunteerSlot || (parentTs && parentTs.volunteerSlot));
+                    const clickAction = isAdmin
+                        ? (shift.templateShiftId
+                            ? `openWeekOverrideModal('${shift.templateShiftId}','${weekStartStr}')`
+                            : `openShiftModal('${shift.id||''}')`)
+                        : '';
+                    const hasPendingSwap = shift.templateShiftId &&
+                        swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
+                    html += `<div class="sched-timeline-event">
+                        <div class="sched-time-col">
+                            <span>${_fmtTime(shift.startTime)}</span>
+                            ${shift.endTime ? `<span class="sched-time-end">${_fmtTime(shift.endTime)}</span>` : ''}
+                        </div>
+                        <div class="sched-mobile-card" onclick="${clickAction}"
+                            style="border-left-color:${color}; cursor:${isAdmin||isMyShift||canClaim?'pointer':'default'};">
+                            <span class="smc-name" style="${isOpenShift?'color:'+color+';':''}">${escapeHtml(wName)}</span>
+                            ${shift.role ? `<span class="smc-role">${escapeHtml(shift.role)}</span>` : ''}
+                            ${hasPendingSwap ? `<span style="font-size:0.68rem;color:#FF9500;font-weight:800;">⏳ Swap Pending</span>` : ''}
+                            ${canClaim ? `<button class="smc-action" onclick="event.stopPropagation();claimOpenTemplateShift('${shift.templateShiftId||''}','${shift.id||''}','${weekStartStr}')"
+                                style="background:${color}33;color:${color};">Sign Up →</button>` : ''}
+                            ${isMyShift&&!isAdmin&&!isVolunteerSlot&&!hasPendingSwap ? `<button class="smc-action" onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
+                                style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);">↔ Request Swap</button>` : ''}
+                        </div>
+                    </div>`;
+                });
+                if (isAdmin) {
+                    const addFn = useTemplate ? `openWeekOverrideModal(null,'${dateStr}')` : `openShiftModal(null,'${dateStr}')`;
+                    html += `<button onclick="${addFn}" style="padding:10px;border-radius:14px;width:100%;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);color:var(--text-muted);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">+ shift</button>`;
+                }
+            }
+            html += `</div>`;
+        });
+        return html;
     }
 
     function _renderTemplateEditor(isAdmin) {
