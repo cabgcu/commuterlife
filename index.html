@@ -1634,6 +1634,7 @@
             }
             #view-schedule .worker-avatar { width: 48px !important; height: 48px !important; font-size: 1.05rem !important; }
             #view-schedule .workers-panel { border-top: none; margin-top: 8px; }
+            .workers-week-wrap { display: block; }
             #view-schedule .workers-grid { margin-top: 8px; gap: 10px; }
             #schedMobileDayPicker {
                 padding: 8px 0 12px 0 !important;
@@ -2018,6 +2019,8 @@
             margin-top: 24px; padding-top: 20px;
             border-top: 1px solid rgba(255,255,255,0.07);
         }
+        /* Desktop: hide workers panel on week view; shown only on mobile */
+        .workers-week-wrap { display: none; }
         .workers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -12317,8 +12320,10 @@
         else if (_schedMode === 'semesters')  html += _renderSemesterManager(isAdmin);
         else if (_schedMode === 'swaps')      html += _renderSwapsInline(isAdmin, currentWorker);
 
-        if (_schedMode === 'week' || _schedMode === 'month')
-            html += _renderWorkersPanel(isAdmin, _schedMode === 'week' ? _getWeekDays() : null);
+        if (_schedMode === 'week')
+            html += `<div class="workers-week-wrap">${_renderWorkersPanel(isAdmin, _getWeekDays())}</div>`;
+        else if (_schedMode === 'month')
+            html += _renderWorkersPanel(isAdmin, null);
 
         container.innerHTML = html;
         _applyScheduleMobileMode();
