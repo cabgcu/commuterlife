@@ -1169,7 +1169,7 @@
             .ntab-label { display: block; font-size: 0.58rem; font-weight: 600; line-height: 1; margin-top: 2px; }
 
             .app-view {
-                padding-top: calc(env(safe-area-inset-top, 44px) + 8px) !important;
+                padding-top: calc(env(safe-area-inset-top, 44px) + 20px) !important;
                 padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
             }
             /* Views that need full-page vertical scroll on mobile */
@@ -1179,7 +1179,7 @@
 
             /* Snap-scrolling Kanban Columns */
             .board-container {
-                padding: calc(env(safe-area-inset-top, 44px) + 16px) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
+                padding: calc(env(safe-area-inset-top, 44px) + 20px) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
                 scroll-snap-type: x mandatory; scroll-padding: 7.5vw; gap: 16px;
                 align-items: stretch !important;
             }
@@ -1281,7 +1281,7 @@
             .bin-lightbox-inner { padding: 64px 16px calc(40px + env(safe-area-inset-bottom)); gap: 22px; }
             .bin-lightbox-items-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
             /* Schedule mobile: single-day view */
-            #view-schedule .schedule-wrapper { padding: 8px 8px 0; }
+            #view-schedule .schedule-wrapper { padding: 12px 12px 0; }
             .schedule-grid { grid-template-columns: 1fr; }
             .schedule-grid .schedule-day-col { display: none; }
             .schedule-grid .schedule-day-col.active-day { display: flex; }
@@ -2021,6 +2021,9 @@
         }
         /* Desktop: hide workers panel on week view; shown only on mobile */
         .workers-week-wrap { display: none; }
+        /* Mobile-only elements hidden by default on desktop */
+        .sched-mobile-timeline { display: none; }
+        .sched-month-list { display: none; }
         .workers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
