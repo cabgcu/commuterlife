@@ -1169,7 +1169,7 @@
             .ntab-label { display: block; font-size: 0.58rem; font-weight: 600; line-height: 1; margin-top: 2px; }
 
             .app-view {
-                padding-top: env(safe-area-inset-top, 0px) !important;
+                padding-top: calc(env(safe-area-inset-top, 44px) + 8px) !important;
                 padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
             }
             /* Views that need full-page vertical scroll on mobile */
@@ -1179,7 +1179,7 @@
 
             /* Snap-scrolling Kanban Columns */
             .board-container {
-                padding: calc(16px + env(safe-area-inset-top, 0px)) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
+                padding: calc(env(safe-area-inset-top, 44px) + 16px) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
                 scroll-snap-type: x mandatory; scroll-padding: 7.5vw; gap: 16px;
                 align-items: stretch !important;
             }
@@ -1332,7 +1332,7 @@
             .modal-content { min-height: 40dvh; }
 
             /* Bin lightbox close button safe position */
-            .bin-lightbox-close { top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; }
+            .bin-lightbox-close { top: calc(12px + env(safe-area-inset-top, 44px)); right: 14px; }
 
             /* Settings inputs full-width */
             .settings-input-row { flex-direction: column; gap: 8px; }
