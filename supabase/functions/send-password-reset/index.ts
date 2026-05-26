@@ -121,9 +121,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "CAB Commuter Life", email: "noreply@cabgcu.com" },
+        sender: { name: "Commuter Life", email: "noreply@cabgcu.com" },
         to: [{ email: normalizedEmail, name: userName }],
-        subject: "Reset Your Password – CAB Commuter Life",
+        subject: "Reset Your Password – Commuter Life",
         htmlContent: `
 <!DOCTYPE html>
 <html>
