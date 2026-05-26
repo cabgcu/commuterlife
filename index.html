@@ -1169,7 +1169,7 @@
             .ntab-label { display: block; font-size: 0.58rem; font-weight: 600; line-height: 1; margin-top: 2px; }
 
             .app-view {
-                padding-top: calc(env(safe-area-inset-top, 44px) + 20px) !important;
+                padding-top: max(calc(env(safe-area-inset-top) + 20px), 64px) !important;
                 padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
             }
             /* Views that need full-page vertical scroll on mobile */
@@ -1179,7 +1179,7 @@
 
             /* Snap-scrolling Kanban Columns */
             .board-container {
-                padding: calc(env(safe-area-inset-top, 44px) + 20px) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
+                padding: max(calc(env(safe-area-inset-top) + 20px), 64px) 7.5vw calc(100px + env(safe-area-inset-bottom)) 7.5vw !important;
                 scroll-snap-type: x mandatory; scroll-padding: 7.5vw; gap: 16px;
                 align-items: stretch !important;
             }
@@ -2019,6 +2019,8 @@
             margin-top: 24px; padding-top: 20px;
             border-top: 1px solid rgba(255,255,255,0.07);
         }
+        /* Schedule nav row — flex on all screen sizes */
+        .sched-nav-row { display: flex; align-items: center; gap: 8px; }
         /* Desktop: hide workers panel on week view; shown only on mobile */
         .workers-week-wrap { display: none; }
         /* Mobile-only elements hidden by default on desktop */
@@ -12294,8 +12296,11 @@
             html += `<button class="btn-action" onclick="openTemplateShiftModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Template Shift</button>`;
         if (isAdmin && _schedMode === 'semesters')
             html += `<button class="btn-action" onclick="openSemesterModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Semester</button>`;
-        if (isAdmin && _schedMode === 'week')
+        if (isAdmin && _schedMode === 'week') {
+            html += `<button class="btn-action" onclick="openShiftModal(null)" style="font-size:0.8rem; padding:6px 16px;">+ Add Shift</button>`;
+            html += `<button class="btn-outline" onclick="openWorkerModal(null)" style="font-size:0.8rem; padding:6px 14px;">+ Add Worker</button>`;
             html += `<button class="btn-outline" onclick="printSchedule()" style="font-size:0.8rem; padding:6px 14px;">🖨 Print</button>`;
+        }
         if (_schedMode === 'swaps' && (isAdmin || currentWorker))
             html += `<button class="btn-action" onclick="openSwapRequestModal(null,null)" style="font-size:0.8rem; padding:6px 16px;">+ Request Swap</button>`;
 
