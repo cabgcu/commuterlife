@@ -1243,9 +1243,10 @@
             .modern-input, .rich-text-editor, .checklist-text { max-width: 100%; box-sizing: border-box; }
             #modalTabDetails > div > div { max-width: 100%; }
             #taskDueDate { min-width: 0 !important; width: 100%; }
-            /* Shift modal — normalize date/time inputs to same size as text inputs */
+            /* Normalize date/time inputs to match select height on mobile */
             #shiftModal .modern-input[type="date"],
-            #shiftModal .modern-input[type="time"] {
+            #shiftModal .modern-input[type="time"],
+            #swapRequestModal .modern-input[type="date"] {
                 -webkit-appearance: none; appearance: none;
                 min-width: 0; width: 100%; box-sizing: border-box;
                 height: 50px; padding: 0 14px;
