@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commuter Life — Training Manual</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #0A84FF;
+      --purple: #BF5AF2;
+      --green: #30D158;
+      --orange: #FF9F0A;
+      --red: #FF453A;
+      --bg: #050505;
+      --surface: rgba(255,255,255,0.05);
+      --surface-hover: rgba(255,255,255,0.09);
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f0;
+      --muted: rgba(255,255,255,0.45);
+      --radius: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, rgba(10,132,255,0.15) 0%, rgba(191,90,242,0.15) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 64px 24px 48px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 0;
+    }
+    @media (max-width: 760px) {
+      .wrapper { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 32px 0 32px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .sidebar-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+    .sidebar nav a {
+      display: block;
+      padding: 7px 12px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: all .15s;
+      margin-bottom: 2px;
+    }
+    .sidebar nav a:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+    .sidebar nav a.active {
+      color: var(--blue);
+      background: rgba(10,132,255,0.12);
+      font-weight: 600;
+    }
+    .sidebar nav .section-header {
+      display: block;
+      padding: 14px 4px 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      pointer-events: none;
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      padding: 48px 40px;
+      min-width: 0;
+    }
+    @media (max-width: 600px) { .content { padding: 32px 20px; } }
+
+    /* ── SECTIONS ── */
+    .section {
+      margin-bottom: 72px;
+    }
+    .section-label {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 8px;
+    }
+    .section h2 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    .section > p, .section > ul {
+      color: rgba(255,255,255,0.7);
+      max-width: 680px;
+      margin-bottom: 24px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 36px 0 12px;
+      color: #fff;
+    }
+    h3:first-child { margin-top: 0; }
+
+    p { margin-bottom: 12px; color: rgba(255,255,255,0.7); }
+    ul, ol { color: rgba(255,255,255,0.7); padding-left: 20px; margin-bottom: 16px; }
+    li { margin-bottom: 6px; }
+    strong { color: var(--text); font-weight: 600; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .card p { margin-bottom: 0; font-size: 14px; }
+
+    /* ── FEATURE GRID ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: background .15s;
+    }
+    .feature-card:hover { background: var(--surface-hover); }
+    .feature-card .icon { font-size: 26px; margin-bottom: 10px; }
+    .feature-card .name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .feature-card .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── STEPS ── */
+    .steps { counter-reset: steps; margin-bottom: 24px; }
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+      align-items: flex-start;
+    }
+    .step-num {
+      counter-increment: steps;
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    .step-body { font-size: 14px; color: rgba(255,255,255,0.7); padding-top: 4px; }
+    .step-body strong { color: var(--text); }
+
+    /* ── TIPS ── */
+    .tip {
+      background: rgba(10,132,255,0.08);
+      border: 1px solid rgba(10,132,255,0.2);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      font-size: 13.5px;
+      color: rgba(255,255,255,0.75);
+    }
+    .tip::before { content: "💡  "; }
+    .tip.warn { background: rgba(255,159,10,0.08); border-color: rgba(255,159,10,0.2); }
+    .tip.warn::before { content: "⚠️  "; }
+    .tip.admin { background: rgba(191,90,242,0.08); border-color: rgba(191,90,242,0.2); }
+    .tip.admin::before { content: "🔒  "; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 100px;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+    .badge-blue { background: rgba(10,132,255,0.2); color: var(--blue); }
+    .badge-purple { background: rgba(191,90,242,0.2); color: var(--purple); }
+    .badge-green { background: rgba(48,209,88,0.2); color: var(--green); }
+    .badge-orange { background: rgba(255,159,10,0.2); color: var(--orange); }
+    .badge-red { background: rgba(255,69,58,0.2); color: var(--red); }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; margin-bottom: 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th {
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.7);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-hover); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 40px 0;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Training Manual</div>
+  <h1>Commuter Life</h1>
+  <p>Your complete guide to managing tasks, schedules, storage, and events — all in one place.</p>
+</div>
+
+<div class="wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Contents</div>
+    <nav>
+      <a href="#getting-started">Getting Started</a>
+      <a href="#overview">App Overview</a>
+
+      <span class="section-header">Views</span>
+      <a href="#board">Board</a>
+      <a href="#calendar">Calendar</a>
+      <a href="#due-soon">Due Soon</a>
+      <a href="#storage">Storage</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#manager">Manager</a>
+      <a href="#settings">Settings</a>
+
+      <span class="section-header">More</span>
+      <a href="#notifications">Notifications</a>
+      <a href="#tips">Tips &amp; Shortcuts</a>
+    </nav>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ── GETTING STARTED ── -->
+    <section class="section" id="getting-started">
+      <span class="section-label">Chapter 1</span>
+      <h2>Getting Started</h2>
+      <p>Welcome to Commuter Life — a workspace built for teams to coordinate projects, shifts, equipment, and events from a single app. This manual walks you through every feature so you can hit the ground running.</p>
+
+      <h3>Logging In</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Open the Commuter Life app in your browser (or from your home screen if installed).</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Enter the <strong>email address</strong> associated with your workspace account.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Returning user:</strong> Enter your password and tap <strong>Sign In</strong>.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>New account:</strong> You'll be prompted to create a password and optionally upload a profile photo.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body">Once signed in, you land on the <strong>Board</strong> view — your main workspace.</div></div>
+      </div>
+
+      <div class="tip">Forgot your password? Tap <strong>"Forgot password?"</strong> on the login screen and check your email for a reset link.</div>
+
+      <h3>Installing as a Home Screen App</h3>
+      <p>Commuter Life works as a Progressive Web App (PWA), which means it can be installed directly to your phone or computer for a native-app feel — no App Store required.</p>
+      <ul>
+        <li><strong>iPhone/iPad:</strong> Open in Safari → tap the <strong>Share</strong> button → <strong>Add to Home Screen</strong>.</li>
+        <li><strong>Android:</strong> Open in Chrome → tap the three-dot menu → <strong>Add to Home Screen</strong>.</li>
+        <li><strong>Desktop (Chrome/Edge):</strong> Look for the install icon in the address bar and click it.</li>
+      </ul>
+    </section>
+
+    <!-- ── OVERVIEW ── -->
+    <section class="section" id="overview">
+      <span class="section-label">Chapter 2</span>
+      <h2>App Overview</h2>
+      <p>The app is divided into seven main views accessible from the navigation bar. On <strong>mobile</strong>, the nav bar sits at the bottom of the screen. On <strong>desktop</strong>, controls appear along the top.</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">📋</div>
+          <div class="name">Board</div>
+          <div class="desc">Kanban-style task management with drag-and-drop columns</div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📅</div>
+          <div class="name">Calendar</div>
+          <div class="desc">Month view showing all tasks laid out by due date</div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">⏰</div>
+          <div class="name">Due Soon</div>
+          <div class="desc">Sorted list of urgent and upcoming tasks</div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📦</div>
+          <div class="name">Storage</div>
+          <div class="desc">Equipment bins — check items in and out, track inventory</div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🗓️</div>
+          <div class="name">Schedule</div>
+          <div class="desc">Shift scheduling and worker availability grid</div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📊</div>
+          <div class="name">Manager</div>
+          <div class="desc">Events, budgets, and photo galleries (admin-focused)</div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">⚙️</div>
+          <div class="name">Settings</div>
+          <div class="desc">Profile, workspace, team members, and preferences</div>
+        </div>
+      </div>
+
+      <h3>User Roles at a Glance</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>Regular User</th><th>Admin / Manager</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>View &amp; create tasks</td><td>✅</td><td>✅</td></tr>
+            <tr><td>Drag tasks between columns</td><td>✅</td><td>✅</td></tr>
+            <tr><td>Check out storage items</td><td>✅</td><td>✅</td></tr>
+            <tr><td>View schedule &amp; shifts</td><td>✅</td><td>✅</td></tr>
+            <tr><td>Add / edit shifts</td><td>—</td><td>✅</td></tr>
+            <tr><td>Manager view (events, budgets)</td><td>—</td><td>✅</td></tr>
+            <tr><td>Manage team members</td><td>—</td><td>✅</td></tr>
+            <tr><td>Workspace branding &amp; settings</td><td>—</td><td>✅</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── BOARD ── -->
+    <section class="section" id="board">
+      <span class="section-label">Chapter 3</span>
+      <h2>Board View</h2>
+      <p>The Board is your team's central workspace — a Kanban board with columns representing stages of work. Cards move left-to-right as work progresses.</p>
+
+      <h3>Understanding the Board</h3>
+      <p>Each <strong>column</strong> represents a workflow stage (e.g. <em>To Do</em>, <em>In Progress</em>, <em>Done</em>). Each <strong>card</strong> is a task. Drag cards between columns to update their status.</p>
+
+      <h3>Creating a Task</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Click the <strong>+ Add Task</strong> button at the top or bottom of any column.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Type the task title and press <strong>Enter</strong> to create quickly — or click the card to open the full details panel.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Fill in optional details: description, due date, assignees, labels, checklist, and attachments.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">Changes save automatically — no need to hit a Save button.</div></div>
+      </div>
+
+      <h3>Task Details Panel</h3>
+      <p>Click any card to open its full details. Here's what you can add:</p>
+      <div class="card"><h4>📝 Description</h4><p>A rich-text field for notes, context, or links. Supports formatted text and hyperlinks.</p></div>
+      <div class="card"><h4>📅 Due Date</h4><p>Pick a date from the date picker. Overdue cards are highlighted in red; tasks due within 48 hours show in orange.</p></div>
+      <div class="card"><h4>👥 Assignees</h4><p>Drag team member avatars onto the card, or click the assignee button inside the panel. Multiple people can be assigned to the same task.</p></div>
+      <div class="card"><h4>🏷️ Labels</h4><p>Color-coded tags for categorization: blue, purple, pink, green, orange, and lime. Click a label pill to toggle it on or off.</p></div>
+      <div class="card"><h4>✅ Checklist</h4><p>Break a task into sub-items. Each checklist item can have its own assignee. Tick items off as they're completed — the card shows a progress indicator.</p></div>
+      <div class="card"><h4>📎 Attachments</h4><p>Upload files or images directly to a card. Images show a thumbnail preview; other files show as download links.</p></div>
+      <div class="card"><h4>💬 Comments &amp; Activity</h4><p>Leave comments for teammates. All changes (status moves, assignee changes, due date edits) are logged in the activity feed.</p></div>
+
+      <h3>Moving &amp; Organizing Tasks</h3>
+      <ul>
+        <li><strong>Drag &amp; drop</strong> a card to a different column to change its status.</li>
+        <li>Use the <strong>status dropdown</strong> inside the card panel to change the column without dragging.</li>
+        <li>Long-press on mobile to enter drag mode.</li>
+      </ul>
+
+      <h3>Bulk Actions</h3>
+      <p>To select multiple cards at once, use the <strong>multi-select mode</strong> (look for the checkbox toggle). Select the cards you want, then choose a bulk action such as deleting them all at once.</p>
+
+      <div class="tip">Cards auto-save every time you make a change. If you close the panel mid-edit, your work is already saved.</div>
+    </section>
+
+    <!-- ── CALENDAR ── -->
+    <section class="section" id="calendar">
+      <span class="section-label">Chapter 4</span>
+      <h2>Calendar View</h2>
+      <p>The Calendar view shows all tasks with due dates laid out on a monthly grid — great for spotting deadline clusters and planning workload distribution.</p>
+
+      <h3>Reading the Calendar</h3>
+      <ul>
+        <li>Each <strong>task pill</strong> on a day represents one task with a due date on that day.</li>
+        <li><strong>Today's date</strong> is highlighted with a blue ring.</li>
+        <li>Hover over a task pill to see a quick summary without opening the full panel.</li>
+        <li>Click a task pill to open its full details.</li>
+      </ul>
+
+      <h3>Rescheduling Tasks</h3>
+      <p>Drag a task pill from one day to another to update its due date instantly. No need to open the card manually.</p>
+
+      <div class="tip">If the current month looks crowded, switch to the <strong>Board</strong> view and filter by label to focus on a specific category of work.</div>
+    </section>
+
+    <!-- ── DUE SOON ── -->
+    <section class="section" id="due-soon">
+      <span class="section-label">Chapter 5</span>
+      <h2>Due Soon</h2>
+      <p>Due Soon is a filtered, time-sorted list of tasks that need attention. It's the fastest way to triage what's urgent without scrolling through the entire board.</p>
+
+      <h3>Understanding the List</h3>
+      <ul>
+        <li>Tasks are sorted from <strong>most urgent</strong> (overdue or due today) to furthest out.</li>
+        <li>A countdown shows how many days or hours remain for each task.</li>
+        <li>Priority dots indicate task urgency: <span class="badge badge-red">High</span> <span class="badge badge-orange">Medium</span> <span class="badge badge-blue">Low</span></li>
+      </ul>
+
+      <p>Click any item to open its full card details, just like on the Board.</p>
+    </section>
+
+    <!-- ── STORAGE ── -->
+    <section class="section" id="storage">
+      <span class="section-label">Chapter 6</span>
+      <h2>Storage View</h2>
+      <p>Storage helps your team track physical equipment and supplies organized into labeled bins. Anyone can check items out or back in, and the system keeps a history.</p>
+
+      <h3>Browsing Bins</h3>
+      <p>The Storage view shows a grid of all bins. Each bin card displays its name, emoji icon, and a status indicator showing how many items are currently checked out.</p>
+
+      <h3>Viewing a Bin's Contents</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Click any bin card to open its detail panel.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">You'll see a list of all items inside the bin along with their quantities and current status (<span class="badge badge-green">Available</span> or <span class="badge badge-orange">Checked Out</span>).</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">A <strong>checkout history</strong> log shows who checked items out and when they were returned.</div></div>
+      </div>
+
+      <h3>Checking Out an Item</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Open the bin containing the item.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Click the item row to select it.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Tap <strong>Check Out</strong>. The item status changes to <span class="badge badge-orange">Checked Out</span> and is logged with your name and timestamp.</div></div>
+      </div>
+
+      <h3>Returning an Item</h3>
+      <p>Open the same item and tap <strong>Check In</strong>. The item returns to <span class="badge badge-green">Available</span> status.</p>
+
+      <h3>QR Code Access</h3>
+      <p>Each bin has a <strong>QR code</strong> (visible inside the bin panel). Scanning it opens that bin's public page — useful for physical labels on the bin itself. Anyone with the link can view contents and check items in/out without logging in.</p>
+
+      <div class="tip warn">Items marked as checked out will show in orange on the bin grid. Make sure to check items back in after use so teammates know what's available.</div>
+    </section>
+
+    <!-- ── SCHEDULE ── -->
+    <section class="section" id="schedule">
+      <span class="section-label">Chapter 7</span>
+      <h2>Schedule View</h2>
+      <p>The Schedule view coordinates who is working when. It shows both <strong>assigned shifts</strong> and <strong>worker availability</strong> in one place.</p>
+
+      <h3>Reading the Schedule</h3>
+      <p>On <strong>desktop</strong>, you'll see a 7-day week grid. Each column is a day; each row shows shifts for that day. Shift cards display the worker's name, role, and start/end time.</p>
+      <p>On <strong>mobile</strong>, you can toggle between a <strong>Week</strong> timeline view and a <strong>Month</strong> calendar view using the mode toggle at the top.</p>
+
+      <h3>Worker Availability</h3>
+      <p>Below the shift grid, availability cards show each team member's available hours for each day of the week. This helps admins assign shifts that fit people's schedules.</p>
+
+      <h3>Adding a Shift <span class="badge badge-purple">Admin</span></h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Click the <strong>+ Add Shift</strong> button inside a day column.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Select the <strong>worker</strong> from the dropdown.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Choose a <strong>role</strong> and set the <strong>start and end times</strong>.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">Save — the shift appears on the grid and the worker receives a notification.</div></div>
+      </div>
+
+      <h3>Shift Reminders</h3>
+      <p>Workers automatically receive push notifications:</p>
+      <ul>
+        <li><strong>24 hours before</strong> their shift starts.</li>
+        <li><strong>1 hour before</strong> their shift starts.</li>
+      </ul>
+      <p>Make sure push notifications are enabled in your browser (see the <a href="#notifications">Notifications</a> section).</p>
+
+      <h3>Sharing the Availability Page</h3>
+      <p>Admins can share a <strong>public link</strong> that lets team members view worker availability without logging in — handy for posting in a group chat.</p>
+    </section>
+
+    <!-- ── MANAGER ── -->
+    <section class="section" id="manager">
+      <span class="section-label">Chapter 8</span>
+      <h2>Manager View <span class="badge badge-purple">Admin</span></h2>
+      <p>Manager is an admin-focused hub for planning events, tracking budgets, and storing event photos. It's organized into four sub-tabs.</p>
+
+      <div class="tip admin">This view is fully visible to all users on desktop. On mobile, it may be restricted to admin accounts.</div>
+
+      <h3>Events Tab</h3>
+      <p>Track every event your team is running. Each event has a name, date, assigned workers, and a status badge:</p>
+      <ul>
+        <li><span class="badge badge-green">OK</span> — On track, no issues.</li>
+        <li><span class="badge badge-orange">Warn</span> — Needs attention.</li>
+        <li><span class="badge badge-red">Action Needed</span> — Urgent issue to resolve.</li>
+      </ul>
+
+      <p><strong>To add a new event:</strong> Click <strong>+ New Event</strong>, fill in the event name, date, and assigned team members, then save.</p>
+      <p>Toggle between <strong>List view</strong> and <strong>Card view</strong> using the view switcher in the top-right of the tab.</p>
+
+      <h3>Calendar Tab</h3>
+      <p>A 7-column calendar grid plots events by date. Click an event pill to see its details. Great for spotting scheduling conflicts at a glance.</p>
+
+      <h3>Budget Tab</h3>
+      <p>Track expenses for each event. Add a new expense with a <strong>category</strong>, <strong>amount</strong>, and <strong>description</strong>. All expenses are displayed in a table sorted by event and category.</p>
+
+      <h3>Photos Tab</h3>
+      <p>Upload and manage photos from events. Photos display in a grid gallery. Click any photo to view it full size; admins can delete photos from this view.</p>
+    </section>
+
+    <!-- ── SETTINGS ── -->
+    <section class="section" id="settings">
+      <span class="section-label">Chapter 9</span>
+      <h2>Settings</h2>
+      <p>Settings is where you manage your profile, control workspace preferences, and handle team membership.</p>
+
+      <h3>Your Profile</h3>
+      <ul>
+        <li><strong>Profile Photo:</strong> Click your avatar to upload a new photo. Supported formats: JPG, PNG, WebP.</li>
+        <li><strong>Display Name:</strong> Your full name as it appears across the app.</li>
+        <li><strong>Email:</strong> The email address used to log in.</li>
+      </ul>
+
+      <h3>Workspace Settings <span class="badge badge-purple">Admin</span></h3>
+      <p>Admins can customize the workspace to match your organization's branding:</p>
+      <ul>
+        <li><strong>Workspace Name</strong> — The title shown at the top of the app.</li>
+        <li><strong>Logo</strong> — Upload a logo image that appears in the header.</li>
+        <li><strong>App Icon</strong> — The icon displayed when the app is installed on a device.</li>
+        <li><strong>Board Background</strong> — Set a background image or color for the Board view.</li>
+      </ul>
+
+      <h3>Switching Workspaces</h3>
+      <p>If your organization runs multiple workspaces (e.g. different academic years or teams), use the <strong>Workspace Switcher</strong> in Settings to jump between them. Each workspace has its own board, schedule, and storage.</p>
+
+      <h3>Managing Team Members <span class="badge badge-purple">Admin</span></h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Scroll to the <strong>Team Members</strong> section in Settings.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">To <strong>add</strong> someone, enter their email address and click <strong>Invite</strong>. They'll receive an email to set up their account.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">To <strong>remove</strong> someone, find their name in the list and click the remove (×) button next to their name.</div></div>
+      </div>
+
+      <div class="tip warn">Removing a team member revokes their access immediately. Any tasks assigned to them will remain on the board.</div>
+
+      <h3>Importing Tasks</h3>
+      <p>If your team previously used <strong>Monday.com</strong>, admins can import existing tasks directly into the Board. Look for the <strong>Import from Monday.com</strong> option in Settings and follow the prompts.</p>
+
+      <h3>Deleting a Workspace <span class="badge badge-red">Irreversible</span></h3>
+      <p>Admins can permanently delete the entire workspace including all tasks, schedules, and storage data. This action cannot be undone. You'll be asked to confirm by typing the workspace name before deletion proceeds.</p>
+    </section>
+
+    <!-- ── NOTIFICATIONS ── -->
+    <section class="section" id="notifications">
+      <span class="section-label">Chapter 10</span>
+      <h2>Notifications</h2>
+      <p>Commuter Life sends notifications both inside the app (in-app) and as push notifications to your device, so you never miss an important update.</p>
+
+      <h3>In-App Notifications</h3>
+      <p>Tap the <strong>bell icon</strong> (top-right on desktop, bottom nav on mobile) to open your notification panel. Each notification is listed with a timestamp. Unread notifications are highlighted; tap one to mark it as read and jump to the related item.</p>
+
+      <h3>Push Notifications</h3>
+      <p>Push notifications appear on your device even when the app isn't open. When you first use the app, your browser will ask permission to send notifications — click <strong>Allow</strong> to enable them.</p>
+
+      <h3>What You'll Be Notified About</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Event</th><th>Who Gets Notified</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A card is assigned to you</td><td>Assigned user</td></tr>
+            <tr><td>Someone comments on your card</td><td>Card assignees</td></tr>
+            <tr><td>A card's due date is updated</td><td>Card assignees</td></tr>
+            <tr><td>A card is moved to a new column</td><td>Card assignees</td></tr>
+            <tr><td>A checklist item is completed</td><td>Card assignees</td></tr>
+            <tr><td>A shift is added for you</td><td>Assigned worker</td></tr>
+            <tr><td>A shift is cancelled</td><td>Assigned worker</td></tr>
+            <tr><td>Your shift is 24 hours away</td><td>Assigned worker</td></tr>
+            <tr><td>Your shift is 1 hour away</td><td>Assigned worker</td></tr>
+            <tr><td>A swap request is made</td><td>Relevant workers</td></tr>
+            <tr><td>Open volunteer shifts are posted</td><td>All team members</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Notification Preferences</h3>
+      <p>In <strong>Settings → Notifications</strong>, you can toggle each notification type on or off. Prefer fewer pings? Disable the categories you don't need while keeping the important ones enabled.</p>
+
+      <div class="tip">If push notifications aren't arriving, check that your browser has permission to send them: open your browser settings and search for "Notifications" to confirm Commuter Life is set to <em>Allow</em>.</div>
+    </section>
+
+    <!-- ── TIPS ── -->
+    <section class="section" id="tips">
+      <span class="section-label">Chapter 11</span>
+      <h2>Tips &amp; Shortcuts</h2>
+
+      <h3>Power User Tips</h3>
+      <ul>
+        <li><strong>Drag tasks on the calendar</strong> to reschedule them — faster than opening the card.</li>
+        <li><strong>Assign multiple people</strong> to a single task for shared ownership.</li>
+        <li><strong>Use labels consistently</strong> across your team so filters and visual scans work well (e.g., always tag client work "blue", internal work "green").</li>
+        <li><strong>Checklist items can have separate assignees</strong> — break a task into clear sub-owners so nothing falls through the cracks.</li>
+        <li><strong>Pin the app to your home screen</strong> (PWA install) for fastest access and full-screen experience.</li>
+        <li><strong>Use the QR codes on storage bins</strong> to print and label physical bins — teammates can scan to check items out without navigating the app manually.</li>
+      </ul>
+
+      <h3>Common Questions</h3>
+
+      <div class="card">
+        <h4>Can I use Commuter Life on my phone?</h4>
+        <p>Yes — the app is mobile-first. Install it to your home screen for the best experience with a native bottom tab bar and full-screen layout.</p>
+      </div>
+      <div class="card">
+        <h4>Do I need to save my changes manually?</h4>
+        <p>No. Every change you make — task edits, card moves, checklist updates — saves automatically in real time.</p>
+      </div>
+      <div class="card">
+        <h4>Who can add or remove team members?</h4>
+        <p>Only workspace admins can add or remove members. If you need someone added, contact your admin.</p>
+      </div>
+      <div class="card">
+        <h4>How do I stop getting so many notifications?</h4>
+        <p>Go to <strong>Settings → Notifications</strong> and toggle off the categories you don't need. You can re-enable them at any time.</p>
+      </div>
+      <div class="card">
+        <h4>Can someone outside the team see our board?</h4>
+        <p>No — the board and most views require login. The only public-facing pages are individual storage bin pages (via QR code link) and the worker availability link, if shared by an admin.</p>
+      </div>
+      <div class="card">
+        <h4>What happens if I accidentally delete a task?</h4>
+        <p>Deleted tasks are removed permanently. Before using bulk delete, double-check your selection. If in doubt, move the card to a "Review" or "Archive" column instead of deleting.</p>
+      </div>
+
+      <hr class="divider" />
+
+      <p style="color: var(--muted); font-size: 13px; text-align: center;">Commuter Life Training Manual · For questions, contact your workspace admin.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sidebar nav a[href^="#"]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
