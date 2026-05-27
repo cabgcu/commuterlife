@@ -326,6 +326,7 @@
 
       <span class="section-header">Views</span>
       <a href="#board">Board</a>
+      <a href="#automations">Automations</a>
       <a href="#calendar">Calendar</a>
       <a href="#due-soon">Due Soon</a>
       <a href="#storage">Storage</a>
@@ -472,9 +473,110 @@
       <div class="tip">Cards auto-save every time you make a change. If you close the panel mid-edit, your work is already saved.</div>
     </section>
 
+    <!-- ── AUTOMATIONS ── -->
+    <section class="section" id="automations">
+      <span class="section-label">Chapter 4</span>
+      <h2>Automations</h2>
+      <p>Automations are rules that run in the background without you lifting a finger. Each rule watches for a specific event (the <strong>trigger</strong>) and then performs one or more actions automatically. Once set up, they save your team time on repetitive steps — like adding labels, moving cards, or assigning members.</p>
+
+      <div class="tip">Open Automations by clicking the <strong>✨ Automations</strong> button in the top controls bar. The button header also shows a live count of how many times your rules have fired in total.</div>
+
+      <h3>Creating a New Rule</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Click <strong>✨ Automations</strong> in the top bar to open the Automations panel.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Click <strong>+ Create Rule</strong>. The rule builder expands below.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Under <strong>⚡ When this happens</strong>, pick a trigger from the dropdown (see full list below).</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">If the trigger needs a value (e.g., a column name, a label name, or a number of days), fill it in.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body">Under <strong>👉 Then do all of this</strong>, click <strong>+ Add Action</strong> and choose what should happen.</div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-body">Configure each action's parameters. Add as many actions as you need — they all run together.</div></div>
+        <div class="step"><div class="step-num">7</div><div class="step-body">Click <strong>Save Rule</strong>. The rule appears in your list immediately and starts running.</div></div>
+      </div>
+
+      <h3>Available Triggers</h3>
+      <p>Choose one trigger per rule. Some triggers require an extra value to be set.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Trigger</th><th>Fires when…</th><th>Extra value needed?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Card created</strong></td><td>Any new card is added to the board</td><td>None</td></tr>
+            <tr><td><strong>Card moved</strong></td><td>A card is dragged into a specific column</td><td>Choose the target column</td></tr>
+            <tr><td><strong>Card completed</strong></td><td>A card is marked as complete</td><td>None</td></tr>
+            <tr><td><strong>Description contains</strong></td><td>A card's description includes certain text</td><td>Enter the text to match</td></tr>
+            <tr><td><strong>Title contains</strong></td><td>A card's title includes certain text</td><td>Enter the text to match</td></tr>
+            <tr><td><strong>Label added</strong></td><td>A specific label is added to a card</td><td>Enter the label name</td></tr>
+            <tr><td><strong>Priority set</strong></td><td>A card's priority is set to High, Medium, or Low</td><td>Select the priority level</td></tr>
+            <tr><td><strong>Checklist completed</strong></td><td>All checklist items on a card are ticked off</td><td>None</td></tr>
+            <tr><td><strong>Due soon</strong></td><td>A card's due date is within X days</td><td>Enter number of days (1–30)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Available Actions</h3>
+      <p>You can combine multiple actions in a single rule — they all fire together when the trigger conditions are met.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Action</th><th>What it does</th><th>Parameters</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Add label</strong></td><td>Adds a color-coded label to the card</td><td>Label name + color (Blue, Purple, Pink, Green, Orange, Lime)</td></tr>
+            <tr><td><strong>Remove label</strong></td><td>Removes a label from the card</td><td>Label name to remove</td></tr>
+            <tr><td><strong>Move to list</strong></td><td>Moves the card to a different column</td><td>Select the destination column</td></tr>
+            <tr><td><strong>Set priority</strong></td><td>Changes the card's priority level</td><td>High, Medium, or Low</td></tr>
+            <tr><td><strong>Mark complete</strong></td><td>Marks the card done and moves it to the Completed column</td><td>None</td></tr>
+            <tr><td><strong>Add checklist items</strong></td><td>Appends items to the card's checklist</td><td>Comma-separated item names (e.g. "Draft, Review, Publish")</td></tr>
+            <tr><td><strong>Apply checklist template</strong></td><td>Stamps a saved checklist template onto the card</td><td>Select a template (must be saved first from a card's checklist)</td></tr>
+            <tr><td><strong>Assign member</strong></td><td>Adds a team member as an assignee</td><td>Team member's name</td></tr>
+            <tr><td><strong>Set due date</strong></td><td>Sets a due date relative to when the rule fires</td><td>Number of days from now (1–365)</td></tr>
+            <tr><td><strong>Show notification</strong></td><td>Displays a custom pop-up message to the user</td><td>Your custom message text</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Example Rules</h3>
+      <div class="card">
+        <h4>Auto-assign a member when a card is created</h4>
+        <p><strong>Trigger:</strong> Card created &nbsp;→&nbsp; <strong>Action:</strong> Assign member → "Jane Doe"<br>Every new card automatically lands with Jane as the assignee.</p>
+      </div>
+      <div class="card">
+        <h4>Add a checklist when a card moves to "In Progress"</h4>
+        <p><strong>Trigger:</strong> Card moved → "In Progress" column &nbsp;→&nbsp; <strong>Action:</strong> Add checklist items → "Research, Draft, Review, Publish"<br>Cards in progress always start with the same standard checklist.</p>
+      </div>
+      <div class="card">
+        <h4>Flag urgent cards 3 days before due</h4>
+        <p><strong>Trigger:</strong> Due soon → 3 days &nbsp;→&nbsp; <strong>Actions:</strong> Set priority → High &amp; Add label → "Urgent" (Red)<br>Upcoming deadlines are automatically flagged so nothing slips.</p>
+      </div>
+      <div class="card">
+        <h4>Move cards to Done when checklist is complete</h4>
+        <p><strong>Trigger:</strong> Checklist completed &nbsp;→&nbsp; <strong>Action:</strong> Move to list → "Done"<br>When every checklist item is ticked, the card moves itself.</p>
+      </div>
+
+      <h3>Managing Your Rules</h3>
+      <p>All saved rules appear as cards in the Automations panel. Each card shows the trigger, the actions, how many times it has run, and when it last fired.</p>
+
+      <div class="card">
+        <h4>Enable / Disable a rule</h4>
+        <p>Use the <strong>toggle switch</strong> on the right side of the rule card to pause or resume a rule without deleting it. A disabled rule stays in your list but won't fire.</p>
+      </div>
+      <div class="card">
+        <h4>Delete a rule</h4>
+        <p>Click the <strong>× button</strong> on the rule card. You'll be asked to confirm before the rule is permanently removed.</p>
+      </div>
+      <div class="card">
+        <h4>Edit a rule</h4>
+        <p>Rules can't be edited in place. To change a rule, delete it and create a new one with the updated settings.</p>
+      </div>
+
+      <div class="tip warn">Automations run on the active workspace only. If you switch workspaces, each workspace has its own independent set of rules.</div>
+    </section>
+
     <!-- ── CALENDAR ── -->
     <section class="section" id="calendar">
-      <span class="section-label">Chapter 4</span>
+      <span class="section-label">Chapter 5</span>
       <h2>Calendar View</h2>
       <p>The Calendar view shows all tasks with due dates laid out on a monthly grid — great for spotting deadline clusters and planning workload distribution.</p>
 
@@ -494,7 +596,7 @@
 
     <!-- ── DUE SOON ── -->
     <section class="section" id="due-soon">
-      <span class="section-label">Chapter 5</span>
+      <span class="section-label">Chapter 6</span>
       <h2>Due Soon</h2>
       <p>Due Soon is a filtered, time-sorted list of tasks that need attention. It's the fastest way to triage what's urgent without scrolling through the entire board.</p>
 
@@ -510,7 +612,7 @@
 
     <!-- ── STORAGE ── -->
     <section class="section" id="storage">
-      <span class="section-label">Chapter 6</span>
+      <span class="section-label">Chapter 7</span>
       <h2>Storage View</h2>
       <p>Storage helps your team track physical equipment and supplies organized into labeled bins. Anyone can check items out or back in, and the system keeps a history.</p>
 
@@ -542,7 +644,7 @@
 
     <!-- ── SCHEDULE ── -->
     <section class="section" id="schedule">
-      <span class="section-label">Chapter 7</span>
+      <span class="section-label">Chapter 8</span>
       <h2>Schedule View</h2>
       <p>The Schedule view coordinates who is working when. It shows both <strong>assigned shifts</strong> and <strong>worker availability</strong> in one place.</p>
 
@@ -575,7 +677,7 @@
 
     <!-- ── MANAGER ── -->
     <section class="section" id="manager">
-      <span class="section-label">Chapter 8</span>
+      <span class="section-label">Chapter 9</span>
       <h2>Manager View <span class="badge badge-purple">Admin</span></h2>
       <p>Manager is an admin-focused hub for planning events, tracking budgets, and storing event photos. It's organized into four sub-tabs.</p>
 
@@ -604,7 +706,7 @@
 
     <!-- ── SETTINGS ── -->
     <section class="section" id="settings">
-      <span class="section-label">Chapter 9</span>
+      <span class="section-label">Chapter 10</span>
       <h2>Settings</h2>
       <p>Settings is where you manage your profile, control workspace preferences, and handle team membership.</p>
 
@@ -645,7 +747,7 @@
 
     <!-- ── NOTIFICATIONS ── -->
     <section class="section" id="notifications">
-      <span class="section-label">Chapter 10</span>
+      <span class="section-label">Chapter 11</span>
       <h2>Notifications</h2>
       <p>Commuter Life sends notifications both inside the app (in-app) and as push notifications to your device, so you never miss an important update.</p>
 
@@ -685,7 +787,7 @@
 
     <!-- ── TIPS ── -->
     <section class="section" id="tips">
-      <span class="section-label">Chapter 11</span>
+      <span class="section-label">Chapter 12</span>
       <h2>Tips &amp; Shortcuts</h2>
 
       <h3>Power User Tips</h3>
