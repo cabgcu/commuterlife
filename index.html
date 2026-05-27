@@ -7620,8 +7620,8 @@
                     }
                 })
             });
-            const result = await resp.text();
-            console.log('[Push] Edge Function response:', resp.status, result);
+            const result = await resp.json();
+            console.log('[Push] results:', JSON.stringify(result));
         } catch (err) {
             console.warn('Server push failed:', err);
         }
