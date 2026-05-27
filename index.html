@@ -2401,6 +2401,12 @@
         <div class="notif-pref-row"><span>Checklist completed</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('checklist', this.checked)"><span class="slider"></span></label></div>
         <div class="notif-pref-row"><span>Checklist item assigned</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('checklist_assign', this.checked)"><span class="slider"></span></label></div>
         <div class="notif-pref-row"><span>Labels added</span><label class="toggle-switch"><input type="checkbox" onchange="updateNotifPref('label', this.checked)"><span class="slider"></span></label></div>
+        <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:10px 0 6px;">Shifts &amp; Scheduling</div>
+        <div class="notif-pref-row"><span>Shift reminders (1h &amp; 24h)</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('shift_reminder', this.checked)"><span class="slider"></span></label></div>
+        <div class="notif-pref-row"><span>Shift added or cancelled</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('shift_added', this.checked)"><span class="slider"></span></label></div>
+        <div class="notif-pref-row"><span>Swap requests</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('swap_request', this.checked)"><span class="slider"></span></label></div>
+        <div class="notif-pref-row"><span>Swap approved / denied</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('swap_approved', this.checked)"><span class="slider"></span></label></div>
+        <div class="notif-pref-row"><span>Open volunteer shifts</span><label class="toggle-switch"><input type="checkbox" checked onchange="updateNotifPref('volunteer_open', this.checked)"><span class="slider"></span></label></div>
     </div>
 </div>
 <div id="sync-indicator">Syncing...</div>
@@ -3772,6 +3778,10 @@
             // Silent pull - don't show toast to avoid spam on every reload
             fetchAndCreateCardsFromMonday().catch(err => console.warn('Auto-pull skipped:', err));
         }
+
+        // Check upcoming shift reminders for current user
+        setTimeout(checkShiftReminders, 2000);
+        setInterval(checkShiftReminders, 5 * 60 * 1000);
 
         // Auto-sync attachments once per day (silent)
         if (activeBoard?.settings?.mondayApiToken && activeBoard?.settings?.mondayProxyGasUrl) {
@@ -6679,6 +6689,55 @@
         showToast('🔒 Files locked — Monday.com will no longer update attachments for this card');
     }
 
+    // Map worker ID → notification username (user.name from appData.settings.users)
+    function _workerUserName(workerId) {
+        const worker = (appData.workers || []).find(w => w.id === workerId);
+        if (!worker || !worker.email) return null;
+        const user = (appData.settings?.users || []).find(u => u.email?.toLowerCase() === worker.email.toLowerCase());
+        return user?.name || worker.email.split('@')[0] || null;
+    }
+
+    // Format 24h time string to 12h display
+    function _fmt12h(time24) {
+        if (!time24) return '';
+        const [h, m] = time24.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12}:${String(m || 0).padStart(2, '0')} ${period}`;
+    }
+
+    // Check upcoming shifts for the current user and fire reminder notifications
+    function checkShiftReminders() {
+        const currentWorker = _getCurrentWorker();
+        if (!currentWorker) return;
+        const now = new Date();
+        const shifts = (appData.shifts || []).filter(s => s.workerId === currentWorker.id && !s.volunteerSlot);
+        for (const shift of shifts) {
+            const shiftDT = new Date(shift.date + 'T' + (shift.startTime || '09:00'));
+            const msUntil = shiftDT - now;
+            if (msUntil <= 0) continue;
+            const hoursUntil = msUntil / (1000 * 60 * 60);
+            const timeStr = shift.startTime ? _fmt12h(shift.startTime) : '';
+            const roleStr = shift.role ? ' — ' + shift.role : '';
+
+            // 24-hour reminder window: 25h → 2h
+            const key24 = 'shift_reminded_24h_' + shift.id;
+            if (hoursUntil <= 25 && hoursUntil > 2 && !localStorage.getItem(key24)) {
+                addNotification('shift_reminder', '⏰ Shift Tomorrow',
+                    `You have a shift tomorrow${timeStr ? ' at ' + timeStr : ''}${roleStr}.`);
+                localStorage.setItem(key24, '1');
+            }
+
+            // 1-hour reminder window: 2h → 15min
+            const key1h = 'shift_reminded_1h_' + shift.id;
+            if (hoursUntil <= 2 && hoursUntil > 0.25 && !localStorage.getItem(key1h)) {
+                addNotification('shift_reminder', '⏰ Shift Starting Soon',
+                    `Your shift starts${timeStr ? ' at ' + timeStr : ' soon'}${roleStr}.`);
+                localStorage.setItem(key1h, '1');
+            }
+        }
+    }
+
     async function saveGoogleCalendarSettings() {
         if (currentUserRole !== 'admin') { showToast('Only admins can change calendar sync settings.'); return; }
         const input = document.getElementById('googleCalendarWebhook');
@@ -7293,11 +7352,11 @@
     }
 
     function getNotifIcon(type) {
-        const map = { assign: '👤', comment: '💬', due: '⏰', move: '📦', checklist: '☑️', checklist_assign: '📋', label: '🏷', complete: '✅', create: '✨' };
+        const map = { assign: '👤', comment: '💬', due: '⏰', move: '📦', checklist: '☑️', checklist_assign: '📋', label: '🏷', complete: '✅', create: '✨', shift_reminder: '⏰', shift_added: '📅', shift_cancelled: '❌', swap_request: '🔄', swap_approved: '✅', swap_denied: '❌', volunteer_open: '🙋' };
         return map[type] || '🔔';
     }
     function getNotifIconBg(type) {
-        const map = { assign: 'rgba(10,132,255,0.15)', comment: 'rgba(52,199,89,0.15)', due: 'rgba(255,149,0,0.15)', move: 'rgba(191,90,242,0.15)', checklist: 'rgba(52,199,89,0.15)', checklist_assign: 'rgba(10,132,255,0.15)', label: 'rgba(255,55,95,0.15)', complete: 'rgba(52,199,89,0.15)', create: 'rgba(10,132,255,0.15)' };
+        const map = { assign: 'rgba(10,132,255,0.15)', comment: 'rgba(52,199,89,0.15)', due: 'rgba(255,149,0,0.15)', move: 'rgba(191,90,242,0.15)', checklist: 'rgba(52,199,89,0.15)', checklist_assign: 'rgba(10,132,255,0.15)', label: 'rgba(255,55,95,0.15)', complete: 'rgba(52,199,89,0.15)', create: 'rgba(10,132,255,0.15)', shift_reminder: 'rgba(255,149,0,0.15)', shift_added: 'rgba(10,132,255,0.15)', shift_cancelled: 'rgba(255,59,48,0.15)', swap_request: 'rgba(191,90,242,0.15)', swap_approved: 'rgba(52,199,89,0.15)', swap_denied: 'rgba(255,59,48,0.15)', volunteer_open: 'rgba(255,204,0,0.15)' };
         return map[type] || 'rgba(255,255,255,0.08)';
     }
 
@@ -12543,7 +12602,29 @@
         };
 
         if (existing) { Object.assign(existing, shiftObj); }
-        else { appData.shifts.push(shiftObj); }
+        else {
+            appData.shifts.push(shiftObj);
+            // Notify worker when a shift is newly assigned
+            if (!shiftObj.volunteerSlot && workerId !== 'open') {
+                const workerUN = _workerUserName(workerId);
+                if (workerUN) {
+                    const timeStr = shiftObj.startTime ? _fmt12h(shiftObj.startTime) : '';
+                    addNotificationFor([workerUN], 'shift_added', '📅 Shift Scheduled',
+                        `You have a new shift on ${shiftObj.date}${timeStr ? ' at ' + timeStr : ''}${shiftObj.role ? ' — ' + shiftObj.role : ''}.`,
+                        null, currentUserName);
+                }
+            }
+            // Notify all workers when a volunteer slot opens
+            if (shiftObj.volunteerSlot && workerId === 'open') {
+                const allWorkerUNs = (appData.workers || []).map(w => _workerUserName(w.id)).filter(Boolean);
+                if (allWorkerUNs.length > 0) {
+                    const timeStr = shiftObj.startTime ? _fmt12h(shiftObj.startTime) : '';
+                    addNotificationFor(allWorkerUNs, 'volunteer_open', '🙋 Open Shift Available',
+                        `A volunteer shift is available on ${shiftObj.date}${timeStr ? ' at ' + timeStr : ''}.`,
+                        null, currentUserName);
+                }
+            }
+        }
 
         closeModal(null, 'shiftModal');
         saveData();
@@ -12553,6 +12634,16 @@
     function deleteShift() {
         if (currentUserRole !== 'admin') { showToast('Admin access required'); return; }
         if (!_shiftEditId) return;
+        const cancelledShift = (appData.shifts || []).find(s => s.id === _shiftEditId);
+        if (cancelledShift && cancelledShift.workerId && cancelledShift.workerId !== 'open' && !cancelledShift.volunteerSlot) {
+            const cancelUN = _workerUserName(cancelledShift.workerId);
+            if (cancelUN) {
+                const timeStr = cancelledShift.startTime ? _fmt12h(cancelledShift.startTime) : '';
+                addNotificationFor([cancelUN], 'shift_cancelled', '❌ Shift Cancelled',
+                    `Your shift on ${cancelledShift.date}${timeStr ? ' at ' + timeStr : ''} has been cancelled.`,
+                    null, currentUserName);
+            }
+        }
         appData.shifts = (appData.shifts || []).filter(s => s.id !== _shiftEditId);
         closeModal(null, 'shiftModal');
         saveData();
@@ -13476,6 +13567,15 @@
         saveData();
         renderSwapRequests();
         showToast('Swap request submitted!');
+        // Notify the target worker
+        const targetWorkerForNotif = (appData.workers || []).find(w => w.id === targetId);
+        const requesterWorkerForNotif = (appData.workers || []).find(w => w.id === requesterId);
+        const targetUN = _workerUserName(targetId);
+        if (targetUN) {
+            addNotificationFor([targetUN], 'swap_request', '🔄 Swap Request',
+                `${requesterWorkerForNotif?.name || 'Someone'} wants to swap a shift with you.`,
+                null, currentUserName);
+        }
     }
 
     function approveSwapRequest(swapId) {
@@ -13514,17 +13614,30 @@
         saveData();
         renderSwapRequests();
         showToast('Swap approved!');
+        // Notify both workers
+        const reqUN = _workerUserName(req.requesterId);
+        const tgtUN = _workerUserName(req.targetId);
+        if (reqUN) addNotificationFor([reqUN], 'swap_approved', '✅ Swap Approved',
+            `Your swap request with ${tgtName} was approved.`, null, currentUserName);
+        if (tgtUN) addNotificationFor([tgtUN], 'shift_added', '📅 Shift Assigned',
+            `You have been assigned a shift via swap with ${reqName}.`, null, currentUserName);
     }
 
     function denySwapRequest(swapId) {
         const req = (appData.swapRequests || []).find(r => r.id === swapId);
         if (!req) return;
+        const denyReqName = (appData.workers||[]).find(w=>w.id===req.requesterId)?.name || '?';
+        const denyTgtName = (appData.workers||[]).find(w=>w.id===req.targetId)?.name || '?';
         req.status = 'denied';
         req.respondedAt = new Date().toISOString();
         req.respondedBy = currentUserEmail;
         saveData();
         renderSwapRequests();
         showToast('Swap denied.');
+        // Notify requester
+        const denyReqUN = _workerUserName(req.requesterId);
+        if (denyReqUN) addNotificationFor([denyReqUN], 'swap_denied', '❌ Swap Denied',
+            `Your swap request with ${denyTgtName} was not approved.`, null, currentUserName);
     }
 
     async function deleteSwapRequest(swapId) {
