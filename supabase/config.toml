@@ -1,0 +1,19 @@
+# Supabase project configuration
+# Docs: https://supabase.com/docs/guides/local-development/cli/config
+
+[project]
+id = "jkcfpiuhbtbrgtrususe"
+
+# ── Edge Functions ────────────────────────────────────────────────────────────
+
+[functions.send-push]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+# shift-reminders runs every 10 minutes to push shift reminders to workers
+# even when no one has the app open.
+[functions.shift-reminders]
+verify_jwt = false
+schedule = "*/10 * * * *"
