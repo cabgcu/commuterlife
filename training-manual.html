@@ -460,6 +460,26 @@
       <div class="card"><h4>📎 Attachments</h4><p>Upload files or images directly to a card. Images show a thumbnail preview; other files show as download links.</p></div>
       <div class="card"><h4>💬 Comments &amp; Activity</h4><p>Leave comments for teammates. All changes (status moves, assignee changes, due date edits) are logged in the activity feed.</p></div>
 
+      <div class="card"><h4>🖼️ Cover Image</h4><p>Add a photo to the top of a card to make it visually distinct. Inside the card panel, click <strong>Upload image</strong> to set a cover. To remove it, click <strong>Remove Cover</strong>. Cover images appear as a banner on the card in the Board view.</p></div>
+
+      <h3>Checklist Templates</h3>
+      <p>If your team uses the same checklist steps repeatedly, save them as a reusable template so you don't have to retype them every time.</p>
+      <div class="card">
+        <h4>Saving a template</h4>
+        <p>Open a card that has a checklist you want to reuse. In the checklist section, click <strong>Save as Template</strong>, give it a name, and confirm. The template is saved to the workspace and available to everyone.</p>
+      </div>
+      <div class="card">
+        <h4>Loading a template</h4>
+        <p>Open any card's checklist section and click <strong>Load Template</strong>. Pick a template from the list — its items are added to the current checklist instantly. Duplicate items are skipped automatically.</p>
+      </div>
+      <div class="card">
+        <h4>Deleting a template</h4>
+        <p>Open the <strong>Load Template</strong> dialog and choose <strong>Delete a template…</strong> at the bottom of the list. Select which template to remove and confirm.</p>
+      </div>
+
+      <h3>Searching Cards</h3>
+      <p>Use the <strong>🔍 Search</strong> bar in the top controls to filter cards in real time. As you type, the Board narrows down to only matching cards. Search is case-insensitive and matches card titles and descriptions. Clear the search field to restore the full board.</p>
+
       <h3>Moving &amp; Organizing Tasks</h3>
       <ul>
         <li><strong>Drag &amp; drop</strong> a card to a different column to change its status.</li>
@@ -468,7 +488,13 @@
       </ul>
 
       <h3>Bulk Actions</h3>
-      <p>To select multiple cards at once, use the <strong>multi-select mode</strong> (look for the checkbox toggle). Select the cards you want, then choose a bulk action such as deleting them all at once.</p>
+      <p>Need to move or delete several cards at once? Tap the bulk-select toggle on the Board to enter multi-select mode. Each card gets a checkbox.</p>
+      <ul>
+        <li><strong>Select cards</strong> by clicking their checkboxes. A bar appears at the bottom showing how many are selected.</li>
+        <li><strong>Move all selected</strong> to any column using the column dropdown in the bar, then click <strong>Move</strong>.</li>
+        <li><strong>Delete all selected</strong> by clicking the red <strong>Delete</strong> button. You'll be asked to confirm.</li>
+        <li>Click <strong>✕ Clear</strong> in the bar to deselect everything and exit bulk mode.</li>
+      </ul>
 
       <div class="tip">Cards auto-save every time you make a change. If you close the panel mid-edit, your work is already saved.</div>
     </section>
@@ -646,22 +672,67 @@
     <section class="section" id="schedule">
       <span class="section-label">Chapter 8</span>
       <h2>Schedule View</h2>
-      <p>The Schedule view coordinates who is working when. It shows both <strong>assigned shifts</strong> and <strong>worker availability</strong> in one place.</p>
+      <p>The Schedule view coordinates who is working when. It shows assigned shifts, open volunteer slots, and worker availability — all in one place.</p>
 
       <h3>Reading the Schedule</h3>
-      <p>On <strong>desktop</strong>, you'll see a 7-day week grid. Each column is a day; each row shows shifts for that day. Shift cards display the worker's name, role, and start/end time.</p>
-      <p>On <strong>mobile</strong>, you can toggle between a <strong>Week</strong> timeline view and a <strong>Month</strong> calendar view using the mode toggle at the top.</p>
+      <p>On <strong>desktop</strong>, you'll see a 7-day week grid. Each column is a day; shift cards inside each column show the worker's name, role, and start/end time.</p>
+      <p>On <strong>mobile</strong>, toggle between a <strong>Week</strong> timeline and a <strong>Month</strong> calendar using the mode switch at the top of the view.</p>
 
-      <h3>Worker Availability</h3>
-      <p>Below the shift grid, availability cards show each team member's available hours for each day of the week. This helps admins assign shifts that fit people's schedules.</p>
+      <h3>Setting Your Availability</h3>
+      <p>Workers tell the team when they're free to work by filling out their availability. Admins use this information when scheduling shifts.</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Ask your admin to send you your personal <strong>availability link</strong> (they generate it from your worker profile).</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Open the link in your browser. You'll see a form with <strong>Monday through Sunday</strong>.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Check the <strong>Available</strong> box for each day you can work. Time fields appear — set your available <strong>From</strong> and <strong>To</strong> times (defaults to 9 AM – 5 PM).</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">Click <strong>Submit Availability</strong>. A green confirmation banner confirms it was saved.</div></div>
+      </div>
+      <p>Your availability appears in the availability cards below the shift grid, visible to your admin when they're building the schedule.</p>
 
       <h3>Adding a Shift <span class="badge badge-purple">Admin</span></h3>
       <div class="steps">
         <div class="step"><div class="step-num">1</div><div class="step-body">Click the <strong>+ Add Shift</strong> button inside a day column.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body">Select the <strong>worker</strong> from the dropdown.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Select the <strong>worker</strong> from the dropdown — or choose <strong>🟢 Open — workers can sign up</strong> to post a volunteer slot (see below).</div></div>
         <div class="step"><div class="step-num">3</div><div class="step-body">Choose a <strong>role</strong> and set the <strong>start and end times</strong>.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body">Save — the shift appears on the grid and the worker receives a notification.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">Save. The shift appears on the grid and the assigned worker receives a notification.</div></div>
       </div>
+
+      <h3>Open / Volunteer Shifts</h3>
+      <p>Admins can post shifts that any team member can claim. These show up on the schedule as <strong>open slots</strong> highlighted for everyone to see.</p>
+
+      <div class="card">
+        <h4>Posting an open shift <span class="badge badge-purple">Admin</span></h4>
+        <p>When adding a shift, select <strong>🟢 Open — workers can sign up</strong> as the worker. Save the shift. All team members immediately receive a push notification: <em>"A volunteer shift is available on [date] at [time]."</em></p>
+      </div>
+      <div class="card">
+        <h4>Claiming an open shift</h4>
+        <p>Open shifts show a <strong>Claim</strong> button on the shift card. Tap it — the shift is immediately assigned to you, your name replaces "Open" on the grid, and you start receiving shift reminders.</p>
+      </div>
+      <div class="card">
+        <h4>Unclaiming a shift</h4>
+        <p>Changed your mind? Tap the shift you claimed and choose <strong>Unclaim</strong>. The shift returns to open status so a teammate can pick it up.</p>
+      </div>
+
+      <h3>Requesting a Shift Swap</h3>
+      <p>If you can't make a shift you're scheduled for, you can request that a teammate cover it. Both sides are notified and the swap doesn't take effect until it's approved.</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Find your shift on the schedule and click <strong>Request Swap</strong> (or access it through the shift's menu).</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">In the <strong>Request Shift Swap</strong> modal, select the shift you want to swap from the <strong>My Shift</strong> dropdown. If it's a recurring shift, enter any date from that week.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Choose a <strong>teammate</strong> from the <strong>Covered by</strong> dropdown — this is the person you're asking to take your shift.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">Optionally add a <strong>note</strong> (e.g., "I have a doctor's appointment") so your teammate has context.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body">Click <strong>Submit</strong>. The teammate receives a <strong>🔄 Swap Request</strong> notification immediately.</div></div>
+      </div>
+
+      <h3>Responding to a Swap Request</h3>
+      <p>When someone requests a swap with you, you'll receive a push notification. Swap requests appear in the <strong>Swaps</strong> tab of the Schedule view.</p>
+      <div class="card">
+        <h4>Approving a swap</h4>
+        <p>Click <strong>Approve</strong> on the request. The shift is instantly reassigned to you on the schedule. You'll receive a <strong>📅 Shift Assigned</strong> notification, and the requester gets a <strong>✅ Swap Approved</strong> notification.</p>
+      </div>
+      <div class="card">
+        <h4>Denying a swap</h4>
+        <p>Click <strong>Deny</strong>. The shift stays with the original worker, who receives a <strong>❌ Swap Denied</strong> notification. No changes are made to the schedule.</p>
+      </div>
+      <div class="tip">Admins can see all pending, approved, and denied swap requests in the Swaps tab to keep an eye on coverage.</div>
 
       <h3>Shift Reminders</h3>
       <p>Workers automatically receive push notifications:</p>
@@ -672,7 +743,7 @@
       <p>Make sure push notifications are enabled in your browser (see the <a href="#notifications">Notifications</a> section).</p>
 
       <h3>Sharing the Availability Page</h3>
-      <p>Admins can share a <strong>public link</strong> that lets team members view worker availability without logging in — handy for posting in a group chat.</p>
+      <p>Admins can share a <strong>public availability link</strong> so teammates can view the team's schedule without logging in — handy for posting in a group chat or pinning to a bulletin board.</p>
     </section>
 
     <!-- ── MANAGER ── -->
@@ -726,8 +797,24 @@
         <li><strong>Board Background</strong> — Set a background image or color for the Board view.</li>
       </ul>
 
-      <h3>Switching Workspaces</h3>
-      <p>If your organization runs multiple workspaces (e.g. different academic years or teams), use the <strong>Workspace Switcher</strong> in Settings to jump between them. Each workspace has its own board, schedule, and storage.</p>
+      <h3>Workspaces <span class="badge badge-purple">Admin</span></h3>
+      <p>Commuter Life supports multiple workspaces — for example, one per academic year or per team. Each workspace has its own completely separate board, schedule, storage, and members. Click the <strong>workspace name</strong> in the header (or go to Settings) to open the Workspace Switcher.</p>
+      <div class="card">
+        <h4>Switching workspaces</h4>
+        <p>In the Workspace Switcher modal, click any workspace name in the list to switch to it instantly.</p>
+      </div>
+      <div class="card">
+        <h4>Creating a new workspace</h4>
+        <p>Click <strong>+ New Workspace</strong> in the modal. Enter a name (e.g., "2025–2026") and confirm. The new workspace starts empty — you'll need to add team members and set it up from scratch.</p>
+      </div>
+      <div class="card">
+        <h4>Renaming or deleting a workspace</h4>
+        <p>Hover over a workspace in the list to reveal <strong>Rename</strong> and <strong>Delete</strong> buttons. Deleting a workspace is permanent and removes all its data.</p>
+      </div>
+      <div class="card">
+        <h4>Setting a default workspace</h4>
+        <p>In Settings, use the <strong>Default Workspace</strong> dropdown to choose which workspace loads automatically when anyone opens the app.</p>
+      </div>
 
       <h3>Managing Team Members <span class="badge badge-purple">Admin</span></h3>
       <div class="steps">
@@ -738,8 +825,15 @@
 
       <div class="tip warn">Removing a team member revokes their access immediately. Any tasks assigned to them will remain on the board.</div>
 
-      <h3>Importing Tasks</h3>
-      <p>If your team previously used <strong>Monday.com</strong>, admins can import existing tasks directly into the Board. Look for the <strong>Import from Monday.com</strong> option in Settings and follow the prompts.</p>
+      <h3>Importing Tasks from Monday.com <span class="badge badge-purple">Admin</span></h3>
+      <p>If your team previously used Monday.com, you can pull existing tasks directly into the Board. Find the <strong>Monday.com Integration</strong> section in Settings.</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body">Enter your Monday.com <strong>API Token</strong> and the <strong>Board ID</strong> you want to import from.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body">Map the Monday.com column fields (event name, date, description, etc.) to the corresponding fields in Commuter Life.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body">Click <strong>Save Monday.com Settings</strong>. The import runs automatically and creates cards on your board.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body">Already-imported items won't be duplicated on subsequent saves — the app tracks which items have been pulled in.</div></div>
+      </div>
+      <div class="tip">To re-import items that were previously skipped, use the <strong>Refresh Old Imports</strong> button to clear the import history.</div>
 
       <h3>Deleting a Workspace <span class="badge badge-red">Irreversible</span></h3>
       <p>Admins can permanently delete the entire workspace including all tasks, schedules, and storage data. This action cannot be undone. You'll be asked to confirm by typing the workspace name before deletion proceeds.</p>
@@ -796,6 +890,13 @@
         <li><strong>Assign multiple people</strong> to a single task for shared ownership.</li>
         <li><strong>Use labels consistently</strong> across your team so filters and visual scans work well (e.g., always tag client work "blue", internal work "green").</li>
         <li><strong>Checklist items can have separate assignees</strong> — break a task into clear sub-owners so nothing falls through the cracks.</li>
+        <li><strong>Save checklist templates</strong> for recurring project types so new cards start with the right steps automatically — or use the Automations "Apply checklist template" action to stamp them on arrival.</li>
+        <li><strong>Use the search bar</strong> when the board gets crowded — type a keyword to instantly filter to matching cards.</li>
+        <li><strong>Bulk-move cards</strong> instead of dragging one at a time when you need to push a group of tasks to the next stage at once.</li>
+        <li><strong>Add a cover image</strong> to high-priority cards so they visually stand out in the column at a glance.</li>
+        <li><strong>Submit availability early</strong> — the sooner your admin has your available times, the better your shifts will fit your schedule.</li>
+        <li><strong>Use shift swaps proactively</strong> — submit a swap request as early as possible so your teammate has time to approve before the shift date.</li>
+        <li><strong>Watch for open shift notifications</strong> — volunteer slots fill up fast; claim them quickly from the Schedule view.</li>
         <li><strong>Pin the app to your home screen</strong> (PWA install) for fastest access and full-screen experience.</li>
         <li><strong>Use the QR codes on storage bins</strong> to print and label physical bins — teammates can scan to check items out without navigating the app manually.</li>
       </ul>
@@ -825,6 +926,18 @@
       <div class="card">
         <h4>What happens if I accidentally delete a task?</h4>
         <p>Deleted tasks are removed permanently. Before using bulk delete, double-check your selection. If in doubt, move the card to a "Review" or "Archive" column instead of deleting.</p>
+      </div>
+      <div class="card">
+        <h4>What happens when a swap is approved?</h4>
+        <p>The shift is immediately reassigned to the approving teammate on the schedule grid. Both workers receive a notification confirming the change — no admin action required.</p>
+      </div>
+      <div class="card">
+        <h4>How do I get my availability link?</h4>
+        <p>Ask your workspace admin. They generate a unique link from your worker profile in the Schedule view and share it with you directly.</p>
+      </div>
+      <div class="card">
+        <h4>Can I be in more than one workspace?</h4>
+        <p>Yes — the same email account can have access to multiple workspaces. Use the Workspace Switcher (click the workspace name in the header) to jump between them.</p>
       </div>
 
       <hr class="divider" />
