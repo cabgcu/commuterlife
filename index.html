@@ -4032,7 +4032,7 @@
 
             saveData();
             isAuthenticated = true;
-            currentUserRole = 'user';
+            currentUserRole = user.role === 'admin' ? 'admin' : 'user';
             currentUserEmail = email;
             currentUserName = name;
             localStorage.setItem('cab_auth_email', email);
