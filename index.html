@@ -3132,10 +3132,7 @@
                             <div id="attachmentsContainer"></div>
                         </div>
                         <div style="margin-top: 20px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                                <h3 class="section-title" style="margin:0;">Posting Schedule</h3>
-                                <button type="button" class="btn-outline" style="font-size:0.78rem; padding:6px 12px; border-color:rgba(10,132,255,0.4); color:#0A84FF;" onclick="openPostAutoFill()">&#9889; Auto-fill Dates</button>
-                            </div>
+                            <h3 class="section-title">Posting Schedule</h3>
                             <div class="posting-schedule-grid" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border);">
                                 <div class="posting-schedule-col" data-type="story" style="--ps-color: #BF5AF2;">
                                     <label class="stat-label" style="margin-top:0; color: #BF5AF2;">IG Story</label>
@@ -7994,36 +7991,47 @@
 
     async function openPostAutoFill() {
         if (!currentEditingTask) return;
+        const eventDate = currentEditingTask.dueDate ? currentEditingTask.dueDate.slice(0,10) : '';
+        const eventLabel = eventDate
+            ? new Date(eventDate + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : 'No event date set';
         const html = `
-            <div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="background:rgba(10,132,255,0.08);border:1px solid rgba(10,132,255,0.2);border-radius:12px;padding:12px 14px;font-size:0.85rem;">
+                    <div style="font-weight:700;color:#0A84FF;margin-bottom:3px;">&#128197; Event / Due Date</div>
+                    <div style="color:${eventDate ? 'var(--text-main)' : '#FF9500'};font-weight:600;">${eventLabel}</div>
+                    ${!eventDate ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Set a Due Date on this card to use event-relative scheduling.</div>' : ''}
+                </div>
                 <div>
-                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Start Date</label>
+                    <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:6px;">Day offsets from event date</label>
+                    <input type="text" id="pafOffsets" class="modern-input" style="width:100%;" value="-21, -14, -7, -3, 0" placeholder="e.g. -21, -14, -7, -3, 0">
+                    <div style="font-size:0.73rem;color:var(--text-muted);margin-top:4px;">Negative = before event &nbsp;·&nbsp; 0 = event day &nbsp;·&nbsp; Positive = after event</div>
+                </div>
+                <div style="display:none;" id="pafManualWrap">
+                    <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:6px;">Or use a fixed start date instead</label>
                     <input type="date" id="pafStartDate" class="modern-input" style="width:100%;">
                 </div>
+                ${!eventDate ? `<button type="button" onclick="document.getElementById('pafManualWrap').style.display='block';this.style.display='none';" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--text-muted);font-size:0.78rem;padding:6px 12px;cursor:pointer;text-align:left;">Use a fixed start date instead &#8594;</button>` : ''}
                 <div>
-                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Number of Dates</label>
-                    <input type="number" id="pafCount" class="modern-input" value="4" min="1" max="52" style="width:100%;">
-                </div>
-                <div>
-                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Interval</label>
-                    <select id="pafInterval" class="modern-input" style="width:100%; background:#1a1a1a; color:#fff;">
-                        <option value="7" style="background:#1a1a1a;">Weekly (every 7 days)</option>
-                        <option value="14" style="background:#1a1a1a;">Bi-weekly (every 14 days)</option>
-                        <option value="1" style="background:#1a1a1a;">Daily</option>
-                        <option value="30" style="background:#1a1a1a;">Monthly (~30 days)</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Apply to</label>
-                    <div style="display:flex; flex-direction:column; gap:6px;">
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="pafStory" checked style="accent-color:#BF5AF2;"> <span style="color:#BF5AF2; font-weight:600;">IG Story</span></label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="pafPhoto" checked style="accent-color:#0A84FF;"> <span style="color:#0A84FF; font-weight:600;">IG Photo</span></label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="pafReel" style="accent-color:#FF2D55;"> <span style="color:#FF2D55; font-weight:600;">IG Reel</span></label>
+                    <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:8px;">Apply to</label>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(191,90,242,0.06);border:1px solid rgba(191,90,242,0.15);border-radius:10px;cursor:pointer;">
+                            <input type="checkbox" id="pafStory" checked style="accent-color:#BF5AF2;width:16px;height:16px;">
+                            <span style="color:#BF5AF2;font-weight:700;">IG Story</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(10,132,255,0.06);border:1px solid rgba(10,132,255,0.15);border-radius:10px;cursor:pointer;">
+                            <input type="checkbox" id="pafPhoto" checked style="accent-color:#0A84FF;width:16px;height:16px;">
+                            <span style="color:#0A84FF;font-weight:700;">IG Photo</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,45,85,0.06);border:1px solid rgba(255,45,85,0.15);border-radius:10px;cursor:pointer;">
+                            <input type="checkbox" id="pafReel" style="accent-color:#FF2D55;width:16px;height:16px;">
+                            <span style="color:#FF2D55;font-weight:700;">IG Reel</span>
+                        </label>
                     </div>
                 </div>
                 <div>
-                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Mode</label>
-                    <select id="pafMode" class="modern-input" style="width:100%; background:#1a1a1a; color:#fff;">
+                    <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:6px;">Mode</label>
+                    <select id="pafMode" class="modern-input" style="width:100%;background:#1a1a1a;color:#fff;">
                         <option value="replace" style="background:#1a1a1a;">Replace existing dates</option>
                         <option value="append" style="background:#1a1a1a;">Append to existing dates</option>
                     </select>
@@ -8031,27 +8039,37 @@
             </div>`;
         const confirmed = await showPostAutoFillDialog(html);
         if (!confirmed) return;
-        const startDateVal = document.getElementById('pafStartDate').value;
-        const count = Math.min(parseInt(document.getElementById('pafCount').value) || 4, 52);
-        const interval = parseInt(document.getElementById('pafInterval').value) || 7;
+
+        // Determine base date: event date or manual fallback
+        let baseDate = eventDate;
+        if (!baseDate) {
+            const manualVal = document.getElementById('pafStartDate')?.value;
+            if (!manualVal) { showToast('Set an event date or enter a start date.'); return; }
+            baseDate = manualVal;
+        }
+        const base = new Date(baseDate + 'T09:00');
+
+        const offsetsRaw = document.getElementById('pafOffsets').value;
+        const offsets = offsetsRaw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        if (!offsets.length) { showToast('Enter at least one day offset.'); return; }
+
         const applyStory = document.getElementById('pafStory').checked;
         const applyPhoto = document.getElementById('pafPhoto').checked;
         const applyReel = document.getElementById('pafReel').checked;
         const mode = document.getElementById('pafMode').value;
-        if (!startDateVal) { showToast('Please select a start date.'); return; }
+
         const types = [];
         if (applyStory) types.push('story');
         if (applyPhoto) types.push('photo');
         if (applyReel) types.push('reel');
         if (!types.length) { showToast('Select at least one type.'); return; }
+
         currentEditingTask.postingSchedule = normalizePostingSchedule(currentEditingTask.postingSchedule);
         types.forEach(type => {
-            const dates = [];
-            const start = new Date(startDateVal + 'T09:00');
-            for (let i = 0; i < count; i++) {
-                const d = new Date(start.getTime() + i * interval * 86400000);
-                dates.push(d.toISOString().slice(0, 16));
-            }
+            const dates = offsets.sort((a,b)=>a-b).map(offset => {
+                const d = new Date(base.getTime() + offset * 86400000);
+                return d.toISOString().slice(0, 16);
+            });
             if (mode === 'replace') {
                 currentEditingTask.postingSchedule[type] = dates;
             } else {
@@ -8060,16 +8078,16 @@
         });
         renderPostingSchedule();
         scheduleAutoSave();
-        showToast('Generated ' + count + ' dates for ' + types.join(', ') + '.');
+        showToast('Added ' + offsets.length + ' posting date' + (offsets.length !== 1 ? 's' : '') + ' for ' + types.join(', ') + '.');
     }
 
     function showPostAutoFillDialog(bodyHtml) {
         return new Promise(resolve => {
             const overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100010;display:flex;align-items:center;justify-content:center;padding:20px;';
             const card = document.createElement('div');
-            card.style.cssText = 'background:#1c1c1e;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto;';
-            card.innerHTML = '<h3 style="margin:0 0 20px;font-weight:800;">&#9889; Auto-fill Posting Dates</h3><div>' + bodyHtml + '</div><div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;"><button id="_pafCancel" class="btn-outline" style="padding:10px 20px;">Cancel</button><button id="_pafConfirm" class="btn-action" style="padding:10px 20px;">Generate</button></div>';
+            card.style.cssText = 'background:#1c1c1e;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;';
+            card.innerHTML = '<h3 style="margin:0 0 20px;font-weight:800;">&#9889; Auto-fill Posting Schedule</h3><div>' + bodyHtml + '</div><div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;"><button id="_pafCancel" class="btn-outline" style="padding:10px 20px;">Cancel</button><button id="_pafConfirm" class="btn-action" style="padding:10px 20px;">Generate</button></div>';
             overlay.appendChild(card);
             document.body.appendChild(overlay);
             const cleanup = (result) => { document.body.removeChild(overlay); resolve(result); };
@@ -10050,6 +10068,30 @@
                         }
                         break;
                     }
+                    case 'fill_posting_schedule': {
+                        if (!task.dueDate) break;
+                        try {
+                            const cfg = JSON.parse(act.value);
+                            const offsets = cfg.offsets.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+                            if (!offsets.length) break;
+                            const base = new Date(task.dueDate.slice(0,10) + 'T09:00');
+                            const dates = offsets.sort((a,b)=>a-b).map(o => new Date(base.getTime() + o*86400000).toISOString().slice(0,16));
+                            if (!task.postingSchedule) task.postingSchedule = { story:[], photo:[], reel:[] };
+                            task.postingSchedule = normalizePostingSchedule(task.postingSchedule);
+                            const types = [];
+                            if (cfg.story === '1') types.push('story');
+                            if (cfg.photo === '1') types.push('photo');
+                            if (cfg.reel  === '1') types.push('reel');
+                            types.forEach(t => {
+                                if (cfg.mode === 'replace') task.postingSchedule[t] = [...dates];
+                                else task.postingSchedule[t] = [...task.postingSchedule[t], ...dates];
+                            });
+                            modified = true;
+                            showToast('🤖 Posting schedule filled from event date');
+                            if (isCurrentEditing) renderPostingSchedule();
+                        } catch(e) {}
+                        break;
+                    }
                     case 'notify': {
                         showToast('🔔 ' + act.value);
                         break;
@@ -10099,6 +10141,7 @@
             set_due_offset: () => `set due date <b>${act.value} days from now</b>`,
             add_member:     () => `assign member <b>${act.value}</b>`,
             remove_member:  () => `remove member <b>${act.value}</b>`,
+            fill_posting_schedule: () => { try { const c=JSON.parse(act.value); const types=[c.story==='1'?'Story':null,c.photo==='1'?'Photo':null,c.reel==='1'?'Reel':null].filter(Boolean); return `fill posting schedule (${types.join(', ')}) at offsets <b>${c.offsets}</b> days`; } catch(e) { return 'fill posting schedule'; } },
             notify:         () => `show notification`,
         };
         return (map[act.type] || (() => act.type))();
@@ -10188,6 +10231,7 @@
                         <option value="add_member">👤 Assign member</option>
                         <option value="remove_member">👤 Remove member</option>
                         <option value="set_due_offset">📅 Set due date (days from now)</option>
+                        <option value="fill_posting_schedule">📸 Fill posting schedule from event date</option>
                     </optgroup>
                     <optgroup label="Other">
                         <option value="notify">🔔 Show notification</option>
@@ -10257,6 +10301,29 @@
             }
             case 'set_due_offset':
                 area.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><input type="number" class="modern-input act-val-text" placeholder="7" min="1" max="365" style="width:100px;"><span style="color:var(--text-muted); font-size:0.85rem;">days from now</span></div>`; break;
+            case 'fill_posting_schedule':
+                area.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px;">
+                    <div>
+                        <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Day offsets from event date (comma-separated)</label>
+                        <input type="text" class="modern-input act-val-text" placeholder="e.g. -21, -14, -7, -3, 0" value="-14, -7, -3, 0" style="width:100%;">
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px;">Negative = before event · 0 = event day · Requires Due Date on card</div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Content types</label>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem;cursor:pointer;"><input type="checkbox" class="psa-story" checked style="accent-color:#BF5AF2;"> <span style="color:#BF5AF2;font-weight:700;">Story</span></label>
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem;cursor:pointer;"><input type="checkbox" class="psa-photo" checked style="accent-color:#0A84FF;"> <span style="color:#0A84FF;font-weight:700;">Photo</span></label>
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem;cursor:pointer;"><input type="checkbox" class="psa-reel" style="accent-color:#FF2D55;"> <span style="color:#FF2D55;font-weight:700;">Reel</span></label>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Mode</label>
+                        <select class="modern-input act-val-post-mode" style="background:#1a1a1a;color:#fff;">
+                            <option value="replace" style="background:#1a1a1a;">Replace existing dates</option>
+                            <option value="append" style="background:#1a1a1a;">Append to existing dates</option>
+                        </select>
+                    </div>
+                </div>`; break;
             case 'notify':
                 area.innerHTML = `<input type="text" class="modern-input act-val-text" placeholder="Notification message...">`; break;
             default:
@@ -10339,6 +10406,14 @@
             } else if (type === 'add_member' || type === 'remove_member') {
                 value = row.querySelector('.act-val-member')?.value || '';
                 if (!value) { showToast('Select a member.'); valid = false; return; }
+            } else if (type === 'fill_posting_schedule') {
+                const offsets = row.querySelector('.act-val-text')?.value.trim() || '';
+                const story = row.querySelector('.psa-story')?.checked ? '1' : '0';
+                const photo = row.querySelector('.psa-photo')?.checked ? '1' : '0';
+                const reel  = row.querySelector('.psa-reel')?.checked  ? '1' : '0';
+                const mode  = row.querySelector('.act-val-post-mode')?.value || 'replace';
+                if (!offsets) { showToast('Enter day offsets for posting schedule.'); valid = false; return; }
+                value = JSON.stringify({ offsets, story, photo, reel, mode });
             } else {
                 value = row.querySelector('.act-val-text')?.value.trim() || '';
                 if (!value && type !== 'mark_complete') { showToast('Fill in all action values.'); valid = false; return; }
@@ -13270,17 +13345,18 @@
                     <div class="day-name">${DAY_NAMES[dayIdx]}</div>
                 </div>`;
             dayShifts.forEach(ts => {
-                const worker = workers.find(w => w.id === ts.workerId);
-                const color = worker ? (worker.color || '#0A84FF') : '#636366';
-                const wName = worker ? worker.name.split(' ')[0] : '?';
+                const isOpenTs = !ts.workerId || ts.workerId === 'open';
+                const worker = isOpenTs ? null : workers.find(w => w.id === ts.workerId);
+                const color = isOpenTs ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
+                const wName = isOpenTs ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
                 html += `<div class="schedule-shift-card" onclick="${isAdmin?`openTemplateShiftModal('${ts.id}')`:'void(0)'}"
                     style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
                     border-color:${color}66; border-top-color:${color}99;
                     box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);
-                    cursor:${isAdmin?'pointer':'default'};">
+                    cursor:${isAdmin?'pointer':'default'};${isOpenTs?'border-style:dashed;':''}">
                     <div style="font-size:0.56rem;color:rgba(255,255,255,0.35);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Every Week</div>
                     <div class="shift-time" style="color:${color};">${_fmtTime(ts.startTime)}${ts.endTime?` – ${_fmtTime(ts.endTime)}`:''}</div>
-                    <div class="shift-worker">${escapeHtml(wName)}</div>
+                    <div class="shift-worker" style="${isOpenTs?`color:${color};font-weight:800;`:''}">${escapeHtml(wName)}</div>
                     ${ts.role?`<div class="shift-role">${escapeHtml(ts.role)}</div>`:''}
                 </div>`;
             });
