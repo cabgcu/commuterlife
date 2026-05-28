@@ -12711,7 +12711,14 @@
             title = `Schedule: ${days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${days[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
             const weekSemForPrint = _getSemesterForWeek(_schedWeekStart);
             const useTemplateForPrint = !!weekSemForPrint && (appData.templateShifts||[]).length > 0;
-            const printShifts = useTemplateForPrint ? _getTemplateShiftsForWeek(_schedWeekStart) : shifts;
+            const templatePrintShifts = useTemplateForPrint ? _getTemplateShiftsForWeek(_schedWeekStart) : [];
+            const templatePrintDates = new Set(templatePrintShifts.map(s => s.date));
+            const manualPrintShifts = shifts
+                .filter(s => days.some(d => _fmtDate(d) === s.date) && !templatePrintDates.has(s.date))
+                .map(s => ({ ...s, templateShiftId: null }));
+            const printShifts = useTemplateForPrint
+                ? [...templatePrintShifts, ...manualPrintShifts]
+                : shifts;
             days.forEach(d => {
                 const dateStr = _fmtDate(d);
                 const dayShifts = printShifts.filter(s => s.date === dateStr).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
@@ -12731,10 +12738,34 @@
         } else {
             const yr = _schedMonthDate.getFullYear(), mo = _schedMonthDate.getMonth();
             title = _schedMonthDate.toLocaleDateString('en-US',{month:'long',year:'numeric'}) + ' Schedule';
-            const monthShifts = shifts.filter(s => {
-                const d = new Date(s.date);
-                return d.getFullYear()===yr && d.getMonth()===mo;
-            }).sort((a,b) => a.date===b.date ? (a.startTime||'').localeCompare(b.startTime||'') : a.date.localeCompare(b.date));
+            // Build effective shifts same way as month grid: template where semester active, manual elsewhere
+            const monthEffMap = {};
+            {
+                const firstDay = new Date(yr, mo, 1);
+                const lastDay  = new Date(yr, mo + 1, 0);
+                let ws = _getWeekStart(firstDay);
+                const coveredDates = new Set();
+                while (ws <= lastDay) {
+                    const wsem = _getSemesterForWeek(ws);
+                    if (wsem && (appData.templateShifts||[]).length > 0) {
+                        _getTemplateShiftsForWeek(ws).forEach(s => {
+                            if (!monthEffMap[s.date]) monthEffMap[s.date] = [];
+                            monthEffMap[s.date].push(s);
+                            coveredDates.add(s.date);
+                        });
+                    }
+                    ws = new Date(ws.getTime() + 7 * 86400000);
+                }
+                shifts.filter(s => {
+                    const d = new Date(s.date);
+                    return d.getFullYear()===yr && d.getMonth()===mo && !coveredDates.has(s.date);
+                }).forEach(s => {
+                    if (!monthEffMap[s.date]) monthEffMap[s.date] = [];
+                    monthEffMap[s.date].push(s);
+                });
+            }
+            const monthShifts = Object.values(monthEffMap).flat()
+                .sort((a,b) => a.date===b.date ? (a.startTime||'').localeCompare(b.startTime||'') : a.date.localeCompare(b.date));
             let lastDate = '';
             monthShifts.forEach(s => {
                 if (s.date !== lastDate) {
