@@ -1170,8 +1170,9 @@
             }
             .notif-panel.open { transform: translateY(0); right: 0; }
 
-            /* Hide Manager from mobile nav */
-            #tab-manager { display: none !important; }
+            /* Hide Manager sub-nav and heavy tables on mobile — show Add Expense only */
+            .em-subnav { display: none !important; }
+            #em-budget-tables { display: none !important; }
 
             /* Bottom Bar Navigation */
             .nav-tabs {
@@ -2643,6 +2644,7 @@
 
             <!-- Sub-view: Budget -->
             <div id="em-view-budget" class="em-hidden">
+                <div id="em-budget-tables">
                 <!-- Event Financials Table -->
                 <div class="em-frosted" style="border-radius:16px; overflow:hidden; margin-bottom:20px;">
                     <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
@@ -2681,6 +2683,7 @@
                         </table>
                     </div>
                 </div>
+                </div><!-- /em-budget-tables -->
 
                 <!-- Expense Form -->
                 <div class="em-frosted" style="border-radius:16px; padding:20px; margin-bottom:20px;">
@@ -14037,7 +14040,8 @@
     function emColLabel(k) { return (emGetSettings().columnLabels || EM_COL_LABELS)[k] || k; }
 
     function renderManager() {
-        emSwitchTab(_emCurrentSubTab, true);
+        const isMobile = window.innerWidth <= 768;
+        emSwitchTab(isMobile ? 'budget' : _emCurrentSubTab, true);
     }
 
     function emSwitchTab(tab, doRender) {
