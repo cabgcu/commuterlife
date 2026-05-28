@@ -3132,10 +3132,7 @@
                             <div id="attachmentsContainer"></div>
                         </div>
                         <div style="margin-top: 20px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                                <h3 class="section-title" style="margin:0;">Posting Schedule</h3>
-                                <button type="button" class="btn-outline" style="font-size:0.78rem; padding:6px 12px; border-color:rgba(10,132,255,0.4); color:#0A84FF;" onclick="openPostAutoFill()">&#9889; Auto-fill Dates</button>
-                            </div>
+                            <h3 class="section-title">Posting Schedule</h3>
                             <div class="posting-schedule-grid" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border);">
                                 <div class="posting-schedule-col" data-type="story" style="--ps-color: #BF5AF2;">
                                     <label class="stat-label" style="margin-top:0; color: #BF5AF2;">IG Story</label>
@@ -10071,6 +10068,30 @@
                         }
                         break;
                     }
+                    case 'fill_posting_schedule': {
+                        if (!task.dueDate) break;
+                        try {
+                            const cfg = JSON.parse(act.value);
+                            const offsets = cfg.offsets.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+                            if (!offsets.length) break;
+                            const base = new Date(task.dueDate.slice(0,10) + 'T09:00');
+                            const dates = offsets.sort((a,b)=>a-b).map(o => new Date(base.getTime() + o*86400000).toISOString().slice(0,16));
+                            if (!task.postingSchedule) task.postingSchedule = { story:[], photo:[], reel:[] };
+                            task.postingSchedule = normalizePostingSchedule(task.postingSchedule);
+                            const types = [];
+                            if (cfg.story === '1') types.push('story');
+                            if (cfg.photo === '1') types.push('photo');
+                            if (cfg.reel  === '1') types.push('reel');
+                            types.forEach(t => {
+                                if (cfg.mode === 'replace') task.postingSchedule[t] = [...dates];
+                                else task.postingSchedule[t] = [...task.postingSchedule[t], ...dates];
+                            });
+                            modified = true;
+                            showToast('🤖 Posting schedule filled from event date');
+                            if (isCurrentEditing) renderPostingSchedule();
+                        } catch(e) {}
+                        break;
+                    }
                     case 'notify': {
                         showToast('🔔 ' + act.value);
                         break;
@@ -10120,6 +10141,7 @@
             set_due_offset: () => `set due date <b>${act.value} days from now</b>`,
             add_member:     () => `assign member <b>${act.value}</b>`,
             remove_member:  () => `remove member <b>${act.value}</b>`,
+            fill_posting_schedule: () => { try { const c=JSON.parse(act.value); const types=[c.story==='1'?'Story':null,c.photo==='1'?'Photo':null,c.reel==='1'?'Reel':null].filter(Boolean); return `fill posting schedule (${types.join(', ')}) at offsets <b>${c.offsets}</b> days`; } catch(e) { return 'fill posting schedule'; } },
             notify:         () => `show notification`,
         };
         return (map[act.type] || (() => act.type))();
@@ -10209,6 +10231,7 @@
                         <option value="add_member">👤 Assign member</option>
                         <option value="remove_member">👤 Remove member</option>
                         <option value="set_due_offset">📅 Set due date (days from now)</option>
+                        <option value="fill_posting_schedule">📸 Fill posting schedule from event date</option>
                     </optgroup>
                     <optgroup label="Other">
                         <option value="notify">🔔 Show notification</option>
@@ -10278,6 +10301,29 @@
             }
             case 'set_due_offset':
                 area.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><input type="number" class="modern-input act-val-text" placeholder="7" min="1" max="365" style="width:100px;"><span style="color:var(--text-muted); font-size:0.85rem;">days from now</span></div>`; break;
+            case 'fill_posting_schedule':
+                area.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px;">
+                    <div>
+                        <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Day offsets from event date (comma-separated)</label>
+                        <input type="text" class="modern-input act-val-text" placeholder="e.g. -21, -14, -7, -3, 0" value="-14, -7, -3, 0" style="width:100%;">
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px;">Negative = before event · 0 = event day · Requires Due Date on card</div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Content types</label>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem;cursor:pointer;"><input type="checkbox" class="psa-story" checked style="accent-color:#BF5AF2;"> <span style="color:#BF5AF2;font-weight:700;">Story</span></label>
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem;cursor:pointer;"><input type="checkbox" class="psa-photo" checked style="accent-color:#0A84FF;"> <span style="color:#0A84FF;font-weight:700;">Photo</span></label>
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem;cursor:pointer;"><input type="checkbox" class="psa-reel" style="accent-color:#FF2D55;"> <span style="color:#FF2D55;font-weight:700;">Reel</span></label>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Mode</label>
+                        <select class="modern-input act-val-post-mode" style="background:#1a1a1a;color:#fff;">
+                            <option value="replace" style="background:#1a1a1a;">Replace existing dates</option>
+                            <option value="append" style="background:#1a1a1a;">Append to existing dates</option>
+                        </select>
+                    </div>
+                </div>`; break;
             case 'notify':
                 area.innerHTML = `<input type="text" class="modern-input act-val-text" placeholder="Notification message...">`; break;
             default:
@@ -10360,6 +10406,14 @@
             } else if (type === 'add_member' || type === 'remove_member') {
                 value = row.querySelector('.act-val-member')?.value || '';
                 if (!value) { showToast('Select a member.'); valid = false; return; }
+            } else if (type === 'fill_posting_schedule') {
+                const offsets = row.querySelector('.act-val-text')?.value.trim() || '';
+                const story = row.querySelector('.psa-story')?.checked ? '1' : '0';
+                const photo = row.querySelector('.psa-photo')?.checked ? '1' : '0';
+                const reel  = row.querySelector('.psa-reel')?.checked  ? '1' : '0';
+                const mode  = row.querySelector('.act-val-post-mode')?.value || 'replace';
+                if (!offsets) { showToast('Enter day offsets for posting schedule.'); valid = false; return; }
+                value = JSON.stringify({ offsets, story, photo, reel, mode });
             } else {
                 value = row.querySelector('.act-val-text')?.value.trim() || '';
                 if (!value && type !== 'mark_complete') { showToast('Fill in all action values.'); valid = false; return; }
