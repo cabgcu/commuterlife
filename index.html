@@ -202,7 +202,7 @@
         .nav-divider { width: 1px; height: 20px; background-color: #3f3f46; margin: 0 4px; flex-shrink: 0; }
 
         .app-view { display: none; flex-grow: 1; overflow: hidden; padding-bottom: 100px; }
-        .app-view.active { display: flex; }
+        .app-view.active { display: flex; flex-direction: column; }
 
         .btn-action { 
             background: var(--gradient-accent); 
@@ -439,7 +439,7 @@
         .post-date-add-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--ps-color, rgba(255,255,255,0.3)); }
         .post-date-empty { font-size: 0.78rem; color: var(--text-muted); padding: 6px 2px; font-style: italic; }
 
-        .settings-wrapper { width: 100%; max-width: 600px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 100px; box-sizing: border-box; }
+        .settings-wrapper { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; padding-bottom: 120px; box-sizing: border-box; }
         .settings-card { background: rgba(24, 24, 28, 0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: var(--radius-card); margin-bottom: 20px; }
 
         .user-profile-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 20px; }
@@ -13229,9 +13229,9 @@
                 style="flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; cursor:pointer; transition:0.12s;
                 background:${isActive?'rgba(10,132,255,0.2)':'rgba(255,255,255,0.05)'};
                 border:1px solid ${isActive?'rgba(10,132,255,0.4)':'rgba(255,255,255,0.08)'};
-                color:${isToday?'#0A84FF':'var(--text-main)'}; min-height:36px;">
+                color:${isToday&&!isActive?'#0A84FF':'var(--text-main)'}; min-height:36px;">
                 <span class="sched-pill-name">${DAY_NAMES[d.getDay()]}</span>
-                <span class="sched-pill-num"${isToday?' style="color:#3b82f6;"':''}>${d.getDate()}</span>
+                <span class="sched-pill-num"${isToday&&!isActive?' style="color:#3b82f6;"':''}>${d.getDate()}</span>
             </button>`;
         });
         html += `</div><div class="schedule-grid" id="schedGrid">`;
