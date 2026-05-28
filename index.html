@@ -2699,6 +2699,16 @@
                         </div>
                     </div>
                     <div style="margin-bottom:16px;"><label class="em-label">Event (optional)</label><select id="em-exp-event" class="em-input"></select></div>
+                    <div style="margin-bottom:16px;">
+                        <label class="em-label">Receipt (optional)</label>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <button type="button" onclick="document.getElementById('em-exp-receipt-input').click()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:var(--text-main);padding:8px 16px;cursor:pointer;font-size:0.85rem;font-family:inherit;">📎 Attach Receipt</button>
+                            <input type="file" id="em-exp-receipt-input" accept="image/*" style="display:none;" onchange="emHandleReceiptSelect(event)">
+                            <span id="em-exp-receipt-name" style="font-size:0.8rem;color:var(--text-muted);"></span>
+                        </div>
+                        <img id="em-exp-receipt-preview" src="" alt="" style="display:none;max-height:80px;border-radius:8px;margin-top:8px;object-fit:cover;cursor:pointer;" onclick="emOpenReceiptLightbox(this.src)">
+                        <input type="hidden" id="em-exp-receipt-url">
+                    </div>
                     <button onclick="emSaveExpense()" class="em-btn-save">Add Expense</button>
                 </div>
 
@@ -14263,12 +14273,14 @@
             expList.innerHTML = expenses.slice().reverse().map(function(exp) {
                 var evName = exp.eventId ? ((d.events||[]).find(function(e) { return e.id===exp.eventId; }) || {name:'Unknown'}).name : 'General';
                 return '<div class="em-frosted" style="padding:14px 16px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;">' +
+                    (exp.receiptUrl ? '<img src="' + exp.receiptUrl + '" alt="receipt" onclick="emOpenReceiptLightbox(\"' + exp.receiptUrl + '\")" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;border:1px solid rgba(255,255,255,0.1);">' : '') +
                     '<div style="flex:1;min-width:0;">' +
                     '<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + exp.name + '</div>' +
-                    '<div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">' + (exp.date||'-') + ' • ' + evName + ' • ' + exp.month + '</div></div>' +
+                    '<div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">' + (exp.date||'-') + ' • ' + evName + ' • ' + exp.month + (exp.category ? ' • ' + exp.category : '') + '</div></div>' +
                     '<div style="text-align:right;flex-shrink:0;">' +
                     '<div style="font-family:monospace;font-weight:700;font-size:1rem;">$' + Number(exp.cost).toLocaleString(undefined,{minimumFractionDigits:2}) + '</div>' +
                     '<div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end;">' +
+                    (exp.receiptUrl ? '<button onclick="emOpenReceiptLightbox(\"' + exp.receiptUrl + '\")" style="background:none;border:none;color:#0A84FF;cursor:pointer;font-size:0.7rem;font-weight:700;">View</button>' : '') +
                     '<button onclick="emDeleteExpense(\'' + exp.id + '\')" style="background:none;border:none;color:#FF3B30;cursor:pointer;font-size:0.7rem;font-weight:700;">Delete</button>' +
                     '</div></div></div>';
             }).join('') || '<div class="em-frosted" style="text-align:center;color:var(--text-muted);padding:40px 24px;border-radius:12px;">No expenses yet.</div>';
@@ -14309,13 +14321,73 @@
         var month = document.getElementById('em-exp-month').value;
         var eventId = document.getElementById('em-exp-event').value;
         var category = document.getElementById('em-exp-category').value;
+        var receiptUrl = document.getElementById('em-exp-receipt-url').value || '';
         if (!name || !cost) { showToast('Name and Cost required'); return; }
         if (!appData.manager.expenses) appData.manager.expenses = [];
-        appData.manager.expenses.push({ id: 'emexp_'+Date.now(), name: name, cost: Number(cost), date: date, month: month, eventId: eventId, category: category });
+        appData.manager.expenses.push({ id: 'emexp_'+Date.now(), name: name, cost: Number(cost), date: date, month: month, eventId: eventId, category: category, receiptUrl: receiptUrl });
         saveData();
         emRenderBudget();
         document.getElementById('em-exp-name').value = '';
         document.getElementById('em-exp-cost').value = '';
+        document.getElementById('em-exp-receipt-url').value = '';
+        document.getElementById('em-exp-receipt-name').textContent = '';
+        document.getElementById('em-exp-receipt-preview').style.display = 'none';
+        document.getElementById('em-exp-receipt-preview').src = '';
+        document.getElementById('em-exp-receipt-input').value = '';
+    }
+
+    function emHandleReceiptSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const nameEl = document.getElementById('em-exp-receipt-name');
+        const preview = document.getElementById('em-exp-receipt-preview');
+        nameEl.textContent = 'Uploading…';
+        showToast('Uploading receipt…');
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const base64Data = e.target.result.split(',')[1];
+            try {
+                const response = await fetch(GAS_UPLOAD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ filename: file.name, mimeType: file.type, base64: base64Data })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const url = toDirectDriveUrl(result.url);
+                    document.getElementById('em-exp-receipt-url').value = url;
+                    nameEl.textContent = file.name;
+                    preview.src = url;
+                    preview.style.display = 'block';
+                    showToast('Receipt uploaded!');
+                } else {
+                    nameEl.textContent = 'Upload failed';
+                    showToast('Upload failed: ' + result.error);
+                }
+            } catch(err) {
+                nameEl.textContent = 'Upload error';
+                showToast('Network error during upload.');
+            }
+            event.target.value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function emOpenReceiptLightbox(url) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.cssText = 'max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6);';
+        const close = document.createElement('button');
+        close.textContent = '✕';
+        close.style.cssText = 'position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:40px;height:40px;font-size:1.2rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+        overlay.appendChild(img);
+        overlay.appendChild(close);
+        document.body.appendChild(overlay);
+        const cleanup = () => document.body.removeChild(overlay);
+        overlay.onclick = cleanup;
+        close.onclick = cleanup;
     }
 
     async function emDeleteExpense(id) {
