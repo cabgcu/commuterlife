@@ -3356,6 +3356,7 @@
                     <optgroup label="Progress">
                         <option value="checklist_completed">All checklist items completed</option>
                         <option value="due_soon">Event date is within X days...</option>
+                        <option value="due_date_set">Due date / event date is set</option>
                     </optgroup>
                 </select>
                 <div id="autoTriggerValueContainer">
@@ -9901,6 +9902,7 @@
         priority_set:        '🎯 Priority set to',
         checklist_completed: '☑️ All checklist items done',
         due_soon:            '⏰ Event date within X days',
+        due_date_set:        '📅 Due date / event date is set',
     };
 
     const AUTO_ACTION_LABELS = {
@@ -9929,6 +9931,7 @@
                 case 'desc_contains':       if (['task_saved','card_created'].includes(eventType)) { if ((task.description||'').toLowerCase().includes(rule.triggerValue.toLowerCase())) triggered = true; } break;
                 case 'title_contains':      if (['task_saved','card_created'].includes(eventType)) { if ((task.title||'').toLowerCase().includes(rule.triggerValue.toLowerCase())) triggered = true; } break;
                 case 'checklist_completed': if (eventType === 'checklist_completed') { if (task.checklist?.length > 0 && task.checklist.every(c => c.done)) triggered = true; } break;
+                case 'due_date_set':        if (['task_saved','card_created'].includes(eventType) && task.dueDate) triggered = true; break;
                 case 'due_soon':
                     if (eventType === 'due_soon_check' && task.dueDate) {
                         const daysUntil = Math.ceil((new Date(task.dueDate) - new Date()) / 86400000);
@@ -10079,7 +10082,7 @@
                         break;
                     }
                     case 'fill_posting_schedule': {
-                        if (!task.dueDate) break;
+                        if (!task.dueDate) break; // silently skip — no due date yet
                         try {
                             const cfg = JSON.parse(act.value);
                             const offsets = cfg.offsets.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
@@ -10092,13 +10095,26 @@
                             if (cfg.story === '1') types.push('story');
                             if (cfg.photo === '1') types.push('photo');
                             if (cfg.reel  === '1') types.push('reel');
+                            let anyFilled = false;
                             types.forEach(t => {
-                                if (cfg.mode === 'replace') task.postingSchedule[t] = [...dates];
-                                else task.postingSchedule[t] = [...task.postingSchedule[t], ...dates];
+                                if (cfg.mode === 'replace') {
+                                    task.postingSchedule[t] = [...dates];
+                                    anyFilled = true;
+                                } else if (cfg.mode === 'fill_if_empty') {
+                                    if (!task.postingSchedule[t] || task.postingSchedule[t].length === 0) {
+                                        task.postingSchedule[t] = [...dates];
+                                        anyFilled = true;
+                                    }
+                                } else {
+                                    task.postingSchedule[t] = [...task.postingSchedule[t], ...dates];
+                                    anyFilled = true;
+                                }
                             });
-                            modified = true;
-                            showToast('🤖 Posting schedule filled from event date');
-                            if (isCurrentEditing) renderPostingSchedule();
+                            if (anyFilled) {
+                                modified = true;
+                                showToast('🤖 Posting schedule filled from event date');
+                                if (isCurrentEditing) renderPostingSchedule();
+                            }
                         } catch(e) {}
                         break;
                     }
@@ -10329,6 +10345,7 @@
                     <div>
                         <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:5px;">Mode</label>
                         <select class="modern-input act-val-post-mode" style="background:#1a1a1a;color:#fff;">
+                            <option value="fill_if_empty" style="background:#1a1a1a;">Fill only if no dates exist yet (recommended)</option>
                             <option value="replace" style="background:#1a1a1a;">Replace existing dates</option>
                             <option value="append" style="background:#1a1a1a;">Append to existing dates</option>
                         </select>
@@ -10390,7 +10407,7 @@
         else if (trigSelect === 'card_moved') triggerVal = document.getElementById('autoTriggerInputSelect').value;
         else if (trigSelect === 'priority_set') triggerVal = document.getElementById('autoTriggerPrioritySelect').value;
         else if (trigSelect === 'due_soon') triggerVal = document.getElementById('autoTriggerDays').value.trim();
-        const noValueTriggers = ['card_created','card_completed','checklist_completed'];
+        const noValueTriggers = ['card_created','card_completed','checklist_completed','due_date_set'];
         if (!noValueTriggers.includes(trigSelect) && !triggerVal) { showToast('Please fill in the trigger value.'); return; }
         const actionRows = document.querySelectorAll('#autoActionsContainer > div');
         if (actionRows.length === 0) { showToast('Add at least one action.'); return; }
