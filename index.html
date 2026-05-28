@@ -264,6 +264,7 @@
         }
 
         .modern-input:focus { border-color: #0A84FF; background: rgba(255, 255, 255, 0.08); }
+        select option { background-color: #1a1a1a; color: #ffffff; }
 
         .board-container {
             gap: 24px;
@@ -1833,6 +1834,13 @@
         }
         .storage-bin-reorder button:hover:not(:disabled) { background: rgba(255,255,255,0.12); color: #fff; }
         .storage-bin-reorder button:disabled { opacity: 0.25; cursor: default; }
+        .storage-bin-reorder-mobile { display: flex; }
+        @media (hover: hover) and (pointer: fine) {
+            .storage-bin-reorder-mobile { display: none; }
+            .storage-bin-card[draggable="true"] { cursor: grab; }
+            .storage-bin-card[draggable="true"]:active { cursor: grabbing; }
+            .storage-bin-card.bin-drag-over { box-shadow: 0 0 0 2px #0A84FF; transform: scale(1.02); transition: transform 0.1s; }
+        }
         .storage-bin-hero {
             width: 100%; height: 140px; flex-shrink: 0;
             background: rgba(255,255,255,0.04);
@@ -2533,10 +2541,6 @@
             <span class="ntab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
             <span class="ntab-label">Calendar</span>
         </button>
-        <button class="nav-tab" id="tab-duesoon" onclick="switchView('duesoon')">
-            <span class="ntab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span>
-            <span class="ntab-label">Due</span>
-        </button>
         <button class="nav-tab" id="tab-storage" onclick="switchView('storage')">
             <span class="ntab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
             <span class="ntab-label">Storage</span>
@@ -2563,9 +2567,6 @@
 
     <div class="app-view active board-container" id="view-board"></div>
     <div class="app-view" id="view-calendar"><div class="calendar-wrapper" id="calendar-main-wrapper"></div></div>
-    <div class="app-view" id="view-duesoon" style="padding: 0 4px;">
-        <div class="due-soon-wrapper" id="due-soon-content"></div>
-    </div>
 
     <div class="app-view" id="view-events" style="padding: 0 4px;">
         <div class="events-wrapper" id="events-content"></div>
@@ -3131,7 +3132,10 @@
                             <div id="attachmentsContainer"></div>
                         </div>
                         <div style="margin-top: 20px;">
-                            <h3 class="section-title">Posting Schedule</h3>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                <h3 class="section-title" style="margin:0;">Posting Schedule</h3>
+                                <button type="button" class="btn-outline" style="font-size:0.78rem; padding:6px 12px; border-color:rgba(10,132,255,0.4); color:#0A84FF;" onclick="openPostAutoFill()">&#9889; Auto-fill Dates</button>
+                            </div>
                             <div class="posting-schedule-grid" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border);">
                                 <div class="posting-schedule-col" data-type="story" style="--ps-color: #BF5AF2;">
                                     <label class="stat-label" style="margin-top:0; color: #BF5AF2;">IG Story</label>
@@ -3920,7 +3924,7 @@
         const user = appData.settings.users.find(u => u.email.toLowerCase() === email);
         if (user && user.password === pass) {
             isAuthenticated = true;
-            currentUserRole = 'user';
+            currentUserRole = user.role === 'admin' ? 'admin' : 'user';
             currentUserEmail = email;
             currentUserName = user.name || email.split('@')[0];
             localStorage.setItem('cab_auth_email', email);
@@ -4028,7 +4032,7 @@
 
             saveData();
             isAuthenticated = true;
-            currentUserRole = 'user';
+            currentUserRole = user.role === 'admin' ? 'admin' : 'user';
             currentUserEmail = email;
             currentUserName = name;
             localStorage.setItem('cab_auth_email', email);
@@ -5736,11 +5740,11 @@
     }
 
     const SECTION_LABELS = {
-        board: 'Home / Board', calendar: 'Calendar', duesoon: 'Due Soon',
+        board: 'Home / Board', calendar: 'Calendar',
         storage: 'Storage', schedule: 'Schedule & Swaps', manager: 'Manager'
     };
     const DEFAULT_SECTION_PERMISSIONS = {
-        board: true, calendar: true, duesoon: true, storage: true, schedule: true, manager: true
+        board: true, calendar: true, storage: true, schedule: true, manager: true
     };
 
     function applyUserPermissions() {
@@ -5750,7 +5754,7 @@
         }
         const user = (appData.settings.users || []).find(u => u.email === currentUserEmail);
         const perms = { ...DEFAULT_SECTION_PERMISSIONS, ...(user?.sectionPermissions || {}) };
-        const tabMap = { board:'tab-board', calendar:'tab-calendar', duesoon:'tab-duesoon', storage:'tab-storage', schedule:'tab-schedule', manager:'tab-manager' };
+        const tabMap = { board:'tab-board', calendar:'tab-calendar', storage:'tab-storage', schedule:'tab-schedule', manager:'tab-manager' };
         let firstVisible = null;
         Object.entries(tabMap).forEach(([section, tabId]) => {
             const tab = document.getElementById(tabId);
@@ -5773,6 +5777,15 @@
         showToast(`${SECTION_LABELS[section]} ${enabled ? 'enabled' : 'disabled'} for ${email.split('@')[0]}`);
     }
 
+    function toggleUserAdminRole(email) {
+        const user = (appData.settings.users || []).find(u => u.email === email);
+        if (!user) return;
+        user.role = user.role === 'admin' ? 'user' : 'admin';
+        saveData();
+        renderUserList();
+        showToast(user.role === 'admin' ? `${email.split('@')[0]} is now an admin.` : `${email.split('@')[0]} admin rights revoked.`);
+    }
+
     function renderUserList() {
         const container = document.getElementById('userListContainer');
         if (!container) return;
@@ -5788,8 +5801,9 @@
                         <div style="font-weight:bold;">${u.name ? escapeHtml(u.name) + ' <span style="font-weight:normal;color:var(--text-muted);">(' + escapeHtml(u.email) + ')</span>' : escapeHtml(u.email)}</div>
                         <div style="font-size:0.75rem; color:${u.password ? '#34C759' : '#FF9500'}; margin-top:2px;">${u.password ? 'Active' : 'Awaiting Setup'}</div>
                     </div>
-                    <div style="display:flex; gap:8px;">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         ${u.password ? `<button class="btn-outline" style="padding:6px 12px; font-size:0.75rem;" onclick="resetUserPassword('${u.email}')">Reset Pass</button>` : ''}
+                        <button class="btn-outline" style="padding:6px 12px; font-size:0.75rem; border-color:${u.role==='admin'?'rgba(191,90,242,0.4)':'rgba(255,255,255,0.15)'}; color:${u.role==='admin'?'#BF5AF2':'var(--text-muted)'};" onclick="toggleUserAdminRole('${u.email}')" title="${u.role==='admin'?'Revoke admin':'Grant admin'}">${u.role==='admin'?'★ Admin':'☆ Admin'}</button>
                         <button class="btn-outline" style="padding:6px 12px; font-size:0.75rem; border-color:rgba(255,59,48,0.4); color:#FF3B30;" onclick="removeUser('${u.email}')">Remove</button>
                     </div>
                 </div>
@@ -7978,6 +7992,93 @@
         return out;
     }
 
+    async function openPostAutoFill() {
+        if (!currentEditingTask) return;
+        const html = `
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Start Date</label>
+                    <input type="date" id="pafStartDate" class="modern-input" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Number of Dates</label>
+                    <input type="number" id="pafCount" class="modern-input" value="4" min="1" max="52" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Interval</label>
+                    <select id="pafInterval" class="modern-input" style="width:100%; background:#1a1a1a; color:#fff;">
+                        <option value="7" style="background:#1a1a1a;">Weekly (every 7 days)</option>
+                        <option value="14" style="background:#1a1a1a;">Bi-weekly (every 14 days)</option>
+                        <option value="1" style="background:#1a1a1a;">Daily</option>
+                        <option value="30" style="background:#1a1a1a;">Monthly (~30 days)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Apply to</label>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="pafStory" checked style="accent-color:#BF5AF2;"> <span style="color:#BF5AF2; font-weight:600;">IG Story</span></label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="pafPhoto" checked style="accent-color:#0A84FF;"> <span style="color:#0A84FF; font-weight:600;">IG Photo</span></label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="pafReel" style="accent-color:#FF2D55;"> <span style="color:#FF2D55; font-weight:600;">IG Reel</span></label>
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Mode</label>
+                    <select id="pafMode" class="modern-input" style="width:100%; background:#1a1a1a; color:#fff;">
+                        <option value="replace" style="background:#1a1a1a;">Replace existing dates</option>
+                        <option value="append" style="background:#1a1a1a;">Append to existing dates</option>
+                    </select>
+                </div>
+            </div>`;
+        const confirmed = await showPostAutoFillDialog(html);
+        if (!confirmed) return;
+        const startDateVal = document.getElementById('pafStartDate').value;
+        const count = Math.min(parseInt(document.getElementById('pafCount').value) || 4, 52);
+        const interval = parseInt(document.getElementById('pafInterval').value) || 7;
+        const applyStory = document.getElementById('pafStory').checked;
+        const applyPhoto = document.getElementById('pafPhoto').checked;
+        const applyReel = document.getElementById('pafReel').checked;
+        const mode = document.getElementById('pafMode').value;
+        if (!startDateVal) { showToast('Please select a start date.'); return; }
+        const types = [];
+        if (applyStory) types.push('story');
+        if (applyPhoto) types.push('photo');
+        if (applyReel) types.push('reel');
+        if (!types.length) { showToast('Select at least one type.'); return; }
+        currentEditingTask.postingSchedule = normalizePostingSchedule(currentEditingTask.postingSchedule);
+        types.forEach(type => {
+            const dates = [];
+            const start = new Date(startDateVal + 'T09:00');
+            for (let i = 0; i < count; i++) {
+                const d = new Date(start.getTime() + i * interval * 86400000);
+                dates.push(d.toISOString().slice(0, 16));
+            }
+            if (mode === 'replace') {
+                currentEditingTask.postingSchedule[type] = dates;
+            } else {
+                currentEditingTask.postingSchedule[type] = [...currentEditingTask.postingSchedule[type], ...dates];
+            }
+        });
+        renderPostingSchedule();
+        scheduleAutoSave();
+        showToast('Generated ' + count + ' dates for ' + types.join(', ') + '.');
+    }
+
+    function showPostAutoFillDialog(bodyHtml) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+            const card = document.createElement('div');
+            card.style.cssText = 'background:#1c1c1e;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto;';
+            card.innerHTML = '<h3 style="margin:0 0 20px;font-weight:800;">&#9889; Auto-fill Posting Dates</h3><div>' + bodyHtml + '</div><div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;"><button id="_pafCancel" class="btn-outline" style="padding:10px 20px;">Cancel</button><button id="_pafConfirm" class="btn-action" style="padding:10px 20px;">Generate</button></div>';
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+            const cleanup = (result) => { document.body.removeChild(overlay); resolve(result); };
+            card.querySelector('#_pafCancel').onclick = () => cleanup(false);
+            card.querySelector('#_pafConfirm').onclick = () => cleanup(true);
+            overlay.onclick = e => { if (e.target === overlay) cleanup(false); };
+        });
+    }
+
     function renderPostingSchedule() {
         if (!currentEditingTask) return;
         currentEditingTask.postingSchedule = normalizePostingSchedule(currentEditingTask.postingSchedule);
@@ -9709,6 +9810,15 @@
             const newTask = { id: generateId(), boardId: appData.activeBoardId, columnId: colId, title, description: desc, text: desc, dueDate, eventLocation, priority, postingSchedule: postingObj, customFields: currentEditingTask.customFields || [], attachments: currentEditingTask.attachments || [], coverImage: currentEditingTask.coverImage || '', checklist: currentEditingTask.checklist || [], members: currentEditingTask.members || [], labels: currentEditingTask.labels || [], comments: [] };
             processAutomations(newTask, 'card_created');
             processAutomations(newTask, 'task_saved');
+            // Sync DOM in case automation moved the card to a different list
+            if (newTask.columnId !== colId) {
+                document.getElementById('taskModalColId').value = newTask.columnId;
+                const movedCol = appData.columns.find(c => c.id === newTask.columnId);
+                const moveSelect = document.getElementById('settingMoveList');
+                if (moveSelect) moveSelect.value = newTask.columnId;
+                const listNameSpan = document.getElementById('taskModalListName');
+                if (listNameSpan && movedCol) listNameSpan.innerText = movedCol.title;
+            }
             appData.tasks.push(newTask);
             document.getElementById('taskModalTaskId').value = newTask.id;
             currentEditingTask = newTask;
@@ -9928,6 +10038,18 @@
                         }
                         break;
                     }
+                    case 'remove_member': {
+                        if (task.members) {
+                            const rmName = act.value.trim();
+                            const before = task.members.length;
+                            task.members = task.members.filter(m => m !== rmName);
+                            if (task.members.length < before) {
+                                modified = true; showToast(`🤖 Removed ${rmName}`);
+                                if (isCurrentEditing) renderMembers();
+                            }
+                        }
+                        break;
+                    }
                     case 'notify': {
                         showToast('🔔 ' + act.value);
                         break;
@@ -9976,6 +10098,7 @@
             mark_complete:  () => 'mark card complete',
             set_due_offset: () => `set due date <b>${act.value} days from now</b>`,
             add_member:     () => `assign member <b>${act.value}</b>`,
+            remove_member:  () => `remove member <b>${act.value}</b>`,
             notify:         () => `show notification`,
         };
         return (map[act.type] || (() => act.type))();
@@ -10063,6 +10186,7 @@
                         <option value="add_checklist">☑️ Add checklist items</option>
                         <option value="add_checklist_template">📋 Apply checklist template</option>
                         <option value="add_member">👤 Assign member</option>
+                        <option value="remove_member">👤 Remove member</option>
                         <option value="set_due_offset">📅 Set due date (days from now)</option>
                     </optgroup>
                     <optgroup label="Other">
@@ -10117,8 +10241,20 @@
                 }
                 break;
             }
-            case 'add_member':
-                area.innerHTML = `<input type="text" class="modern-input act-val-text" placeholder="Member Name (e.g. Jane Doe)">`; break;
+            case 'add_member': {
+                const allUsers = (appData.settings.users || []).filter(u => u.name && u.password);
+                const userOpts = allUsers.length > 0
+                    ? allUsers.map(u => `<option value="${u.name}">${u.name}</option>`).join('')
+                    : `<option value="">No registered users</option>`;
+                area.innerHTML = `<select class="modern-input act-val-member">${userOpts}</select>`; break;
+            }
+            case 'remove_member': {
+                const allUsers2 = (appData.settings.users || []).filter(u => u.name && u.password);
+                const userOpts2 = allUsers2.length > 0
+                    ? allUsers2.map(u => `<option value="${u.name}">${u.name}</option>`).join('')
+                    : `<option value="">No registered users</option>`;
+                area.innerHTML = `<select class="modern-input act-val-member">${userOpts2}</select>`; break;
+            }
             case 'set_due_offset':
                 area.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><input type="number" class="modern-input act-val-text" placeholder="7" min="1" max="365" style="width:100px;"><span style="color:var(--text-muted); font-size:0.85rem;">days from now</span></div>`; break;
             case 'notify':
@@ -10200,6 +10336,9 @@
             } else if (type === 'add_checklist_template') {
                 value = row.querySelector('.act-val-template')?.value || '';
                 if (!value) { showToast('Select a checklist template.'); valid = false; return; }
+            } else if (type === 'add_member' || type === 'remove_member') {
+                value = row.querySelector('.act-val-member')?.value || '';
+                if (!value) { showToast('Select a member.'); valid = false; return; }
             } else {
                 value = row.querySelector('.act-val-text')?.value.trim() || '';
                 if (!value && type !== 'mark_complete') { showToast('Fill in all action values.'); valid = false; return; }
@@ -11227,7 +11366,7 @@
 
         let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
             <h2 style="margin:0; font-weight:800; font-size:1.4rem;">Storage Bins</h2>
-            ${currentUserRole === 'admin' ? `<button class="btn-action" onclick="openBinModal(null)" style="padding:9px 20px; font-size:0.88rem;">+ Add Bin</button>` : ''}
+            <button class="btn-action" onclick="openBinModal(null)" style="padding:9px 20px; font-size:0.88rem;">+ Add Bin</button>
         </div>`;
 
         if (bins.length === 0) {
@@ -11288,11 +11427,11 @@
 
                 const isFirst = secIdx === 0;
                 const isLast = secIdx === secBins.length - 1;
-                const reorderOverlay = currentUserRole === 'admin' ? `
-                    <div class="storage-bin-reorder">
+                const reorderOverlay = `
+                    <div class="storage-bin-reorder storage-bin-reorder-mobile">
                         <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', -1)" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
                         <button onclick="event.stopPropagation(); moveBinInSection('${bin.id}', '${sec}', 1)" ${isLast ? 'disabled' : ''} title="Move down">↓</button>
-                    </div>` : '';
+                    </div>`;
 
                 const heroHtml = bin.picture ? `
                     <div class="storage-bin-hero" onclick="event.stopPropagation(); openBinPhotoViewer('${bin.id}')">
@@ -11302,7 +11441,12 @@
 
                 const iconHtml = '';
 
-                html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')">
+                html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')" draggable="true"
+                    ondragstart="binDragStart(event,'${bin.id}')"
+                    ondragend="binDragEnd(event)"
+                    ondragover="binDragOver(event,'${bin.id}')"
+                    ondragleave="binDragLeave(event)"
+                    ondrop="binDrop(event,'${bin.id}','${sec.replace(/'/g, "\\'")}')">
                     ${heroHtml}
                     ${reorderOverlay}
                     <div class="storage-bin-body">
@@ -11321,7 +11465,7 @@
                     </div>
                     <div class="storage-bin-actions">
                         <button class="btn-outline" onclick="event.stopPropagation(); openBinQr('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">QR</button>
-                        ${currentUserRole === 'admin' ? `<button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">Edit</button>` : ''}
+                        <button class="btn-outline" onclick="event.stopPropagation(); openBinModal('${bin.id}')" style="font-size:0.8rem; padding:6px 12px;">Edit</button>
                         <button class="btn-action" onclick="event.stopPropagation(); openPublicBinCardModal('${bin.id}')" style="font-size:0.8rem; padding:6px 16px; margin-left:auto;">${hasActive ? 'Check In' : 'Check Out'}</button>
                     </div>
                 </div>`;
@@ -11576,6 +11720,40 @@
         closeModal(null, 'storageBinModal');
         renderStorage();
         showToast('Bin saved.');
+    }
+
+    function binDragStart(e, binId) {
+        e.dataTransfer.setData('text/plain', binId);
+        setTimeout(() => e.currentTarget.style.opacity = '0.5', 0);
+    }
+    function binDragEnd(e) {
+        e.currentTarget.style.opacity = '';
+        document.querySelectorAll('.storage-bin-card').forEach(el => el.classList.remove('bin-drag-over'));
+    }
+    function binDragOver(e, binId) {
+        e.preventDefault();
+        document.querySelectorAll('.storage-bin-card').forEach(el => el.classList.remove('bin-drag-over'));
+        e.currentTarget.classList.add('bin-drag-over');
+    }
+    function binDragLeave(e) {
+        e.currentTarget.classList.remove('bin-drag-over');
+    }
+    function binDrop(e, targetBinId, sec) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('bin-drag-over');
+        const sourceBinId = e.dataTransfer.getData('text/plain');
+        if (!sourceBinId || sourceBinId === targetBinId) return;
+        const bins = appData.storageBins || [];
+        const secBins = bins.filter(b => (b.section || 'General') === sec)
+            .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        const fromIdx = secBins.findIndex(b => b.id === sourceBinId);
+        const toIdx = secBins.findIndex(b => b.id === targetBinId);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = secBins.splice(fromIdx, 1);
+        secBins.splice(toIdx, 0, moved);
+        secBins.forEach((b, i) => { b.order = i; });
+        saveData();
+        renderStorage();
     }
 
     function moveBinInSection(binId, sec, dir) {
@@ -12185,11 +12363,30 @@
     }
 
     function _renderMonthGrid(isAdmin) {
-        const shifts  = appData.shifts  || [];
         const workers = appData.workers || [];
         const todayStr = _fmtDate(new Date());
         const yr = _schedMonthDate.getFullYear();
         const mo = _schedMonthDate.getMonth();
+
+        // Build effective shifts map, using template shifts when a semester is active
+        const effectiveShiftsMap = {};
+        if (_activeSemesterId) {
+            const firstDay = new Date(yr, mo, 1);
+            const lastDay  = new Date(yr, mo + 1, 0);
+            let ws = _getWeekStart(firstDay);
+            while (ws <= lastDay) {
+                _getTemplateShiftsForWeek(ws).forEach(s => {
+                    if (!effectiveShiftsMap[s.date]) effectiveShiftsMap[s.date] = [];
+                    effectiveShiftsMap[s.date].push(s);
+                });
+                ws = new Date(ws.getTime() + 7 * 86400000);
+            }
+        } else {
+            (appData.shifts || []).forEach(s => {
+                if (!effectiveShiftsMap[s.date]) effectiveShiftsMap[s.date] = [];
+                effectiveShiftsMap[s.date].push(s);
+            });
+        }
 
         const firstDay = new Date(yr, mo, 1);
         const lastDay  = new Date(yr, mo + 1, 0);
@@ -12211,8 +12408,8 @@
             const d = new Date(yr, mo, dayNum);
             const dateStr = _fmtDate(d);
             const isToday = dateStr === todayStr;
-            const dayShifts = shifts.filter(s => s.date === dateStr)
-                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+            const dayShifts = (effectiveShiftsMap[dateStr] || [])
+                .slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
             html += `<div class="schedule-month-cell${isToday ? ' today' : ''}" onclick="${isAdmin ? `openShiftModal(null,'${dateStr}')` : ''}">
                 <div class="month-cell-num">${dayNum}</div>`;
             dayShifts.forEach(shift => {
@@ -12240,8 +12437,8 @@
             const d = new Date(yr, mo, day);
             const dateStr = _fmtDate(d);
             const isToday = dateStr === todayStr;
-            const dayShifts = shifts.filter(s => s.date === dateStr)
-                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+            const dayShifts = (effectiveShiftsMap[dateStr] || [])
+                .slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
             if (!dayShifts.length && !isAdmin) continue;
             hasAnyShifts = true;
             const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -12842,13 +13039,13 @@
         // Semester banner (week/month modes with semesters available)
         if ((_schedMode === 'week' || _schedMode === 'month') && (appData.semesters || []).length > 0) {
             const semOpts = (appData.semesters || []).map(s =>
-                `<option value="${s.id}" ${s.id === _activeSemesterId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
+                `<option value="${s.id}" ${s.id === _activeSemesterId ? 'selected' : ''} style="background:#1a1a1a;color:#ffffff;">${escapeHtml(s.name)}</option>`
             ).join('');
             html += `<div class="semester-banner">
                 <span style="color:#0A84FF; font-weight:700; font-size:0.82rem;">📅 Semester</span>
                 <select onchange="schedSelectSemester(this.value)"
-                    style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:var(--text-main); padding:4px 8px; font-size:0.8rem; font-family:inherit;">
-                    <option value="">None (manual shifts only)</option>
+                    style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:#ffffff; padding:4px 8px; font-size:0.8rem; font-family:inherit;">
+                    <option value="" style="background:#1a1a1a; color:#ffffff;">None (manual shifts only)</option>
                     ${semOpts}
                 </select>
             </div>`;
