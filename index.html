@@ -3479,6 +3479,7 @@
     // Store the private key as VAPID_PRIVATE_KEY secret in your Supabase Edge Function
     const VAPID_PUBLIC_KEY = 'BH6EQJUGHQRfBiOm3xbGRNCePzMryOqSGafvPsd4bwu2Au8Y6Re-u1XQ_QgvERNTrJOO2P02CsigEKQtKhMSW9E';
     let _supabase;
+    const _realtimeClientId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
     const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbxA0dO3uYefvZ-QlN_bGnXxoIKU88cg3bswbF2wR38hO5JkCGaN9LEodk7a-KYcQ6ud/exec';
 
@@ -4358,6 +4359,7 @@
 
     async function saveData() {
         try {
+            appData._lastClientId = _realtimeClientId;
             const { error } = await _supabase.from('app_state').upsert({ id: 1, data: appData });
             if (error) {
                 console.error("Supabase sync error:", error);
@@ -10499,9 +10501,36 @@
         }
     }
 
+    function _initRealtimeSync() {
+        if (!_supabase) return;
+        _supabase
+            .channel('app_state_realtime')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.1' }, (payload) => {
+                const incoming = payload.new && payload.new.data;
+                if (!incoming) return;
+                if (incoming._lastClientId === _realtimeClientId) return; // our own save
+                if (!isAuthenticated) return; // not logged in yet, skip
+                // Check if a task modal is open — defer re-render to avoid clobbering edits
+                const modalOpen = document.getElementById('taskModal')?.classList.contains('active') ||
+                                  document.getElementById('settingsPanel')?.style.display === 'flex';
+                appData = incoming;
+                if (!appData.boards)      appData.boards = [];
+                if (!appData.columns)     appData.columns = [];
+                if (!appData.tasks)       appData.tasks = [];
+                if (!appData.automations) appData.automations = [];
+                if (!appData.settings)    appData.settings = {};
+                showToast('🔄 Updated by another user');
+                if (!modalOpen) {
+                    renderApp();
+                }
+            })
+            .subscribe();
+    }
+
     window.onload = async () => {
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         await initData();
+        _initRealtimeSync();
 
         // Check for availability submission mode (?avail=TOKEN)
         const shareParams = new URLSearchParams(window.location.search);
@@ -12470,23 +12499,28 @@
         const yr = _schedMonthDate.getFullYear();
         const mo = _schedMonthDate.getMonth();
 
-        // Build effective shifts map, using template shifts when a semester is active
+        // Build effective shifts: template shifts for weeks inside a semester, manual shifts elsewhere
         const effectiveShiftsMap = {};
-        if (_activeSemesterId) {
+        {
             const firstDay = new Date(yr, mo, 1);
             const lastDay  = new Date(yr, mo + 1, 0);
             let ws = _getWeekStart(firstDay);
+            const coveredDates = new Set();
             while (ws <= lastDay) {
-                _getTemplateShiftsForWeek(ws).forEach(s => {
-                    if (!effectiveShiftsMap[s.date]) effectiveShiftsMap[s.date] = [];
-                    effectiveShiftsMap[s.date].push(s);
-                });
+                const weekSem = _getSemesterForWeek(ws);
+                if (weekSem && (appData.templateShifts || []).length > 0) {
+                    _getTemplateShiftsForWeek(ws).forEach(s => {
+                        if (!effectiveShiftsMap[s.date]) effectiveShiftsMap[s.date] = [];
+                        effectiveShiftsMap[s.date].push(s);
+                        coveredDates.add(s.date);
+                    });
+                }
                 ws = new Date(ws.getTime() + 7 * 86400000);
             }
-        } else {
+            // Always include manual shifts (appData.shifts) for any date
             (appData.shifts || []).forEach(s => {
                 if (!effectiveShiftsMap[s.date]) effectiveShiftsMap[s.date] = [];
-                effectiveShiftsMap[s.date].push(s);
+                if (!coveredDates.has(s.date)) effectiveShiftsMap[s.date].push(s);
             });
         }
 
@@ -12670,7 +12704,7 @@
         if (isWeek) {
             const days = _getWeekDays();
             title = `Schedule: ${days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${days[6].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
-            const weekSemForPrint = _activeSemesterId ? _getSemesterForWeek(_schedWeekStart) : null;
+            const weekSemForPrint = _getSemesterForWeek(_schedWeekStart);
             const useTemplateForPrint = !!weekSemForPrint && (appData.templateShifts||[]).length > 0;
             const printShifts = useTemplateForPrint ? _getTemplateShiftsForWeek(_schedWeekStart) : shifts;
             days.forEach(d => {
@@ -13138,20 +13172,7 @@
 
         html += `</div>`; // close schedule-top-bar
 
-        // Semester banner (week/month modes with semesters available)
-        if ((_schedMode === 'week' || _schedMode === 'month') && (appData.semesters || []).length > 0) {
-            const semOpts = (appData.semesters || []).map(s =>
-                `<option value="${s.id}" ${s.id === _activeSemesterId ? 'selected' : ''} style="background:#1a1a1a;color:#ffffff;">${escapeHtml(s.name)}</option>`
-            ).join('');
-            html += `<div class="semester-banner">
-                <span style="color:#0A84FF; font-weight:700; font-size:0.82rem;">📅 Semester</span>
-                <select onchange="schedSelectSemester(this.value)"
-                    style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:#ffffff; padding:4px 8px; font-size:0.8rem; font-family:inherit;">
-                    <option value="" style="background:#1a1a1a; color:#ffffff;">None (manual shifts only)</option>
-                    ${semOpts}
-                </select>
-            </div>`;
-        }
+        // Auto-detect active semester — no manual dropdown needed
 
         // Content
         if (_schedMode === 'week')           html += _renderTemplatizedWeekGrid(isAdmin, currentWorker);
@@ -13179,11 +13200,16 @@
         const weekStartStr = _fmtDate(_schedWeekStart);
 
         // Use template if semester is active and there are template shifts
-        const weekSemester = _activeSemesterId ? _getSemesterForWeek(_schedWeekStart) : null;
+        const weekSemester = _getSemesterForWeek(_schedWeekStart);
         const useTemplate = !!weekSemester && (appData.templateShifts || []).length > 0;
 
+        const templateEffective = useTemplate ? _getTemplateShiftsForWeek(_schedWeekStart) : [];
+        const templateDates = new Set(templateEffective.map(s => s.date));
+        const manualShifts = (appData.shifts || [])
+            .filter(s => days.some(d => _fmtDate(d) === s.date) && !templateDates.has(s.date))
+            .map(s => ({ ...s, templateShiftId: null, isOverridden: false, weekStartDate: null, originalWorkerId: s.workerId }));
         const effectiveShifts = useTemplate
-            ? _getTemplateShiftsForWeek(_schedWeekStart)
+            ? [...templateEffective, ...manualShifts]
             : (appData.shifts || [])
                 .filter(s => days.some(d => _fmtDate(d) === s.date))
                 .map(s => ({ ...s, templateShiftId: null, isOverridden: false, weekStartDate: null, originalWorkerId: s.workerId }));
