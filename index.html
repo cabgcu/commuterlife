@@ -4887,9 +4887,11 @@
 
         const { trelloData, year } = _pendingImportData;
 
-        // Create new workspace
+        // Create new workspace; reset per-year data, storage bins carry over
         const newBoardId = generateId();
         appData.boards.push({ id: newBoardId, year, backgroundImage: '' });
+        appData.manager = { events: [], expenses: [], budgets: null, settings: null };
+        appData.timesheets = [];
 
         // Color mapping for Trello labels
         const colorMap = {
@@ -7153,6 +7155,9 @@
             appData.columns.push({ id: generateId(), boardId: newBoardId, title: 'In Progress', order: 1, assignedTo: '', members: [], hideable: true });
             appData.columns.push({ id: generateId(), boardId: newBoardId, title: 'Completed',   order: 2, assignedTo: '', members: [], hideable: true });
             appData.activeBoardId = newBoardId;
+            // Reset per-year data; storage bins carry over to new workspace
+            appData.manager = { events: [], expenses: [], budgets: null, settings: null };
+            appData.timesheets = [];
             saveData(); closeModal(null, 'newBoardModal');
             document.getElementById('boardYearInput').value = '';
             renderTopbar(); renderApp();
