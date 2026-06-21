@@ -13457,11 +13457,12 @@
                     // volunteerSlot: sign-up shifts get un-sign-up; assigned shifts get swap
                     const parentTs = shift.templateShiftId ? (appData.templateShifts||[]).find(t => t.id === shift.templateShiftId) : null;
                     const isVolunteerSlot = !!(shift.volunteerSlot || (parentTs && parentTs.volunteerSlot));
+                    const claimFn = `claimOpenTemplateShift('${shift.templateShiftId||''}','${shift.id||''}','${weekStartStr}')`;
                     const clickAction = isAdmin
                         ? (shift.templateShiftId
                             ? `openWeekOverrideModal('${shift.templateShiftId}','${weekStartStr}')`
                             : `openShiftModal('${shift.id||''}')`)
-                        : '';
+                        : (canClaim ? claimFn : '');
                     const bgStyle = isOpenShift
                         ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
                         : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
@@ -13477,9 +13478,9 @@
                             ${escapeHtml(wName)}</div>
                         ${!isCompact&&shift.role?`<div class="shift-role">${escapeHtml(shift.role)}</div>`:''}
                         ${hasPendingSwap?`<div style="font-size:0.58rem;color:#FF9500;font-weight:800;text-transform:uppercase;">⏳ Swap Pending</div>`:''}
-                        ${canClaim&&!isCompact?`<button onclick="event.stopPropagation();claimOpenTemplateShift('${shift.templateShiftId||''}','${shift.id||''}','${weekStartStr}')"
-                            style="margin-top:6px;width:100%;padding:3px 0;border-radius:6px;border:none;
-                            background:${color}33;color:${color};font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;">
+                        ${canClaim?`<button onclick="event.stopPropagation();${claimFn}"
+                            style="margin-top:${isCompact?'3':'6'}px;width:100%;padding:${isCompact?'2':'3'}px 0;border-radius:6px;border:none;
+                            background:${color}33;color:${color};font-size:${isCompact?'0.58':'0.65'}rem;font-weight:800;cursor:pointer;font-family:inherit;">
                             Sign Up →</button>`:''}
                         ${isMyShift&&!isAdmin&&!isVolunteerSlot&&!hasPendingSwap?`
                         <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
@@ -13525,11 +13526,12 @@
                     const canClaim = isOpenShift && !isAdmin && isAuthenticated;
                     const parentTs = shift.templateShiftId ? (appData.templateShifts||[]).find(t => t.id === shift.templateShiftId) : null;
                     const isVolunteerSlot = !!(shift.volunteerSlot || (parentTs && parentTs.volunteerSlot));
+                    const claimFnM = `claimOpenTemplateShift('${shift.templateShiftId||''}','${shift.id||''}','${weekStartStr}')`;
                     const clickAction = isAdmin
                         ? (shift.templateShiftId
                             ? `openWeekOverrideModal('${shift.templateShiftId}','${weekStartStr}')`
                             : `openShiftModal('${shift.id||''}')`)
-                        : '';
+                        : (canClaim ? claimFnM : '');
                     const hasPendingSwap = shift.templateShiftId &&
                         swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
                     html += `<div class="sched-timeline-event">
@@ -14220,6 +14222,10 @@
     function emGetData() { return appData.manager || { events:[], expenses:[], budgets: JSON.parse(JSON.stringify(EM_DEFAULT_BUDGETS)), settings: { columnLabels: Object.assign({}, EM_COL_LABELS), milestoneOffsets: Object.assign({}, EM_COL_OFFSETS) } }; }
     function emGetSettings() { return emGetData().settings || { columnLabels: Object.assign({}, EM_COL_LABELS), milestoneOffsets: Object.assign({}, EM_COL_OFFSETS) }; }
     function emColLabel(k) { return (emGetSettings().columnLabels || EM_COL_LABELS)[k] || k; }
+    function emGetMilestoneKeys() {
+        var s = emGetSettings();
+        return (s.milestoneKeys && s.milestoneKeys.length > 0) ? s.milestoneKeys : EM_MILESTONE_KEYS.slice();
+    }
 
     function renderManager() {
         const isMobile = window.innerWidth <= 768;
@@ -14277,7 +14283,7 @@
         if (!widget || !list) return;
         var items = [];
         d.events.forEach(function(ev) {
-            EM_MILESTONE_KEYS.forEach(function(k) {
+            emGetMilestoneKeys().forEach(function(k) {
                 var m = ev.deadlines && ev.deadlines[k];
                 if (m && m.date && !m.completed) {
                     var today = new Date(); today.setHours(0,0,0,0);
@@ -14329,7 +14335,7 @@
         var isAdmin = isAuthenticated; // any authenticated user with manager access can edit/delete events
 
         if (_emViewMode === 'list') {
-            var milestoneHeaders = EM_MILESTONE_KEYS.map(function(k) {
+            var milestoneHeaders = emGetMilestoneKeys().map(function(k) {
                 return '<th class="em-th" style="text-align:center;">' + emColLabel(k) + '</th>';
             }).join('');
             var sortIcon = function(col) { return _emSortCol === col ? (_emSortDir === 'asc' ? ' ▲' : ' ▼') : ''; };
@@ -14339,7 +14345,7 @@
                 var rem = (Number(ev.budget)||0) - spent;
                 var remCol = rem < 0 ? '#FF3B30' : '#fff';
 
-                var milestones = EM_MILESTONE_KEYS.map(function(k) {
+                var milestones = emGetMilestoneKeys().map(function(k) {
                     var m = (ev.deadlines && ev.deadlines[k]) || {};
                     var st = emDeadlineStatus(m.date, m.completed);
                     var bc = emBadgeClass(st);
@@ -14664,7 +14670,7 @@
 
         var registeredUsers = ((appData.settings && appData.settings.users) || []).filter(function(u) { return u.email && u.passwordHash; });
         var userOptions = '<option value="">— Unassigned —</option>' + registeredUsers.map(function(u) { return '<option value="' + u.email + '">' + (u.name || u.email) + '</option>'; }).join('');
-        var milestonesHTML = EM_MILESTONE_KEYS.map(function(k) {
+        var milestonesHTML = emGetMilestoneKeys().map(function(k) {
             var m = (ev.deadlines && ev.deadlines[k]) || {};
             var assigneeOpts = userOptions.replace('value="' + (m.assignee||'') + '"', 'value="' + (m.assignee||'') + '" selected');
             return '<div class="em-frosted" style="padding:14px;border-radius:12px;">' +
@@ -14704,7 +14710,7 @@
         var offsets = settings.milestoneOffsets || EM_COL_OFFSETS;
         if (!val) return;
         var eventDate = new Date(val + 'T12:00:00');
-        EM_MILESTONE_KEYS.forEach(function(k) {
+        emGetMilestoneKeys().forEach(function(k) {
             var inp = document.getElementById('em-d-' + k);
             if (inp && (force || !inp.value)) {
                 var target = new Date(eventDate);
@@ -14740,7 +14746,7 @@
             photosLink: existing ? existing.photosLink : '',
             deadlines: {}
         };
-        EM_MILESTONE_KEYS.forEach(function(k) {
+        emGetMilestoneKeys().forEach(function(k) {
             ev.deadlines[k] = {
                 date: document.getElementById('em-d-' + k).value,
                 assignee: document.getElementById('em-a-' + k).value,
@@ -14794,32 +14800,58 @@
         a.click();
     }
 
-    function emOpenManagerSettings() {
+    // Working copy of keys while settings modal is open
+    var _emEditingKeys = null;
+
+    function emSettingsRenderRows() {
         var settings = emGetSettings();
-        var labels = settings.columnLabels || Object.assign({}, EM_COL_LABELS);
-        var offsets = settings.milestoneOffsets || Object.assign({}, EM_COL_OFFSETS);
+        var labels = settings.columnLabels || {};
+        var offsets = settings.milestoneOffsets || {};
         var rows = document.getElementById('em-settings-rows');
         if (!rows) return;
-        rows.innerHTML = EM_MILESTONE_KEYS.map(function(k) {
-            return '<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;">' +
-                '<input id="em-set-label-' + k + '" class="em-input" value="' + (labels[k]||k) + '" placeholder="Column label">' +
-                '<input type="number" id="em-set-weeks-' + k + '" class="em-input" value="' + (offsets[k]!==undefined?offsets[k]:1) + '" min="0" max="52" style="width:80px;text-align:center;" title="Weeks before event">' +
+        rows.innerHTML = _emEditingKeys.map(function(k, i) {
+            return '<div style="display:grid;grid-template-columns:1fr 80px 32px;gap:6px;align-items:center;" id="em-row-' + i + '">' +
+                '<input class="em-input em-set-label" data-idx="' + i + '" value="' + ((labels[k]||k)).replace(/"/g,'&quot;') + '" placeholder="Column label">' +
+                '<input type="number" class="em-input em-set-weeks" data-idx="' + i + '" value="' + (offsets[k]!==undefined?offsets[k]:1) + '" min="0" max="52" style="text-align:center;" title="Weeks before event">' +
+                '<button onclick="emSettingsDeleteRow(' + i + ')" style="background:rgba(255,59,48,0.12);border:1px solid rgba(255,59,48,0.3);color:#FF3B30;border-radius:8px;width:32px;height:36px;cursor:pointer;font-size:1rem;line-height:1;">✕</button>' +
                 '</div>';
         }).join('');
+    }
+
+    function emSettingsDeleteRow(idx) {
+        _emEditingKeys.splice(idx, 1);
+        emSettingsRenderRows();
+    }
+
+    function emSettingsAddRow() {
+        var key = 'col_' + Date.now();
+        _emEditingKeys.push(key);
+        emSettingsRenderRows();
+        // Focus the new label input
+        var inputs = document.querySelectorAll('.em-set-label');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+
+    function emOpenManagerSettings() {
+        var settings = emGetSettings();
+        _emEditingKeys = emGetMilestoneKeys().slice();
+        emSettingsRenderRows();
         document.getElementById('em-settings-modal').style.display = 'flex';
     }
 
     function emSaveManagerSettings() {
         if (!appData.manager) return;
         if (!appData.manager.settings) appData.manager.settings = {};
+        var labelInputs = document.querySelectorAll('.em-set-label');
+        var weeksInputs = document.querySelectorAll('.em-set-weeks');
         var labels = {};
         var offsets = {};
-        EM_MILESTONE_KEYS.forEach(function(k) {
-            var lbl = document.getElementById('em-set-label-' + k);
-            var wks = document.getElementById('em-set-weeks-' + k);
-            labels[k] = lbl ? lbl.value : EM_COL_LABELS[k];
-            offsets[k] = wks ? (parseInt(wks.value)||0) : EM_COL_OFFSETS[k];
+        // Read from inputs in order matching _emEditingKeys
+        _emEditingKeys.forEach(function(k, i) {
+            labels[k] = labelInputs[i] ? (labelInputs[i].value.trim() || k) : k;
+            offsets[k] = weeksInputs[i] ? (parseInt(weeksInputs[i].value)||0) : 1;
         });
+        appData.manager.settings.milestoneKeys = _emEditingKeys.slice();
         appData.manager.settings.columnLabels = labels;
         appData.manager.settings.milestoneOffsets = offsets;
         saveData();
@@ -15388,12 +15420,14 @@
             <button onclick="document.getElementById('em-settings-modal').style.display='none'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;">✕</button>
         </div>
         <div style="padding:24px;overflow-y:auto;flex:1;">
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 20px;">Configure the deadline milestone columns — their label and how many weeks before the event each auto-fills to.</p>
-            <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:8px;">
+            <p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 16px;">Configure deadline milestone columns — label and how many weeks before the event each auto-fills to. Add or remove columns freely.</p>
+            <div style="display:grid;grid-template-columns:1fr 80px 32px;gap:6px;align-items:center;margin-bottom:8px;">
                 <span style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Milestone Label</span>
-                <span style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;text-align:center;width:80px;">Weeks Out</span>
+                <span style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;text-align:center;">Weeks Out</span>
+                <span></span>
             </div>
-            <div id="em-settings-rows" style="display:flex;flex-direction:column;gap:10px;"></div>
+            <div id="em-settings-rows" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <button onclick="emSettingsAddRow()" style="margin-top:14px;width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(10,132,255,0.35);background:rgba(10,132,255,0.06);color:#0A84FF;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Add Deadline Column</button>
         </div>
         <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);">
             <button onclick="emSaveManagerSettings()" class="em-btn-save">Save Settings</button>
