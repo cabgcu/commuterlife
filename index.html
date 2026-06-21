@@ -1735,14 +1735,14 @@
         }
         /* @mention autocomplete dropdown */
         .mention-dropdown {
-            position: absolute;
+            position: fixed;
             background: rgba(20, 20, 24, 0.95);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: 10px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            z-index: 10000;
+            z-index: 10002;
             max-height: 180px;
             overflow-y: auto;
             min-width: 180px;
@@ -9745,26 +9745,34 @@
             </div>`;
         }).join('');
 
-        // Position dropdown near caret
+        // Position dropdown near caret — show below element, flip above if it would clip
+        dd.style.display = 'block';
+        const ddH = dd.offsetHeight;
         let x, y;
         if (isTextarea) {
             const rect = el.getBoundingClientRect();
-            x = rect.left + 20;
-            y = rect.top - dd.offsetHeight - 4;
+            x = rect.left + 12;
+            // Prefer below; flip above if not enough space
+            if (rect.bottom + ddH + 8 <= window.innerHeight) {
+                y = rect.bottom + 4;
+            } else {
+                y = rect.top - ddH - 4;
+            }
         } else {
             const coords = getCaretCoordinates();
-            if (coords) { x = coords.left; y = coords.bottom + 4; }
-            else { const rect = el.getBoundingClientRect(); x = rect.left + 20; y = rect.bottom + 4; }
+            if (coords) {
+                x = coords.left;
+                y = coords.bottom + ddH + 8 <= window.innerHeight ? coords.bottom + 4 : coords.top - ddH - 4;
+            } else {
+                const rect = el.getBoundingClientRect();
+                x = rect.left + 12;
+                y = rect.bottom + 4;
+            }
         }
-        dd.style.left = x + 'px';
-        dd.style.top = y + 'px';
-        dd.style.display = 'block';
-
-        // Re-position if it goes off-screen
-        const ddRect = dd.getBoundingClientRect();
-        if (ddRect.bottom > window.innerHeight) {
-            dd.style.top = (y - ddRect.height - 30) + 'px';
-        }
+        // Clamp to viewport
+        x = Math.min(x, window.innerWidth - dd.offsetWidth - 8);
+        dd.style.left = Math.max(8, x) + 'px';
+        dd.style.top = Math.max(8, y) + 'px';
     }
 
     function insertMention(name, event) {
