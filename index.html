@@ -8653,7 +8653,7 @@
         const lockedBadge = document.getElementById('mondayFilesLockedBadge');
         if (lockBtn && lockedBadge) {
             const isLocked = !!currentEditingTask._mondayAttachLocked;
-            lockBtn.style.display = (!isLocked && isAdmin) ? 'inline-block' : 'none';
+            lockBtn.style.display = (!isLocked && currentUserRole === 'admin') ? 'inline-block' : 'none';
             lockedBadge.style.display = isLocked ? 'inline-block' : 'none';
         }
         if(!currentEditingTask.attachments || currentEditingTask.attachments.length === 0) {
