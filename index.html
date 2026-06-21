@@ -8653,7 +8653,7 @@
         const lockedBadge = document.getElementById('mondayFilesLockedBadge');
         if (lockBtn && lockedBadge) {
             const isLocked = !!currentEditingTask._mondayAttachLocked;
-            lockBtn.style.display = isLocked ? 'none' : 'inline-block';
+            lockBtn.style.display = (!isLocked && isAdmin) ? 'inline-block' : 'none';
             lockedBadge.style.display = isLocked ? 'inline-block' : 'none';
         }
         if(!currentEditingTask.attachments || currentEditingTask.attachments.length === 0) {
@@ -12647,8 +12647,7 @@
                 const worker = isOpen ? null : workers.find(w => w.id === shift.workerId);
                 const color  = isOpen ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
                 const wName  = isOpen ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
-                const currentWorker = _getCurrentWorker();
-                const chipClick = isAdmin ? `openShiftModal('${shift.id}')` : (isOpen && currentWorker ? `claimOpenShift('${shift.id}')` : '');
+                const chipClick = isAdmin ? `openShiftModal('${shift.id}')` : (isOpen && isAuthenticated ? `claimOpenShift('${shift.id}')` : '');
                 html += `<div class="schedule-month-chip" onclick="event.stopPropagation();${chipClick}"
                     style="background:${color}33; border-color:${color}66; color:var(--text-main); ${isOpen ? 'border-style:dashed;' : ''}">
                     <span class="chip-dot" style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>
@@ -12682,8 +12681,7 @@
                 const worker = isOpen ? null : workers.find(w => w.id === shift.workerId);
                 const color  = isOpen ? '#34C759' : (worker ? (worker.color || '#a855f7') : '#636366');
                 const wName  = isOpen ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
-                const currentWorker2 = _getCurrentWorker();
-                const shiftClick = isAdmin ? `openShiftModal('${shift.id}')` : (isOpen && currentWorker2 ? `claimOpenShift('${shift.id}')` : '');
+                const shiftClick = isAdmin ? `openShiftModal('${shift.id}')` : (isOpen && isAuthenticated ? `claimOpenShift('${shift.id}')` : '');
                 html += `<div class="smlsd-shift" onclick="${shiftClick}">
                     <span class="smlsd-dot" style="background:${color};${isOpen?'border:1px dashed '+color+';background:transparent;':''}" ></span>
                     <span class="smlsd-time">${_fmtTime(shift.startTime)}${shift.endTime?'–'+_fmtTime(shift.endTime):''}</span>
@@ -13108,44 +13106,70 @@
         renderSchedule();
     }
 
-    function claimOpenShift(shiftId) {
-        const currentWorker = _getOrCreateWorker();
+    async function claimOpenShift(shiftId) {
         const shift = (appData.shifts || []).find(s => s.id === shiftId);
         if (!shift) return;
         if (shift.workerId && shift.workerId !== 'open') { showToast('This shift has already been claimed'); renderSchedule(); return; }
+        const timeStr = shift.startTime ? _fmt12h(shift.startTime) : '';
+        const endStr  = shift.endTime   ? ' – ' + _fmt12h(shift.endTime) : '';
+        const confirmed = await showConfirm(
+            'Confirm Sign Up',
+            `Sign up for the shift on ${shift.date}${timeStr ? ' at ' + timeStr + endStr : ''}${shift.role ? ' (' + shift.role + ')' : ''}?`,
+            'Sign Up'
+        );
+        if (!confirmed) return;
+        const currentWorker = _getOrCreateWorker();
         shift.workerId = currentWorker.id;
         saveData();
         renderSchedule();
         showToast("You're signed up! ✅");
+        addNotificationFor(
+            (appData.settings?.users || []).filter(u => u.role === 'admin').map(u => u.name).filter(n => n !== currentUserName),
+            'shift_added', '🙋 Shift Claimed',
+            `${currentWorker.name} signed up for the open shift on ${shift.date}${timeStr ? ' at ' + timeStr : ''}.`,
+            null, currentUserName
+        );
     }
 
-    function claimOpenTemplateShift(templateShiftId, shiftId, weekStartDate) {
+    async function claimOpenTemplateShift(templateShiftId, shiftId, weekStartDate) {
+        if (!templateShiftId) { await claimOpenShift(shiftId); return; }
+        // Template shift: create/update a weekly override to assign this worker
+        if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
+        const ts = (appData.templateShifts || []).find(t => t.id === templateShiftId);
+        const existing = appData.weeklyOverrides.find(o =>
+            o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate
+        );
+        if (existing && existing.workerId && existing.workerId !== 'open') {
+            showToast('This shift has already been claimed'); renderSchedule(); return;
+        }
+        const timeStr = ts?.startTime ? _fmt12h(ts.startTime) : '';
+        const endStr  = ts?.endTime   ? ' – ' + _fmt12h(ts.endTime) : '';
+        const dayLabel = ts?.dayOfWeek ? ts.dayOfWeek + ' (' + weekStartDate + ' week)' : weekStartDate;
+        const confirmed = await showConfirm(
+            'Confirm Sign Up',
+            `Sign up for the shift on ${dayLabel}${timeStr ? ' at ' + timeStr + endStr : ''}${ts?.role ? ' (' + ts.role + ')' : ''}?`,
+            'Sign Up'
+        );
+        if (!confirmed) return;
         const currentWorker = _getOrCreateWorker();
-        if (templateShiftId) {
-            // Template shift: create/update a weekly override to assign this worker
-            if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
-            const ts = (appData.templateShifts || []).find(t => t.id === templateShiftId);
-            const existing = appData.weeklyOverrides.find(o =>
-                o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate
-            );
-            if (existing && existing.workerId && existing.workerId !== 'open') {
-                showToast('This shift has already been claimed'); renderSchedule(); return;
-            }
-            if (existing) {
-                existing.workerId = currentWorker.id;
-            } else {
-                appData.weeklyOverrides.push({
-                    id: 'wo_' + Date.now(), templateShiftId, weekStartDate,
-                    workerId: currentWorker.id, cancelled: false,
-                    startTime: ts ? ts.startTime : '', endTime: ts ? ts.endTime : '', notes: ''
-                });
-            }
+        if (existing) {
+            existing.workerId = currentWorker.id;
         } else {
-            claimOpenShift(shiftId); return;
+            appData.weeklyOverrides.push({
+                id: 'wo_' + Date.now(), templateShiftId, weekStartDate,
+                workerId: currentWorker.id, cancelled: false,
+                startTime: ts ? ts.startTime : '', endTime: ts ? ts.endTime : '', notes: ''
+            });
         }
         saveData();
         renderSchedule();
         showToast("You're signed up! ✅");
+        addNotificationFor(
+            (appData.settings?.users || []).filter(u => u.role === 'admin').map(u => u.name).filter(n => n !== currentUserName),
+            'shift_added', '🙋 Shift Claimed',
+            `${currentWorker.name} signed up for the open shift on ${dayLabel}${timeStr ? ' at ' + timeStr : ''}.`,
+            null, currentUserName
+        );
     }
 
     function unclaimShift(shiftId) {
@@ -13408,7 +13432,7 @@
                     const isMyShift = !isOpenShift && currentWorker && shift.workerId === currentWorker.id;
                     const hasPendingSwap = shift.templateShiftId &&
                         swapRequests.some(r => r.templateShiftId === shift.templateShiftId);
-                    const canClaim = isOpenShift && !isAdmin && currentWorker;
+                    const canClaim = isOpenShift && !isAdmin && isAuthenticated;
                     // volunteerSlot: sign-up shifts get un-sign-up; assigned shifts get swap
                     const parentTs = shift.templateShiftId ? (appData.templateShifts||[]).find(t => t.id === shift.templateShiftId) : null;
                     const isVolunteerSlot = !!(shift.volunteerSlot || (parentTs && parentTs.volunteerSlot));
@@ -13477,7 +13501,7 @@
                     const color = isOpenShift ? '#34C759' : (worker ? (worker.color || '#a855f7') : '#636366');
                     const wName = isOpenShift ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
                     const isMyShift = !isOpenShift && currentWorker && shift.workerId === currentWorker.id;
-                    const canClaim = isOpenShift && !isAdmin && currentWorker;
+                    const canClaim = isOpenShift && !isAdmin && isAuthenticated;
                     const parentTs = shift.templateShiftId ? (appData.templateShifts||[]).find(t => t.id === shift.templateShiftId) : null;
                     const isVolunteerSlot = !!(shift.volunteerSlot || (parentTs && parentTs.volunteerSlot));
                     const clickAction = isAdmin
