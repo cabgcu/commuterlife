@@ -14895,7 +14895,6 @@
         const weekStart = _tsGetWeekStart(0); // always current week for users
         const weekStartIso = _tsIsoDate(weekStart);
         const ts = _tsGetOrCreate(currentUserEmail, currentUserName, weekStartIso);
-        const isLocked = ts.status === 'submitted';
 
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
@@ -14904,49 +14903,36 @@
 
         let entriesHtml = '';
         ts.entries.forEach((entry, idx) => {
-            const disabled = isLocked ? 'disabled' : '';
             entriesHtml += `
             <div class="ts-entry-row">
-                <textarea class="ts-entry-desc" rows="2" placeholder="What did you work on?" ${disabled}
+                <textarea class="ts-entry-desc" rows="2" placeholder="What did you work on?"
                     oninput="tsUpdateEntry('${weekStartIso}',${idx},'description',this.value)">${_escHtml(entry.description || '')}</textarea>
-                <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs" ${disabled}
+                <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs"
                     value="${entry.hours !== '' && entry.hours !== undefined ? entry.hours : ''}"
                     oninput="tsUpdateEntry('${weekStartIso}',${idx},'hours',this.value)">
-                ${!isLocked ? `<button class="ts-del-btn" onclick="tsDeleteEntry('${weekStartIso}',${idx})" title="Remove">✕</button>` : '<span></span>'}
+                <button class="ts-del-btn" onclick="tsDeleteEntry('${weekStartIso}',${idx})" title="Remove">✕</button>
             </div>`;
         });
 
         const total = _tsCalcTotal(ts.entries);
 
-        let actionBar = '';
-        if (ts.status === 'draft') {
-            actionBar = `
-            <button class="ts-btn-save" onclick="tsSaveDraft('${weekStartIso}')">Save Draft</button>
-            <button class="ts-btn-submit" onclick="tsSubmit('${weekStartIso}')">Submit Hours</button>`;
-        } else {
-            actionBar = `
-            <span style="color:#0A84FF;font-size:0.85rem;font-weight:600;">Hours submitted ✓</span>
-            <button class="ts-btn-unsubmit" onclick="tsUnsubmit('${weekStartIso}')">Edit / Retract</button>`;
-        }
-
         container.innerHTML = `
         <div class="ts-week-nav">
             <h2>My Timesheet — ${weekLabel}</h2>
-            <span class="ts-status-badge ts-status-${ts.status}">${ts.status}</span>
+            <span id="ts-save-indicator" style="font-size:0.75rem;color:var(--text-muted);"></span>
         </div>
         <div class="ts-card">
             <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
                 <span>Description</span><span style="text-align:center;">Hours</span><span></span>
             </div>
-            ${entriesHtml || `<div style="color:var(--text-muted);font-size:0.88rem;padding:8px 0 14px;">No activities yet. Add what you worked on this week.</div>`}
-            ${!isLocked ? `<button class="ts-add-entry-btn" onclick="tsAddEntry('${weekStartIso}')">+ Add Activity</button>` : ''}
+            ${entriesHtml || `<div style="color:var(--text-muted);font-size:0.88rem;padding:8px 0 14px;">No activities yet — add what you worked on this week.</div>`}
+            <button class="ts-add-entry-btn" onclick="tsAddEntry('${weekStartIso}')">+ Add Activity</button>
             <div class="ts-total-row">
                 <span class="ts-total-label">Total Hours</span>
                 <span class="ts-total-value" id="ts-total-display">${total % 1 === 0 ? total : total.toFixed(1)}</span>
             </div>
         </div>
-        <div class="ts-action-bar">${actionBar}</div>
-        <div style="color:var(--text-muted);font-size:0.78rem;text-align:center;margin-top:12px;">Hours auto-submit at 12:00 AM every Monday.</div>`;
+        <div style="color:var(--text-muted);font-size:0.75rem;text-align:center;margin-top:10px;">Changes save automatically · auto-submits at midnight every Monday</div>`;
     }
 
     // ── Admin overview (all members, week navigation) ─────────────────────────
@@ -15078,58 +15064,54 @@
 
     // ── User mutations ────────────────────────────────────────────────────────
 
+    // ── Auto-save (debounced, persists to Supabase for cross-device access) ─────
+
+    let _tsAutoSaveTimer = null;
+    function _tsAutoSave() {
+        clearTimeout(_tsAutoSaveTimer);
+        const ind = document.getElementById('ts-save-indicator');
+        if (ind) ind.textContent = 'Saving…';
+        _tsAutoSaveTimer = setTimeout(() => {
+            saveData();
+            const ind2 = document.getElementById('ts-save-indicator');
+            if (ind2) {
+                ind2.textContent = 'Saved';
+                setTimeout(() => { const el = document.getElementById('ts-save-indicator'); if (el) el.textContent = ''; }, 2000);
+            }
+        }, 1200);
+    }
+
+    // ── User mutations ────────────────────────────────────────────────────────
+
     function tsAddEntry(weekStartIso) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts || ts.status !== 'draft') return;
+        if (!ts) return;
         ts.entries.push({ id: 'tse_' + Date.now(), description: '', hours: '' });
         renderTimesheet();
+        // focus the new textarea after render
+        setTimeout(() => {
+            const rows = document.querySelectorAll('.ts-entry-desc');
+            if (rows.length) rows[rows.length - 1].focus();
+        }, 50);
     }
 
     function tsDeleteEntry(weekStartIso, idx) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts || ts.status !== 'draft') return;
+        if (!ts) return;
         ts.entries.splice(idx, 1);
         ts.totalHours = _tsCalcTotal(ts.entries);
         renderTimesheet();
+        _tsAutoSave();
     }
 
     function tsUpdateEntry(weekStartIso, idx, field, value) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts || ts.status !== 'draft') return;
+        if (!ts) return;
         if (ts.entries[idx]) ts.entries[idx][field] = value;
         ts.totalHours = _tsCalcTotal(ts.entries);
         const el = document.getElementById('ts-total-display');
         if (el) { const v = ts.totalHours; el.textContent = v % 1 === 0 ? v : v.toFixed(1); }
-    }
-
-    function tsSaveDraft(weekStartIso) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts) return;
-        ts.totalHours = _tsCalcTotal(ts.entries);
-        saveData();
-        showToast('Timesheet saved.');
-    }
-
-    function tsSubmit(weekStartIso) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts) return;
-        if (ts.entries.length === 0) { showToast('Add at least one activity before submitting.'); return; }
-        ts.totalHours = _tsCalcTotal(ts.entries);
-        ts.status = 'submitted';
-        ts.submittedAt = new Date().toISOString();
-        saveData();
-        showToast('Hours submitted!');
-        renderTimesheet();
-    }
-
-    function tsUnsubmit(weekStartIso) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts || ts.status !== 'submitted') return;
-        ts.status = 'draft';
-        ts.submittedAt = null;
-        saveData();
-        showToast('Submission retracted — now in draft.');
-        renderTimesheet();
+        _tsAutoSave();
     }
 
     // ── Admin mutations ───────────────────────────────────────────────────────
@@ -15139,6 +15121,10 @@
         if (!ts) return;
         ts.entries.push({ id: 'tse_' + Date.now(), description: '', hours: '' });
         renderTimesheet();
+        setTimeout(() => {
+            const rows = document.querySelectorAll('.ts-entry-desc');
+            if (rows.length) rows[rows.length - 1].focus();
+        }, 50);
     }
 
     function tsAdminDeleteEntry(email, weekStartIso, idx) {
@@ -15167,7 +15153,6 @@
             ts.submittedAt = new Date().toISOString();
         }
         saveData();
-        showToast('Timesheet saved.');
         renderTimesheet();
     }
 
@@ -15177,7 +15162,6 @@
         ts.status = 'draft';
         ts.submittedAt = null;
         saveData();
-        showToast('Returned to draft.');
         renderTimesheet();
     }
 
