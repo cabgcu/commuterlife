@@ -14933,7 +14933,6 @@
         container.innerHTML = `
         <div class="ts-week-nav">
             <h2>My Timesheet — ${weekLabel}</h2>
-            <span id="ts-save-indicator" style="font-size:0.75rem;color:var(--text-muted);"></span>
         </div>
         <div class="ts-card">
             <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
@@ -15083,16 +15082,7 @@
     let _tsAutoSaveTimer = null;
     function _tsAutoSave() {
         clearTimeout(_tsAutoSaveTimer);
-        const ind = document.getElementById('ts-save-indicator');
-        if (ind) ind.textContent = 'Saving…';
-        _tsAutoSaveTimer = setTimeout(() => {
-            saveData();
-            const ind2 = document.getElementById('ts-save-indicator');
-            if (ind2) {
-                ind2.textContent = 'Saved';
-                setTimeout(() => { const el = document.getElementById('ts-save-indicator'); if (el) el.textContent = ''; }, 2000);
-            }
-        }, 1200);
+        _tsAutoSaveTimer = setTimeout(() => saveData(), 1200);
     }
 
     // ── User mutations ────────────────────────────────────────────────────────
