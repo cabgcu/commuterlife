@@ -236,31 +236,54 @@ Deno.serve(async (_req) => {
 
     // ── Send real push notifications ─────────────────────────────────────────
     if (privateKey) {
+      let subsModified = false;
       for (const job of pushJobs) {
-        const sub = subscriptions[job.userName];
-        if (!sub?.endpoint || !sub?.keys) {
+        const rawSub = subscriptions[job.userName];
+        // Support both legacy single-object and new array format
+        const subList: Array<{ endpoint: string; keys: { p256dh: string; auth: string } }> =
+          Array.isArray(rawSub) ? rawSub : rawSub?.endpoint ? [rawSub] : [];
+
+        if (subList.length === 0) {
           pushResults[job.userName] = "no_subscription";
           continue;
         }
-        try {
-          const { ok, status } = await sendWebPush(
-            sub, job.title, job.body, job.tag,
-            appData.settings?.appIconUrl || "",
-            privateKey
-          );
-          pushResults[job.userName] = ok ? "sent" : `error_${status}`;
 
-          // Remove expired subscriptions
-          if (status === 404 || status === 410) {
-            delete subscriptions[job.userName];
-            await supabase.from("app_state")
-              .update({ data: { ...appData, pushSubscriptions: subscriptions } })
-              .eq("id", 1);
-            pushResults[job.userName] = "subscription_expired";
+        let sentCount = 0;
+        const stillValid: typeof subList = [];
+        for (const sub of subList) {
+          try {
+            const { ok, status } = await sendWebPush(
+              sub, job.title, job.body, job.tag,
+              appData.settings?.appIconUrl || "",
+              privateKey
+            );
+            if (ok) {
+              sentCount++;
+              stillValid.push(sub);
+            } else if (status === 404 || status === 410) {
+              subsModified = true; // expired — drop it
+            } else {
+              stillValid.push(sub); // keep, transient error
+            }
+          } catch (e) {
+            stillValid.push(sub);
           }
-        } catch (e) {
-          pushResults[job.userName] = "error: " + (e as Error).message;
         }
+
+        if (stillValid.length !== subList.length) {
+          if (stillValid.length === 0) delete subscriptions[job.userName];
+          else subscriptions[job.userName] = stillValid;
+        }
+
+        pushResults[job.userName] = sentCount > 0
+          ? `sent (${sentCount}/${subList.length})`
+          : `error — 0/${subList.length} delivered`;
+      }
+
+      if (subsModified) {
+        await supabase.from("app_state")
+          .update({ data: { ...appData, pushSubscriptions: subscriptions } })
+          .eq("id", 1);
       }
     } else {
       console.warn("shift-reminders: VAPID keys not set — skipping Web Push delivery");
