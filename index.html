@@ -2395,8 +2395,8 @@
         .ts-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
         .ts-card-title { font-size: 1rem; font-weight: 800; margin: 0; }
         .ts-entry-row { display: grid; grid-template-columns: 1fr 90px 32px; gap: 10px; align-items: start; margin-bottom: 10px; }
-        .ts-entry-desc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; resize: none; width: 100%; }
-        .ts-entry-hours { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; width: 100%; text-align: center; }
+        .ts-entry-desc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; resize: none; width: 100%; height: 42px; box-sizing: border-box; }
+        .ts-entry-hours { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; width: 100%; text-align: center; height: 42px; box-sizing: border-box; }
         .ts-entry-desc:focus, .ts-entry-hours:focus { outline: none; border-color: rgba(10,132,255,0.5); background: rgba(10,132,255,0.04); }
         .ts-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 8px 0; line-height: 1; }
         .ts-del-btn:hover { color: #FF3B30; }
@@ -2427,8 +2427,8 @@
             .ts-card { padding: 28px 32px; border-radius: 24px; }
             .ts-week-nav h2 { font-size: 1.25rem; }
             .ts-entry-row { grid-template-columns: 1fr 120px 36px; gap: 14px; margin-bottom: 12px; }
-            .ts-entry-desc { font-size: 0.92rem; padding: 11px 16px; border-radius: 14px; }
-            .ts-entry-hours { font-size: 0.92rem; padding: 11px 16px; border-radius: 14px; }
+            .ts-entry-desc { font-size: 0.92rem; padding: 11px 16px; border-radius: 14px; height: 48px; }
+            .ts-entry-hours { font-size: 0.92rem; padding: 11px 16px; border-radius: 14px; height: 48px; }
             .ts-add-entry-btn { padding: 11px 20px; font-size: 0.88rem; border-radius: 14px; margin-top: 6px; }
             .ts-total-row { margin-top: 16px; padding-top: 16px; }
             .ts-total-value { font-size: 1.3rem; }
@@ -14919,7 +14919,7 @@
         ts.entries.forEach((entry, idx) => {
             entriesHtml += `
             <div class="ts-entry-row">
-                <textarea class="ts-entry-desc" rows="2" placeholder="What did you work on?"
+                <textarea class="ts-entry-desc" rows="1" placeholder="What did you work on?"
                     oninput="tsUpdateEntry('${weekStartIso}',${idx},'description',this.value)">${_escHtml(entry.description || '')}</textarea>
                 <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs"
                     value="${entry.hours !== '' && entry.hours !== undefined ? entry.hours : ''}"
@@ -15015,7 +15015,7 @@
         ts.entries.forEach((entry, idx) => {
             entriesHtml += `
             <div class="ts-entry-row">
-                <textarea class="ts-entry-desc" rows="2" placeholder="What did they work on?"
+                <textarea class="ts-entry-desc" rows="1" placeholder="What did they work on?"
                     oninput="tsAdminUpdateEntry('${email}','${weekStartIso}',${idx},'description',this.value)">${_escHtml(entry.description || '')}</textarea>
                 <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs"
                     value="${entry.hours !== '' && entry.hours !== undefined ? entry.hours : ''}"
