@@ -2416,6 +2416,27 @@
         .ts-summary-card:hover { border-color: rgba(10,132,255,0.4); }
         .ts-summary-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
         .ts-empty { text-align: center; color: var(--text-muted); padding: 48px 24px; border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1); font-size: 0.95rem; }
+        /* All-time spreadsheet */
+        .ts-view-toggle { display: flex; gap: 6px; margin-bottom: 18px; }
+        .ts-view-btn { background: rgba(24,24,28,0.85); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 100px; padding: 6px 16px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.15s; }
+        .ts-view-btn.active { background: rgba(10,132,255,0.18); border-color: rgba(10,132,255,0.4); color: #0A84FF; }
+        .ts-sheet-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid rgba(255,255,255,0.09); background: rgba(18,18,22,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); margin-bottom: 20px; }
+        .ts-sheet { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 0.82rem; }
+        .ts-sheet th, .ts-sheet td { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
+        .ts-sheet th { background: rgba(255,255,255,0.04); color: var(--text-muted); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; }
+        .ts-sheet td:first-child, .ts-sheet th:first-child { position: sticky; left: 0; z-index: 3; background: rgba(22,22,28,0.97); min-width: 130px; }
+        .ts-sheet th:first-child { z-index: 4; }
+        .ts-sheet tr:last-child td { border-bottom: none; }
+        .ts-sheet td:last-child, .ts-sheet th:last-child { border-right: none; }
+        .ts-sheet .ts-sheet-name { font-weight: 700; color: var(--text-main); }
+        .ts-sheet .ts-sheet-total { font-weight: 800; color: var(--text-main); }
+        .ts-sheet .ts-sheet-footer td { background: rgba(255,255,255,0.04); font-weight: 700; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); border-bottom: none; }
+        .ts-sheet-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 56px; }
+        .ts-sheet-hrs { font-weight: 700; color: var(--text-main); }
+        .ts-sheet-hrs.zero { color: rgba(255,255,255,0.2); }
+        .ts-sheet-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .ts-sheet-dot.submitted { background: #0A84FF; }
+        .ts-sheet-dot.draft { background: #a1a1aa; opacity: 0.5; }
         .ts-admin-member-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .ts-admin-member-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
         @media (max-width: 600px) {
@@ -14871,6 +14892,7 @@
 
     let _tsWeekOffset = 0; // admin-only; users are always locked to current week
     let _tsAdminViewEmail = null; // null = overview, email = viewing specific member
+    let _tsAdminViewMode = 'weekly'; // 'weekly' | 'alltime'
 
     // Returns the Monday of a week relative to today (offset in weeks, admin only)
     function _tsGetWeekStart(offset) {
@@ -15016,6 +15038,11 @@
             _tsRenderAdminMember(container, _tsAdminViewEmail);
             return;
         }
+        if (_tsAdminViewMode === 'alltime') {
+            _tsRenderAdminAllTime(container);
+            return;
+        }
+
         const weekStart = _tsGetWeekStart(_tsWeekOffset);
         const weekStartIso = _tsIsoDate(weekStart);
         const users = appData.settings.users || [];
@@ -15023,8 +15050,13 @@
         const prevBtn = `<button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>`;
         const nextBtn = `<button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4;cursor:default"' : ''}>Next &#8594;</button>`;
 
+        const toggle = `<div class="ts-view-toggle">
+            <button class="ts-view-btn active" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
+            <button class="ts-view-btn" onclick="tsSetAdminViewMode('alltime')">All Time</button>
+        </div>`;
+
         if (users.length === 0) {
-            container.innerHTML = `
+            container.innerHTML = `${toggle}
             <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
             <div class="ts-empty">No team members found. Add users in Settings.</div>`;
             return;
@@ -15054,9 +15086,107 @@
         });
 
         container.innerHTML = `
+        ${toggle}
         <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
         <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Team Timesheets — click a member to view &amp; edit</div>
         <div class="ts-summary-grid">${summaryHtml}</div>`;
+    }
+
+    function _tsRenderAdminAllTime(container) {
+        const users = appData.settings.users || [];
+        const timesheets = appData.timesheets || [];
+
+        // Collect all unique week starts across all timesheets, sorted ascending
+        const weekSet = new Set(timesheets.map(t => t.weekStart));
+        const weeks = Array.from(weekSet).sort();
+
+        const toggle = `<div class="ts-view-toggle">
+            <button class="ts-view-btn" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
+            <button class="ts-view-btn active" onclick="tsSetAdminViewMode('alltime')">All Time</button>
+        </div>`;
+
+        if (weeks.length === 0 || users.length === 0) {
+            container.innerHTML = `${toggle}<div class="ts-empty">No timesheet data yet.</div>`;
+            return;
+        }
+
+        // Format week label short: "Jun 16"
+        const shortWeek = (iso) => {
+            const [y, m, d] = iso.split('-').map(Number);
+            const dt = new Date(y, m - 1, d);
+            return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        };
+
+        // Column totals (per week)
+        const colTotals = {};
+        weeks.forEach(w => colTotals[w] = 0);
+
+        // Build rows
+        let bodyRows = '';
+        users.forEach(u => {
+            let rowTotal = 0;
+            let cells = '';
+            weeks.forEach(w => {
+                const ts = timesheets.find(t => t.userEmail === u.email && t.weekStart === w);
+                const hrs = ts ? _tsCalcTotal(ts.entries) : 0;
+                rowTotal += hrs;
+                colTotals[w] += hrs;
+                const dot = ts ? `<span class="ts-sheet-dot ${ts.status}"></span>` : '';
+                const hrsLabel = hrs > 0 ? (hrs % 1 === 0 ? hrs : hrs.toFixed(1)) : '–';
+                cells += `<td title="${ts ? ts.status : 'no data'}">
+                    <div class="ts-sheet-cell">
+                        <span class="ts-sheet-hrs${hrs === 0 ? ' zero' : ''}">${hrsLabel}</span>
+                        ${dot}
+                    </div>
+                </td>`;
+            });
+            const totalLabel = rowTotal % 1 === 0 ? rowTotal : rowTotal.toFixed(1);
+            bodyRows += `<tr>
+                <td class="ts-sheet-name" onclick="tsAdminViewMember('${u.email}')" style="cursor:pointer;" title="View ${_escHtml(u.name || u.email)}">${_escHtml(u.name || u.email)}</td>
+                ${cells}
+                <td class="ts-sheet-total">${totalLabel} hrs</td>
+            </tr>`;
+        });
+
+        // Footer totals row
+        let footerCells = weeks.map(w => {
+            const t = colTotals[w];
+            return `<td style="text-align:right;">${t > 0 ? (t % 1 === 0 ? t : t.toFixed(1)) : '–'}</td>`;
+        }).join('');
+        const grandTotal = Object.values(colTotals).reduce((a, b) => a + b, 0);
+        footerCells += `<td style="font-weight:800;color:var(--text-main);">${grandTotal % 1 === 0 ? grandTotal : grandTotal.toFixed(1)} hrs</td>`;
+
+        // Header row
+        const weekHeaders = weeks.map(w => `<th style="text-align:right;">${shortWeek(w)}</th>`).join('');
+
+        container.innerHTML = `
+        ${toggle}
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">
+            All Time Hours — ${weeks.length} week${weeks.length !== 1 ? 's' : ''} · <span style="color:#0A84FF;">●</span> submitted &nbsp;<span style="color:#a1a1aa;">●</span> draft
+        </div>
+        <div class="ts-sheet-wrap">
+            <table class="ts-sheet">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        ${weekHeaders}
+                        <th style="text-align:right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>${bodyRows}</tbody>
+                <tfoot>
+                    <tr class="ts-sheet-footer">
+                        <td style="font-weight:700;color:var(--text-muted);">Totals</td>
+                        ${footerCells}
+                    </tr>
+                </tfoot>
+            </table>
+        </div>`;
+    }
+
+    function tsSetAdminViewMode(mode) {
+        _tsAdminViewMode = mode;
+        renderTimesheet();
     }
 
     // ── Admin member detail (editable) ────────────────────────────────────────
@@ -15133,7 +15263,7 @@
 
     function tsAdminBack() {
         _tsAdminViewEmail = null;
-        renderTimesheet();
+        renderTimesheet(); // returns to whichever mode was active before drilling in
     }
 
     // ── User mutations ────────────────────────────────────────────────────────
