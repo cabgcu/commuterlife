@@ -3545,7 +3545,7 @@
     // VAPID public key for Web Push — generate a key pair and put the public key here
     // Generate keys by running: npx web-push generate-vapid-keys
     // Store the private key as VAPID_PRIVATE_KEY secret in your Supabase Edge Function
-    const VAPID_PUBLIC_KEY = 'BH6EQJUGHQRfBiOm3xbGRNCePzMryOqSGafvPsd4bwu2Au8Y6Re-u1XQ_QgvERNTrJOO2P02CsigEKQtKhMSW9E';
+    const VAPID_PUBLIC_KEY = 'BAqdVFHnd9HMVCWPCP-mRhT2jgP5bdagqdQW_gLGqrb3yVFV_uERnLdSTMAd_HkRFRJuaSt_5bUxfQOYyayDPNM';
     let _supabase;
     const _realtimeClientId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
@@ -7677,8 +7677,22 @@
                 });
             }
             // Store subscription in appData so the Edge Function can look it up
+            // Keep an array per user so multiple devices each get notified
             if (!appData.pushSubscriptions) appData.pushSubscriptions = {};
-            appData.pushSubscriptions[currentUserName] = sub.toJSON();
+            const subJson = sub.toJSON();
+            const existing = appData.pushSubscriptions[currentUserName];
+            if (Array.isArray(existing)) {
+                if (!existing.some(s => s.endpoint === subJson.endpoint)) {
+                    existing.push(subJson);
+                }
+            } else if (existing && existing.endpoint) {
+                // Migrate legacy single-object format to array
+                appData.pushSubscriptions[currentUserName] = existing.endpoint === subJson.endpoint
+                    ? [subJson]
+                    : [existing, subJson];
+            } else {
+                appData.pushSubscriptions[currentUserName] = [subJson];
+            }
             await saveData();
             console.log('Push subscription stored for', currentUserName);
         } catch (err) {

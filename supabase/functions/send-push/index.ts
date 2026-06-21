@@ -205,47 +205,77 @@ Deno.serve(async (req) => {
     const payloadBytes = new TextEncoder().encode(notifPayload);
 
     for (const userName of targets) {
-      const sub = subscriptions[userName];
-      if (!sub?.endpoint || !sub?.keys) {
+      const rawSub = subscriptions[userName];
+      if (!rawSub) {
         results[userName] = "no_subscription";
         continue;
       }
 
-      try {
-        const audience = new URL(sub.endpoint).origin;
-        const jwt = await createVapidJwt(audience, privateKey);
+      // Normalize: support both legacy single-object and new array format
+      const subList: Array<{ endpoint: string; keys: { p256dh: string; auth: string } }> =
+        Array.isArray(rawSub) ? rawSub : [rawSub];
 
-        // Encrypt payload using Web Push encryption (RFC 8291)
-        const { encrypted } = await encryptPayload(payloadBytes, sub.keys);
-
-        const resp = await fetch(sub.endpoint, {
-          method: "POST",
-          headers: {
-            Authorization: `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`,
-            TTL: "86400",
-            "Content-Encoding": "aes128gcm",
-            "Content-Type": "application/octet-stream",
-            "Content-Length": String(encrypted.length),
-            Urgency: "high",
-          },
-          body: encrypted,
-        });
-
-        const respText = await resp.text();
-        results[userName] = resp.ok ? "sent" : `error_${resp.status}: ${respText}`;
-
-        // Clean up expired subscriptions
-        if (resp.status === 404 || resp.status === 410) {
-          delete subscriptions[userName];
-          await supabase
-            .from("app_state")
-            .update({ data: { ...data.data, pushSubscriptions: subscriptions } })
-            .eq("id", 1);
-          results[userName] = "subscription_expired";
-        }
-      } catch (err) {
-        results[userName] = "error: " + (err as Error).message;
+      const validSubs = subList.filter(s => s?.endpoint && s?.keys);
+      if (validSubs.length === 0) {
+        results[userName] = "no_subscription";
+        continue;
       }
+
+      const subResults: string[] = [];
+      let anyExpired = false;
+
+      for (const sub of validSubs) {
+        try {
+          const audience = new URL(sub.endpoint).origin;
+          const jwt = await createVapidJwt(audience, privateKey);
+
+          const { encrypted } = await encryptPayload(payloadBytes, sub.keys);
+
+          const resp = await fetch(sub.endpoint, {
+            method: "POST",
+            headers: {
+              Authorization: `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`,
+              TTL: "86400",
+              "Content-Encoding": "aes128gcm",
+              "Content-Type": "application/octet-stream",
+              "Content-Length": String(encrypted.length),
+              Urgency: "high",
+            },
+            body: encrypted,
+          });
+
+          const respText = await resp.text();
+          if (resp.ok) {
+            subResults.push("sent");
+          } else if (resp.status === 404 || resp.status === 410) {
+            subResults.push("expired");
+            anyExpired = true;
+          } else {
+            subResults.push(`error_${resp.status}: ${respText}`);
+          }
+        } catch (err) {
+          subResults.push("error: " + (err as Error).message);
+        }
+      }
+
+      // Clean up expired subscriptions
+      if (anyExpired) {
+        const stillValid = subList.filter((_, i) => subResults[i] !== "expired");
+        if (stillValid.length === 0) {
+          delete subscriptions[userName];
+        } else {
+          subscriptions[userName] = stillValid;
+        }
+        await supabase
+          .from("app_state")
+          .update({ data: { ...data.data, pushSubscriptions: subscriptions } })
+          .eq("id", 1);
+      }
+
+      const sentCount = subResults.filter(r => r === "sent").length;
+      results[userName] = sentCount > 0
+        ? `sent (${sentCount}/${validSubs.length} devices)`
+        : subResults[0];
     }
 
     return new Response(JSON.stringify({ results }), {
