@@ -2386,45 +2386,38 @@
         .ts-wrapper { max-width: 860px; margin: 0 auto; padding: 16px 4px 120px; }
         .ts-week-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         .ts-week-nav h2 { margin: 0; font-size: 1.1rem; font-weight: 800; flex: 1; }
-        .ts-week-btn { background: var(--glass-surface); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 100px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+        .ts-week-btn { background: rgba(24,24,28,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 100px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
         .ts-week-btn:hover { background: rgba(255,255,255,0.1); }
         .ts-status-badge { border-radius: 100px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
         .ts-status-draft    { background: rgba(161,161,170,0.15); color: #a1a1aa; }
-        .ts-status-submitted { background: rgba(10,132,255,0.15); color: #0A84FF; }
-        .ts-status-approved  { background: rgba(52,199,89,0.15); color: #34C759; }
-        .ts-card { background: var(--glass-surface); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .ts-status-submitted { background: rgba(10,132,255,0.18); color: #0A84FF; }
+        .ts-card { background: rgba(18,18,22,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
         .ts-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
         .ts-card-title { font-size: 1rem; font-weight: 800; margin: 0; }
         .ts-entry-row { display: grid; grid-template-columns: 1fr 90px 32px; gap: 10px; align-items: start; margin-bottom: 10px; }
-        .ts-entry-desc { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; resize: none; width: 100%; }
-        .ts-entry-hours { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; width: 100%; text-align: center; }
-        .ts-entry-desc:focus, .ts-entry-hours:focus { outline: none; border-color: rgba(10,132,255,0.5); }
+        .ts-entry-desc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; resize: none; width: 100%; }
+        .ts-entry-hours { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; width: 100%; text-align: center; }
+        .ts-entry-desc:focus, .ts-entry-hours:focus { outline: none; border-color: rgba(10,132,255,0.5); background: rgba(10,132,255,0.04); }
         .ts-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 8px 0; line-height: 1; }
         .ts-del-btn:hover { color: #FF3B30; }
-        .ts-add-entry-btn { background: none; border: 1px dashed rgba(255,255,255,0.2); color: var(--text-muted); border-radius: 12px; padding: 9px 16px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 4px; }
-        .ts-add-entry-btn:hover { border-color: rgba(10,132,255,0.5); color: #0A84FF; }
-        .ts-total-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--glass-border); }
+        .ts-add-entry-btn { background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); color: var(--text-muted); border-radius: 12px; padding: 9px 16px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 4px; }
+        .ts-add-entry-btn:hover { border-color: rgba(10,132,255,0.5); color: #0A84FF; background: rgba(10,132,255,0.04); }
+        .ts-total-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
         .ts-total-label { color: var(--text-muted); font-size: 0.82rem; font-weight: 600; }
         .ts-total-value { font-size: 1.15rem; font-weight: 800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .ts-action-bar { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
-        .ts-btn-save { background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .ts-btn-save:hover { background: rgba(255,255,255,0.14); }
+        .ts-btn-save { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: var(--text-main); border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .ts-btn-save:hover { background: rgba(255,255,255,0.12); }
         .ts-btn-submit { background: linear-gradient(135deg, #0A84FF 0%, #BF5AF2 100%); border: none; color: #fff; border-radius: 100px; padding: 9px 22px; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
         .ts-btn-submit:hover { opacity: 0.88; }
-        .ts-btn-approve { background: linear-gradient(135deg, #34C759 0%, #30B0C7 100%); border: none; color: #fff; border-radius: 100px; padding: 9px 22px; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
-        .ts-btn-unapprove { background: rgba(255,149,0,0.15); border: 1px solid rgba(255,149,0,0.3); color: #FF9500; border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .ts-btn-unsubmit { background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.25); color: #FF6B6B; border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .ts-admin-notes { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.85rem; font-family: inherit; resize: vertical; width: 100%; margin-top: 8px; }
-        .ts-admin-notes:focus { outline: none; border-color: rgba(52,199,89,0.5); }
+        .ts-btn-unsubmit { background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.2); color: #FF6B6B; border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
         .ts-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .ts-summary-card { background: var(--glass-surface); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s; }
+        .ts-summary-card { background: rgba(18,18,22,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.09); border-radius: 16px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s; }
         .ts-summary-card:hover { border-color: rgba(10,132,255,0.4); }
         .ts-summary-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
-        .ts-summary-hours { font-size: 0.82rem; color: var(--text-muted); }
-        .ts-empty { text-align: center; color: var(--text-muted); padding: 48px 24px; border-radius: 16px; border: 1px dashed var(--glass-border); font-size: 0.95rem; }
-        .ts-admin-member-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
+        .ts-empty { text-align: center; color: var(--text-muted); padding: 48px 24px; border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1); font-size: 0.95rem; }
+        .ts-admin-member-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .ts-admin-member-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
-        .ts-approved-note { font-size: 0.78rem; color: #34C759; margin-top: 4px; }
         @media (max-width: 600px) {
             .ts-entry-row { grid-template-columns: 1fr 72px 28px; }
             .ts-week-nav h2 { font-size: 0.95rem; }
@@ -4022,6 +4015,8 @@
         ensurePushSubscription();
         // Auto-prompt notification permission for first-time visitors
         autoPromptNotifPermission();
+        // Start midnight Monday auto-submit for timesheets
+        tsScheduleMidnightAutoSubmit();
     }
 
     let setupProfilePictureFile = null;
@@ -14799,21 +14794,25 @@
 
     // ── TIMESHEET ─────────────────────────────────────────────────────────────
 
-    let _tsWeekOffset = 0; // 0 = current week, -1 = last week, etc.
+    let _tsWeekOffset = 0; // admin-only; users are always locked to current week
     let _tsAdminViewEmail = null; // null = overview, email = viewing specific member
 
+    // Returns the Monday of a week relative to today (offset in weeks, admin only)
     function _tsGetWeekStart(offset) {
         const now = new Date();
-        const day = now.getDay(); // 0=Sun,1=Mon,...,6=Sat
+        const day = now.getDay();
         const diffToMon = (day === 0) ? -6 : 1 - day;
         const mon = new Date(now);
-        mon.setDate(now.getDate() + diffToMon + offset * 7);
+        mon.setDate(now.getDate() + diffToMon + (offset || 0) * 7);
         mon.setHours(0, 0, 0, 0);
         return mon;
     }
 
     function _tsIsoDate(d) {
-        return d.toISOString().slice(0, 10);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
     }
 
     function _tsWeekLabel(weekStart) {
@@ -14835,10 +14834,7 @@
                 entries: [],
                 totalHours: 0,
                 status: 'draft',
-                submittedAt: null,
-                approvedAt: null,
-                approvedBy: null,
-                adminNotes: ''
+                submittedAt: null
             };
             appData.timesheets.push(ts);
         }
@@ -14849,10 +14845,43 @@
         return entries.reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
     }
 
+    // Auto-submit any draft timesheets from weeks prior to the current one
+    function tsAutoSubmitPastDrafts() {
+        if (!appData.timesheets || !isAuthenticated) return;
+        const currentWeekIso = _tsIsoDate(_tsGetWeekStart(0));
+        let changed = false;
+        appData.timesheets.forEach(ts => {
+            if (ts.status === 'draft' && ts.weekStart < currentWeekIso && ts.entries.length > 0) {
+                ts.totalHours = _tsCalcTotal(ts.entries);
+                ts.status = 'submitted';
+                ts.submittedAt = new Date().toISOString();
+                changed = true;
+            }
+        });
+        if (changed) saveData();
+    }
+
+    // Schedule auto-submit to fire at midnight Monday
+    function tsScheduleMidnightAutoSubmit() {
+        const now = new Date();
+        const day = now.getDay(); // 0=Sun
+        // Find next Monday midnight
+        const daysUntilMon = (day === 0) ? 1 : (8 - day) % 7 || 7;
+        const nextMon = new Date(now);
+        nextMon.setDate(now.getDate() + daysUntilMon);
+        nextMon.setHours(0, 0, 1, 0); // 12:00:01 AM Monday
+        const ms = nextMon - now;
+        setTimeout(() => {
+            tsAutoSubmitPastDrafts();
+            if (currentView === 'timesheet') renderTimesheet();
+            tsScheduleMidnightAutoSubmit(); // reschedule for next Monday
+        }, ms);
+    }
+
     function renderTimesheet() {
         const container = document.getElementById('timesheet-content');
         if (!container) return;
-
+        tsAutoSubmitPastDrafts();
         if (currentUserRole === 'admin') {
             _tsRenderAdmin(container);
         } else {
@@ -14860,77 +14889,67 @@
         }
     }
 
+    // ── User view (current week only, no navigation) ──────────────────────────
+
     function _tsRenderUser(container) {
-        const weekStart = _tsGetWeekStart(_tsWeekOffset);
+        const weekStart = _tsGetWeekStart(0); // always current week for users
         const weekStartIso = _tsIsoDate(weekStart);
         const ts = _tsGetOrCreate(currentUserEmail, currentUserName, weekStartIso);
-        const isLocked = ts.status === 'submitted' || ts.status === 'approved';
+        const isLocked = ts.status === 'submitted';
+
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        const fmtOpts = { month: 'long', day: 'numeric' };
+        const weekLabel = `${weekStart.toLocaleDateString('en-US', fmtOpts)} – ${weekEnd.toLocaleDateString('en-US', { ...fmtOpts, year: 'numeric' })}`;
 
         let entriesHtml = '';
         ts.entries.forEach((entry, idx) => {
             const disabled = isLocked ? 'disabled' : '';
             entriesHtml += `
-            <div class="ts-entry-row" id="ts-entry-row-${idx}">
+            <div class="ts-entry-row">
                 <textarea class="ts-entry-desc" rows="2" placeholder="What did you work on?" ${disabled}
                     oninput="tsUpdateEntry('${weekStartIso}',${idx},'description',this.value)">${_escHtml(entry.description || '')}</textarea>
                 <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs" ${disabled}
-                    value="${entry.hours || ''}"
+                    value="${entry.hours !== '' && entry.hours !== undefined ? entry.hours : ''}"
                     oninput="tsUpdateEntry('${weekStartIso}',${idx},'hours',this.value)">
                 ${!isLocked ? `<button class="ts-del-btn" onclick="tsDeleteEntry('${weekStartIso}',${idx})" title="Remove">✕</button>` : '<span></span>'}
             </div>`;
         });
 
         const total = _tsCalcTotal(ts.entries);
-        const statusBadge = `<span class="ts-status-badge ts-status-${ts.status}">${ts.status}</span>`;
 
         let actionBar = '';
         if (ts.status === 'draft') {
             actionBar = `
             <button class="ts-btn-save" onclick="tsSaveDraft('${weekStartIso}')">Save Draft</button>
-            <button class="ts-btn-submit" onclick="tsSubmit('${weekStartIso}')">Submit for Approval</button>`;
-        } else if (ts.status === 'submitted') {
+            <button class="ts-btn-submit" onclick="tsSubmit('${weekStartIso}')">Submit Hours</button>`;
+        } else {
             actionBar = `
-            <button class="ts-btn-unsubmit" onclick="tsUnsubmit('${weekStartIso}')">Retract Submission</button>`;
-        } else if (ts.status === 'approved') {
-            actionBar = `<span style="color:#34C759;font-size:0.85rem;font-weight:600;">Approved${ts.approvedBy ? ' by ' + ts.approvedBy : ''}</span>`;
-        }
-
-        let approvedNote = '';
-        if (ts.status === 'approved' && ts.approvedAt) {
-            const d = new Date(ts.approvedAt);
-            approvedNote = `<div class="ts-approved-note">Approved ${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`;
-        }
-        let adminNotesHtml = '';
-        if (ts.adminNotes) {
-            adminNotesHtml = `<div style="margin-top:12px;padding:10px 14px;background:rgba(52,199,89,0.08);border:1px solid rgba(52,199,89,0.2);border-radius:12px;font-size:0.83rem;color:var(--text-muted);">
-                <strong style="color:#34C759;">Admin note:</strong> ${_escHtml(ts.adminNotes)}</div>`;
+            <span style="color:#0A84FF;font-size:0.85rem;font-weight:600;">Hours submitted ✓</span>
+            <button class="ts-btn-unsubmit" onclick="tsUnsubmit('${weekStartIso}')">Edit / Retract</button>`;
         }
 
         container.innerHTML = `
         <div class="ts-week-nav">
-            <button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>
-            <h2>Week of ${_tsWeekLabel(weekStart)}</h2>
-            ${statusBadge}
-            <button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4"' : ''}>Next &#8594;</button>
+            <h2>My Timesheet — ${weekLabel}</h2>
+            <span class="ts-status-badge ts-status-${ts.status}">${ts.status}</span>
         </div>
         <div class="ts-card">
-            <div class="ts-card-header">
-                <p class="ts-card-title">My Hours — ${weekStart.toLocaleDateString('en-US',{month:'long',day:'numeric'})} to ${(() => { const e=new Date(weekStart); e.setDate(e.getDate()+6); return e.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); })()}</p>
-            </div>
-            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:8px;">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
                 <span>Description</span><span style="text-align:center;">Hours</span><span></span>
             </div>
-            ${entriesHtml}
+            ${entriesHtml || `<div style="color:var(--text-muted);font-size:0.88rem;padding:8px 0 14px;">No activities yet. Add what you worked on this week.</div>`}
             ${!isLocked ? `<button class="ts-add-entry-btn" onclick="tsAddEntry('${weekStartIso}')">+ Add Activity</button>` : ''}
             <div class="ts-total-row">
                 <span class="ts-total-label">Total Hours</span>
                 <span class="ts-total-value" id="ts-total-display">${total % 1 === 0 ? total : total.toFixed(1)}</span>
             </div>
-            ${adminNotesHtml}
-            ${approvedNote}
         </div>
-        <div class="ts-action-bar">${actionBar}</div>`;
+        <div class="ts-action-bar">${actionBar}</div>
+        <div style="color:var(--text-muted);font-size:0.78rem;text-align:center;margin-top:12px;">Hours auto-submit at 12:00 AM every Monday.</div>`;
     }
+
+    // ── Admin overview (all members, week navigation) ─────────────────────────
 
     function _tsRenderAdmin(container) {
         if (_tsAdminViewEmail) {
@@ -14939,15 +14958,14 @@
         }
         const weekStart = _tsGetWeekStart(_tsWeekOffset);
         const weekStartIso = _tsIsoDate(weekStart);
-
         const users = appData.settings.users || [];
+
+        const prevBtn = `<button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>`;
+        const nextBtn = `<button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4;cursor:default"' : ''}>Next &#8594;</button>`;
+
         if (users.length === 0) {
             container.innerHTML = `
-            <div class="ts-week-nav">
-                <button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>
-                <h2>Week of ${_tsWeekLabel(weekStart)}</h2>
-                <button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4"' : ''}>Next &#8594;</button>
-            </div>
+            <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
             <div class="ts-empty">No team members found. Add users in Settings.</div>`;
             return;
         }
@@ -14956,13 +14974,12 @@
         users.forEach(u => {
             const ts = (appData.timesheets || []).find(t => t.userEmail === u.email && t.weekStart === weekStartIso);
             const hours = ts ? _tsCalcTotal(ts.entries) : 0;
-            const status = ts ? ts.status : 'not submitted';
-            const initials = (u.name || u.email).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-            const badgeCls = ts ? `ts-status-${ts.status}` : 'ts-status-draft';
             const badgeLabel = ts ? ts.status : 'not submitted';
+            const badgeCls = ts ? `ts-status-${ts.status}` : 'ts-status-draft';
+            const initials = (u.name || u.email).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
             summaryHtml += `
             <div class="ts-summary-card" onclick="tsAdminViewMember('${u.email}')">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                     <div class="ts-admin-member-avatar">${initials}</div>
                     <div style="flex:1;min-width:0;">
                         <div class="ts-summary-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_escHtml(u.name || u.email)}</div>
@@ -14971,20 +14988,18 @@
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;">
                     <span class="ts-status-badge ${badgeCls}">${badgeLabel}</span>
-                    <span style="font-size:0.9rem;font-weight:800;color:var(--text-main);">${hours % 1 === 0 ? hours : hours.toFixed(1)} hrs</span>
+                    <span style="font-size:0.9rem;font-weight:800;">${hours % 1 === 0 ? hours : hours.toFixed(1)} hrs</span>
                 </div>
             </div>`;
         });
 
         container.innerHTML = `
-        <div class="ts-week-nav">
-            <button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>
-            <h2>Week of ${_tsWeekLabel(weekStart)}</h2>
-            <button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4"' : ''}>Next &#8594;</button>
-        </div>
-        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Team Timesheets</div>
-        <div class="ts-summary-grid">${summaryHtml || '<div class="ts-empty">No timesheets submitted yet.</div>'}</div>`;
+        <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Team Timesheets — click a member to view &amp; edit</div>
+        <div class="ts-summary-grid">${summaryHtml}</div>`;
     }
+
+    // ── Admin member detail (editable) ────────────────────────────────────────
 
     function _tsRenderAdminMember(container, email) {
         const weekStart = _tsGetWeekStart(_tsWeekOffset);
@@ -14992,56 +15007,30 @@
         const user = (appData.settings.users || []).find(u => u.email === email);
         if (!user) { _tsAdminViewEmail = null; renderTimesheet(); return; }
 
-        const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
+        const ts = _tsGetOrCreate(email, user.name || email, weekStartIso);
         const initials = (user.name || user.email).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        const total = _tsCalcTotal(ts.entries);
 
         let entriesHtml = '';
-        if (!ts || ts.entries.length === 0) {
-            entriesHtml = '<div style="color:var(--text-muted);font-size:0.88rem;padding:12px 0;">No entries for this week.</div>';
-        } else {
-            ts.entries.forEach(entry => {
-                entriesHtml += `
-                <div style="display:grid;grid-template-columns:1fr 80px;gap:10px;margin-bottom:10px;align-items:start;">
-                    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:9px 12px;font-size:0.88rem;white-space:pre-wrap;">${_escHtml(entry.description || '')}</div>
-                    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:9px 12px;font-size:0.88rem;text-align:center;font-weight:700;">${parseFloat(entry.hours)||0}</div>
-                </div>`;
-            });
-        }
-
-        const total = ts ? _tsCalcTotal(ts.entries) : 0;
-        const status = ts ? ts.status : 'not submitted';
-        const badgeCls = ts ? `ts-status-${ts.status}` : 'ts-status-draft';
-
-        let adminActions = '';
-        if (ts && ts.status === 'submitted') {
-            adminActions = `
-            <div style="margin-top:12px;">
-                <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">Note to member (optional)</label>
-                <textarea class="ts-admin-notes" rows="2" id="ts-admin-note-input" placeholder="Add a note...">${_escHtml(ts.adminNotes||'')}</textarea>
-            </div>
-            <div class="ts-action-bar">
-                <button class="ts-btn-unapprove" onclick="tsAdminUnsubmit('${email}','${weekStartIso}')">Return to Draft</button>
-                <button class="ts-btn-approve" onclick="tsAdminApprove('${email}','${weekStartIso}')">Approve</button>
+        ts.entries.forEach((entry, idx) => {
+            entriesHtml += `
+            <div class="ts-entry-row">
+                <textarea class="ts-entry-desc" rows="2" placeholder="What did they work on?"
+                    oninput="tsAdminUpdateEntry('${email}','${weekStartIso}',${idx},'description',this.value)">${_escHtml(entry.description || '')}</textarea>
+                <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs"
+                    value="${entry.hours !== '' && entry.hours !== undefined ? entry.hours : ''}"
+                    oninput="tsAdminUpdateEntry('${email}','${weekStartIso}',${idx},'hours',this.value)">
+                <button class="ts-del-btn" onclick="tsAdminDeleteEntry('${email}','${weekStartIso}',${idx})" title="Remove">✕</button>
             </div>`;
-        } else if (ts && ts.status === 'approved') {
-            adminActions = `
-            <div style="margin-top:12px;">
-                <textarea class="ts-admin-notes" rows="2" id="ts-admin-note-input" placeholder="Update note...">${_escHtml(ts.adminNotes||'')}</textarea>
-            </div>
-            <div class="ts-action-bar">
-                <button class="ts-btn-unapprove" onclick="tsAdminUnapprove('${email}','${weekStartIso}')">Unapprove</button>
-                <button class="ts-btn-save" onclick="tsAdminSaveNote('${email}','${weekStartIso}')">Save Note</button>
-            </div>`;
-        }
+        });
+
+        const prevBtn = `<button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>`;
+        const nextBtn = `<button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4;cursor:default"' : ''}>Next &#8594;</button>`;
 
         container.innerHTML = `
-        <div class="ts-week-nav">
-            <button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>
-            <h2>Week of ${_tsWeekLabel(weekStart)}</h2>
-            <button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4"' : ''}>Next &#8594;</button>
-        </div>
+        <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
         <div style="margin-bottom:16px;">
-            <button class="ts-week-btn" onclick="tsAdminBack()" style="display:inline-flex;align-items:center;gap:6px;">&#8592; All Members</button>
+            <button class="ts-week-btn" onclick="tsAdminBack()">&#8592; All Members</button>
         </div>
         <div class="ts-card">
             <div class="ts-card-header">
@@ -15052,23 +15041,28 @@
                         <div style="font-size:0.78rem;color:var(--text-muted);">${_escHtml(user.email)}</div>
                     </div>
                 </div>
-                <span class="ts-status-badge ${badgeCls}">${status}</span>
+                <span class="ts-status-badge ts-status-${ts.status}">${ts.status}</span>
             </div>
-            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 80px;gap:10px;margin-bottom:8px;">
-                <span>Description</span><span style="text-align:center;">Hours</span>
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
+                <span>Description</span><span style="text-align:center;">Hours</span><span></span>
             </div>
-            ${entriesHtml}
+            ${entriesHtml || `<div style="color:var(--text-muted);font-size:0.88rem;padding:8px 0 14px;">No entries yet.</div>`}
+            <button class="ts-add-entry-btn" onclick="tsAdminAddEntry('${email}','${weekStartIso}')">+ Add Activity</button>
             <div class="ts-total-row">
                 <span class="ts-total-label">Total Hours</span>
-                <span class="ts-total-value">${total % 1 === 0 ? total : total.toFixed(1)}</span>
+                <span class="ts-total-value" id="ts-total-display">${total % 1 === 0 ? total : total.toFixed(1)}</span>
             </div>
-            ${adminActions}
+        </div>
+        <div class="ts-action-bar">
+            <button class="ts-btn-save" onclick="tsAdminSave('${email}','${weekStartIso}')">Save Changes</button>
+            ${ts.status === 'submitted' ? `<button class="ts-btn-unsubmit" onclick="tsAdminReturnToDraft('${email}','${weekStartIso}')">Return to Draft</button>` : ''}
         </div>`;
     }
 
+    // ── Navigation ────────────────────────────────────────────────────────────
+
     function tsNavWeek(dir) {
-        _tsWeekOffset += dir;
-        if (_tsWeekOffset > 0) _tsWeekOffset = 0;
+        _tsWeekOffset = Math.min(0, _tsWeekOffset + dir);
         renderTimesheet();
     }
 
@@ -15081,6 +15075,8 @@
         _tsAdminViewEmail = null;
         renderTimesheet();
     }
+
+    // ── User mutations ────────────────────────────────────────────────────────
 
     function tsAddEntry(weekStartIso) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
@@ -15102,11 +15098,8 @@
         if (!ts || ts.status !== 'draft') return;
         if (ts.entries[idx]) ts.entries[idx][field] = value;
         ts.totalHours = _tsCalcTotal(ts.entries);
-        const totalEl = document.getElementById('ts-total-display');
-        if (totalEl) {
-            const t = ts.totalHours;
-            totalEl.textContent = t % 1 === 0 ? t : t.toFixed(1);
-        }
+        const el = document.getElementById('ts-total-display');
+        if (el) { const v = ts.totalHours; el.textContent = v % 1 === 0 ? v : v.toFixed(1); }
     }
 
     function tsSaveDraft(weekStartIso) {
@@ -15125,7 +15118,7 @@
         ts.status = 'submitted';
         ts.submittedAt = new Date().toISOString();
         saveData();
-        showToast('Timesheet submitted for approval!');
+        showToast('Hours submitted!');
         renderTimesheet();
     }
 
@@ -15135,53 +15128,57 @@
         ts.status = 'draft';
         ts.submittedAt = null;
         saveData();
-        showToast('Submission retracted — back to draft.');
+        showToast('Submission retracted — now in draft.');
         renderTimesheet();
     }
 
-    function tsAdminApprove(email, weekStartIso) {
+    // ── Admin mutations ───────────────────────────────────────────────────────
+
+    function tsAdminAddEntry(email, weekStartIso) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
         if (!ts) return;
-        const noteEl = document.getElementById('ts-admin-note-input');
-        ts.adminNotes = noteEl ? noteEl.value.trim() : ts.adminNotes;
-        ts.status = 'approved';
-        ts.approvedAt = new Date().toISOString();
-        ts.approvedBy = currentUserName || currentUserEmail;
-        saveData();
-        showToast('Timesheet approved!');
+        ts.entries.push({ id: 'tse_' + Date.now(), description: '', hours: '' });
         renderTimesheet();
     }
 
-    function tsAdminUnapprove(email, weekStartIso) {
+    function tsAdminDeleteEntry(email, weekStartIso, idx) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
-        if (!ts || ts.status !== 'approved') return;
-        ts.status = 'submitted';
-        ts.approvedAt = null;
-        ts.approvedBy = null;
-        saveData();
-        showToast('Approval revoked — back to submitted.');
+        if (!ts) return;
+        ts.entries.splice(idx, 1);
+        ts.totalHours = _tsCalcTotal(ts.entries);
         renderTimesheet();
     }
 
-    function tsAdminUnsubmit(email, weekStartIso) {
+    function tsAdminUpdateEntry(email, weekStartIso, idx, field, value) {
+        const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
+        if (!ts) return;
+        if (ts.entries[idx]) ts.entries[idx][field] = value;
+        ts.totalHours = _tsCalcTotal(ts.entries);
+        const el = document.getElementById('ts-total-display');
+        if (el) { const v = ts.totalHours; el.textContent = v % 1 === 0 ? v : v.toFixed(1); }
+    }
+
+    function tsAdminSave(email, weekStartIso) {
+        const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
+        if (!ts) return;
+        ts.totalHours = _tsCalcTotal(ts.entries);
+        if (ts.status === 'draft' && ts.entries.length > 0) {
+            ts.status = 'submitted';
+            ts.submittedAt = new Date().toISOString();
+        }
+        saveData();
+        showToast('Timesheet saved.');
+        renderTimesheet();
+    }
+
+    function tsAdminReturnToDraft(email, weekStartIso) {
         const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
         if (!ts) return;
         ts.status = 'draft';
         ts.submittedAt = null;
-        ts.approvedAt = null;
-        ts.approvedBy = null;
         saveData();
-        showToast('Timesheet returned to draft.');
+        showToast('Returned to draft.');
         renderTimesheet();
-    }
-
-    function tsAdminSaveNote(email, weekStartIso) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
-        if (!ts) return;
-        const noteEl = document.getElementById('ts-admin-note-input');
-        if (noteEl) ts.adminNotes = noteEl.value.trim();
-        saveData();
-        showToast('Note saved.');
     }
 
     function _escHtml(str) {
