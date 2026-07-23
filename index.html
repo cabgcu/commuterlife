@@ -3441,17 +3441,25 @@
                         <option value="card_created">Card is created</option>
                         <option value="card_moved">Card is moved to list...</option>
                         <option value="card_completed">Card is marked complete</option>
+                        <option value="member_assigned">Member is assigned...</option>
+                        <option value="attachment_added">Attachment is added</option>
+                        <option value="files_locked">Files are locked</option>
                     </optgroup>
                     <optgroup label="Content">
                         <option value="desc_contains">Description contains text...</option>
                         <option value="title_contains">Title contains text...</option>
+                        <option value="description_blank">Description is blank</option>
+                        <option value="no_attachments">Card has no attachments</option>
+                        <option value="no_comments">Card has no comments</option>
                         <option value="label_added">Label is added...</option>
+                        <option value="label_removed">Label is removed...</option>
                         <option value="priority_set">Priority is set to...</option>
                     </optgroup>
                     <optgroup label="Progress">
                         <option value="checklist_completed">All checklist items completed</option>
                         <option value="due_soon">Event date is within X days...</option>
                         <option value="due_date_set">Due date / event date is set</option>
+                        <option value="card_stale">Card not updated in X days...</option>
                     </optgroup>
                 </select>
                 <div id="autoTriggerValueContainer">
@@ -10178,10 +10186,23 @@
                 case 'title_contains':      if (['task_saved','card_created'].includes(eventType)) { if ((task.title||'').toLowerCase().includes(rule.triggerValue.toLowerCase())) triggered = true; } break;
                 case 'checklist_completed': if (eventType === 'checklist_completed') { if (task.checklist?.length > 0 && task.checklist.every(c => c.done)) triggered = true; } break;
                 case 'due_date_set':        if (['task_saved','card_created'].includes(eventType) && task.dueDate) triggered = true; break;
+                case 'description_blank':   if (['task_saved','card_created'].includes(eventType)) { const stripped = (task.description||task.text||'').replace(/<[^>]*>/g,'').trim(); if (!stripped) triggered = true; } break;
+                case 'no_attachments':      if (['task_saved','card_created'].includes(eventType)) { if (!task.attachments || task.attachments.length === 0) triggered = true; } break;
+                case 'no_comments':         if (['task_saved','card_created'].includes(eventType)) { if (!task.comments || task.comments.length === 0) triggered = true; } break;
+                case 'label_removed':       if (eventType === 'label_removed' && eventData.labelText?.toLowerCase() === rule.triggerValue.toLowerCase()) triggered = true; break;
+                case 'member_assigned':     if (eventType === 'member_assigned') { if (!rule.triggerValue || eventData.memberName?.toLowerCase() === rule.triggerValue.toLowerCase()) triggered = true; } break;
+                case 'attachment_added':    if (eventType === 'attachment_added') triggered = true; break;
+                case 'files_locked':        if (eventType === 'files_locked') triggered = true; break;
                 case 'due_soon':
                     if (eventType === 'due_soon_check' && task.dueDate) {
                         const daysUntil = Math.ceil((new Date(task.dueDate) - new Date()) / 86400000);
                         if (daysUntil >= 0 && daysUntil <= parseInt(rule.triggerValue)) triggered = true;
+                    }
+                    break;
+                case 'card_stale':
+                    if (eventType === 'due_soon_check' && task.updatedAt) {
+                        const daysSinceUpdate = Math.floor((Date.now() - new Date(task.updatedAt).getTime()) / 86400000);
+                        if (daysSinceUpdate >= parseInt(rule.triggerValue)) triggered = true;
                     }
                     break;
             }
@@ -10364,6 +10385,54 @@
                         } catch(e) {}
                         break;
                     }
+                    case 'add_comment': {
+                        const commentText = act.value.replace('{card_title}', task.title || '');
+                        if (!task.comments) task.comments = [];
+                        const timeStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date());
+                        task.comments.push({ id: generateId(), user: '🤖 Automation', text: commentText, time: timeStr });
+                        modified = true;
+                        showToast('🤖 Comment added');
+                        if (isCurrentEditing && typeof renderComments === 'function') renderComments();
+                        break;
+                    }
+                    case 'append_description': {
+                        const appendText = act.value.replace('{card_title}', task.title || '');
+                        task.description = (task.description || '') + `<p>${appendText}</p>`;
+                        task.text = task.description;
+                        modified = true;
+                        showToast('🤖 Description updated');
+                        if (isCurrentEditing) {
+                            const descEl = document.getElementById('taskDescription');
+                            if (descEl) descEl.innerHTML = task.description;
+                        }
+                        break;
+                    }
+                    case 'clear_labels': {
+                        if (task.labels && task.labels.length > 0) {
+                            task.labels = [];
+                            modified = true; showToast('🤖 All labels removed');
+                            if (isCurrentEditing) renderLabels();
+                        }
+                        break;
+                    }
+                    case 'lock_monday_sync': {
+                        task._mondayAttachLocked = true;
+                        modified = true; showToast('🤖 Monday sync locked');
+                        break;
+                    }
+                    case 'send_push': {
+                        const pushMsg = act.value.replace('{card_title}', task.title || '');
+                        if (typeof sendServerPush === 'function') {
+                            const targets = (task.members && task.members.length > 0)
+                                ? task.members
+                                : (appData.settings.users || []).map(u => u.name).filter(Boolean);
+                            if (targets.length > 0) {
+                                sendServerPush(targets, { title: '🤖 Automation', body: pushMsg, type: 'automation', taskId: task.id, id: generateId() });
+                            }
+                        }
+                        showToast('📲 Push sent');
+                        break;
+                    }
                     case 'notify': {
                         showToast('🔔 ' + act.value);
                         break;
@@ -10376,8 +10445,8 @@
 
     function checkDueSoonAutomations() {
         if (!appData.automations) return;
-        const dueSoonRules = appData.automations.filter(a => a.enabled && a.trigger === 'due_soon');
-        if (dueSoonRules.length === 0) return;
+        const relevantRules = appData.automations.filter(a => a.enabled && (a.trigger === 'due_soon' || a.trigger === 'card_stale'));
+        if (relevantRules.length === 0) return;
         appData.tasks.forEach(task => {
             if (processAutomations(task, 'due_soon_check')) saveData();
         });
@@ -10391,10 +10460,19 @@
             card_moved:          `card moved to <b>${col ? col.title : '?'}</b>`,
             desc_contains:       `description contains <b>"${a.triggerValue}"</b>`,
             title_contains:      `title contains <b>"${a.triggerValue}"</b>`,
+            description_blank:   'description is blank',
+            no_attachments:      'card has no attachments',
+            no_comments:         'card has no comments',
             label_added:         `label <b>"${a.triggerValue}"</b> is added`,
+            label_removed:       `label <b>"${a.triggerValue}"</b> is removed`,
             priority_set:        `priority set to <b>${a.triggerValue}</b>`,
+            member_assigned:     a.triggerValue ? `<b>${a.triggerValue}</b> is assigned` : 'any member is assigned',
+            attachment_added:    'attachment is added',
+            files_locked:        '🔒 files are locked',
             checklist_completed: 'all checklist items completed',
             due_soon:            `event is within <b>${a.triggerValue} days</b>`,
+            due_date_set:        'due date / event date is set',
+            card_stale:          `card not updated in <b>${a.triggerValue} days</b>`,
         };
         return map[a.trigger] || a.trigger;
     }
@@ -10403,18 +10481,23 @@
         const col = act.type === 'move_to_list' ? appData.columns.find(c => c.id === act.value) : null;
         const priorityNames = { high: '🔴 High', med: '🟡 Medium', low: '🟢 Low' };
         const map = {
-            add_label:      () => { const [t,c] = act.value.split('|'); return `add label <b>"${t}"</b>`; },
-            remove_label:   () => `remove label <b>"${act.value}"</b>`,
-            move_to_list:   () => `move to <b>${col ? col.title : '?'}</b>`,
-            add_checklist:  () => `add checklist items`,
+            add_label:          () => { const [t,c] = act.value.split('|'); return `add label <b>"${t}"</b>`; },
+            remove_label:       () => `remove label <b>"${act.value}"</b>`,
+            clear_labels:       () => `remove all labels`,
+            move_to_list:       () => `move to <b>${col ? col.title : '?'}</b>`,
+            add_checklist:      () => `add checklist items`,
             add_checklist_template: () => { const tpl = (appData.settings.checklistTemplates||[]).find(t => t.id === act.value); return `apply template <b>"${tpl ? tpl.name : '?'}"</b>`; },
-            set_priority:   () => `set priority to <b>${priorityNames[act.value] || act.value}</b>`,
-            mark_complete:  () => 'mark card complete',
-            set_due_offset: () => `set due date <b>${act.value} days from now</b>`,
-            add_member:     () => `assign member <b>${act.value}</b>`,
-            remove_member:  () => `remove member <b>${act.value}</b>`,
+            set_priority:       () => `set priority to <b>${priorityNames[act.value] || act.value}</b>`,
+            mark_complete:      () => 'mark card complete',
+            set_due_offset:     () => `set due date <b>${act.value} days from now</b>`,
+            add_member:         () => `assign member <b>${act.value}</b>`,
+            remove_member:      () => `remove member <b>${act.value}</b>`,
+            add_comment:        () => `add comment`,
+            append_description: () => `append to description`,
             fill_posting_schedule: () => { try { const c=JSON.parse(act.value); const types=[c.story==='1'?'Story':null,c.photo==='1'?'Photo':null,c.reel==='1'?'Reel':null].filter(Boolean); return `fill posting schedule (${types.join(', ')}) at offsets <b>${c.offsets}</b> days`; } catch(e) { return 'fill posting schedule'; } },
-            notify:         () => `show notification`,
+            notify:             () => `show notification`,
+            send_push:          () => `send push notification`,
+            lock_monday_sync:   () => `lock files`,
         };
         return (map[act.type] || (() => act.type))();
     }
@@ -10491,6 +10574,7 @@
                     <optgroup label="Labels">
                         <option value="add_label">🏷 Add label</option>
                         <option value="remove_label">🚫 Remove label</option>
+                        <option value="clear_labels">🧹 Remove all labels</option>
                     </optgroup>
                     <optgroup label="Card">
                         <option value="move_to_list">📦 Move to list</option>
@@ -10498,6 +10582,8 @@
                         <option value="mark_complete">✅ Mark complete</option>
                     </optgroup>
                     <optgroup label="Content">
+                        <option value="add_comment">💬 Add comment</option>
+                        <option value="append_description">📝 Append to description</option>
                         <option value="add_checklist">☑️ Add checklist items</option>
                         <option value="add_checklist_template">📋 Apply checklist template</option>
                         <option value="add_member">👤 Assign member</option>
@@ -10507,6 +10593,8 @@
                     </optgroup>
                     <optgroup label="Other">
                         <option value="notify">🔔 Show notification</option>
+                        <option value="send_push">📲 Send push notification</option>
+                        <option value="lock_monday_sync">🔒 Lock Files</option>
                     </optgroup>
                 </select>
                 <button type="button" onclick="document.getElementById('actRow_${rowId}').remove()" style="background:none; border:none; color:#FF3B30; font-size:1.2rem; cursor:pointer; padding:0 4px;">✕</button>
@@ -10538,6 +10626,8 @@
                     </select></div>`; break;
             case 'remove_label':
                 area.innerHTML = `${dlHtml}<input type="text" class="modern-input act-val-text" placeholder="Label name to remove" list="${dlId}">`; break;
+            case 'clear_labels':
+                area.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); padding:4px 0;">All labels will be removed from the card.</div>`; break;
             case 'move_to_list':
                 area.innerHTML = `<select class="modern-input act-val-list">${colOptions}</select>`; break;
             case 'set_priority':
@@ -10546,6 +10636,10 @@
                 </select>`; break;
             case 'mark_complete':
                 area.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); padding:4px 0;">Card will be marked as complete.</div>`; break;
+            case 'add_comment':
+                area.innerHTML = `<textarea class="modern-input act-val-text" placeholder="Comment text... Use {card_title} to insert card name." style="height:70px; resize:vertical;"></textarea>`; break;
+            case 'append_description':
+                area.innerHTML = `<textarea class="modern-input act-val-text" placeholder="Text to append to the description..." style="height:70px; resize:vertical;"></textarea>`; break;
             case 'add_checklist':
                 area.innerHTML = `<input type="text" class="modern-input act-val-text" placeholder="Item 1, Item 2, Item 3 (comma separated)">`; break;
             case 'add_checklist_template': {
@@ -10599,6 +10693,10 @@
                 </div>`; break;
             case 'notify':
                 area.innerHTML = `<input type="text" class="modern-input act-val-text" placeholder="Notification message...">`; break;
+            case 'send_push':
+                area.innerHTML = `<input type="text" class="modern-input act-val-text" placeholder="Push notification message...">`; break;
+            case 'lock_monday_sync':
+                area.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); padding:4px 0;">Files will be locked — Monday.com will no longer update attachments for this card.</div>`; break;
             default:
                 area.innerHTML = '';
         }
@@ -10631,29 +10729,37 @@
             case 'desc_contains': case 'title_contains':
                 trigInputText.style.display = 'block';
                 trigInputText.placeholder = trigSelect === 'title_contains' ? 'e.g. Fundraiser' : 'e.g. Shae Dale'; break;
-            case 'label_added':
-                trigInputText.style.display = 'block'; 
-                trigInputText.placeholder = 'e.g. Completed'; 
+            case 'label_added': case 'label_removed':
+                trigInputText.style.display = 'block';
+                trigInputText.placeholder = 'e.g. Completed';
                 trigInputText.setAttribute('list', 'autoTriggerLabelList');
                 break;
+            case 'member_assigned':
+                trigInputText.style.display = 'block';
+                trigInputText.placeholder = 'Member name (leave blank for any member)'; break;
             case 'card_moved':
                 trigInputSelect.style.display = 'block'; trigInputSelect.innerHTML = colOptions; break;
             case 'priority_set':
                 trigPrioritySelect.style.display = 'block'; break;
             case 'due_soon':
-                trigDaysWrap.style.display = 'flex'; break;
+                trigDaysWrap.style.display = 'flex';
+                document.getElementById('autoTriggerDays').placeholder = 'e.g. 3'; break;
+            case 'card_stale':
+                trigDaysWrap.style.display = 'flex';
+                document.getElementById('autoTriggerDays').placeholder = 'e.g. 7'; break;
         }
     }
 
     function saveNewAutomation() {
         const trigSelect = document.getElementById('autoTriggerSelect').value;
         let triggerVal = '';
-        const needsTextTriggers = ['desc_contains','title_contains','label_added'];
+        const needsTextTriggers = ['desc_contains','title_contains','label_added','label_removed'];
         if (needsTextTriggers.includes(trigSelect)) triggerVal = document.getElementById('autoTriggerInputText').value.trim();
+        else if (trigSelect === 'member_assigned') triggerVal = document.getElementById('autoTriggerInputText').value.trim(); // blank = any
         else if (trigSelect === 'card_moved') triggerVal = document.getElementById('autoTriggerInputSelect').value;
         else if (trigSelect === 'priority_set') triggerVal = document.getElementById('autoTriggerPrioritySelect').value;
-        else if (trigSelect === 'due_soon') triggerVal = document.getElementById('autoTriggerDays').value.trim();
-        const noValueTriggers = ['card_created','card_completed','checklist_completed','due_date_set'];
+        else if (['due_soon','card_stale'].includes(trigSelect)) triggerVal = document.getElementById('autoTriggerDays').value.trim();
+        const noValueTriggers = ['card_created','card_completed','checklist_completed','due_date_set','description_blank','no_attachments','no_comments','attachment_added','member_assigned','files_locked'];
         if (!noValueTriggers.includes(trigSelect) && !triggerVal) { showToast('Please fill in the trigger value.'); return; }
         const actionRows = document.querySelectorAll('#autoActionsContainer > div');
         if (actionRows.length === 0) { showToast('Add at least one action.'); return; }
@@ -10673,6 +10779,8 @@
                 value = row.querySelector('.act-val-priority')?.value || 'med';
             } else if (type === 'mark_complete') {
                 value = 'true';
+            } else if (['clear_labels','lock_monday_sync'].includes(type)) {
+                value = 'true';
             } else if (type === 'add_checklist_template') {
                 value = row.querySelector('.act-val-template')?.value || '';
                 if (!value) { showToast('Select a checklist template.'); valid = false; return; }
@@ -10689,7 +10797,8 @@
                 value = JSON.stringify({ offsets, story, photo, reel, mode });
             } else {
                 value = row.querySelector('.act-val-text')?.value.trim() || '';
-                if (!value && type !== 'mark_complete') { showToast('Fill in all action values.'); valid = false; return; }
+                const noValActions = ['mark_complete','clear_labels','lock_monday_sync'];
+                if (!value && !noValActions.includes(type)) { showToast('Fill in all action values.'); valid = false; return; }
             }
             actions.push({ type, value });
         });
