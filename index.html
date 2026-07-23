@@ -15211,9 +15211,12 @@
         const prevBtn = `<button class="ts-week-btn" onclick="tsNavWeek(-1)">&#8592; Prev</button>`;
         const nextBtn = `<button class="ts-week-btn" onclick="tsNavWeek(1)" ${_tsWeekOffset >= 0 ? 'disabled style="opacity:0.4;cursor:default"' : ''}>Next &#8594;</button>`;
 
-        const toggle = `<div class="ts-view-toggle">
-            <button class="ts-view-btn active" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
-            <button class="ts-view-btn" onclick="tsSetAdminViewMode('alltime')">All Time</button>
+        const toggle = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+            <div class="ts-view-toggle" style="margin-bottom:0;">
+                <button class="ts-view-btn active" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
+                <button class="ts-view-btn" onclick="tsSetAdminViewMode('alltime')">All Time</button>
+            </div>
+            <button class="btn-outline" onclick="tsExportAllCsv()" style="font-size:0.8rem; padding:6px 14px;" title="Export all timesheet data as CSV">⬇ Export All (CSV)</button>
         </div>`;
 
         if (users.length === 0) {
@@ -15261,9 +15264,12 @@
         const weekSet = new Set(timesheets.map(t => t.weekStart));
         const weeks = Array.from(weekSet).sort();
 
-        const toggle = `<div class="ts-view-toggle">
-            <button class="ts-view-btn" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
-            <button class="ts-view-btn active" onclick="tsSetAdminViewMode('alltime')">All Time</button>
+        const toggle = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+            <div class="ts-view-toggle" style="margin-bottom:0;">
+                <button class="ts-view-btn" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
+                <button class="ts-view-btn active" onclick="tsSetAdminViewMode('alltime')">All Time</button>
+            </div>
+            <button class="btn-outline" onclick="tsExportAllCsv()" style="font-size:0.8rem; padding:6px 14px;" title="Export all timesheet data as CSV">⬇ Export All (CSV)</button>
         </div>`;
 
         if (weeks.length === 0 || users.length === 0) {
@@ -15472,6 +15478,36 @@
         <script>window.onload=()=>window.print();<\/script>
         </body></html>`);
         win.document.close();
+    }
+
+    function tsExportAllCsv() {
+        const timesheets = appData.timesheets || [];
+        if (!timesheets.length) { showToast('No timesheet data to export'); return; }
+
+        const users = appData.settings.users || [];
+        const nameFor = email => { const u = users.find(u => u.email === email); return u ? (u.name || u.email) : email; };
+        const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+
+        let csv = 'Member,Email,Week Start,Status,Description,Hours\n';
+        timesheets.slice()
+            .sort((a, b) => a.weekStart === b.weekStart ? nameFor(a.userEmail).localeCompare(nameFor(b.userEmail)) : a.weekStart.localeCompare(b.weekStart))
+            .forEach(ts => {
+                const entries = ts.entries || [];
+                if (!entries.length) {
+                    csv += [esc(nameFor(ts.userEmail)), esc(ts.userEmail), esc(ts.weekStart), esc(ts.status), esc(''), esc(0)].join(',') + '\n';
+                    return;
+                }
+                entries.forEach(entry => {
+                    const hours = entry.hours !== '' && entry.hours !== undefined ? entry.hours : 0;
+                    csv += [esc(nameFor(ts.userEmail)), esc(ts.userEmail), esc(ts.weekStart), esc(ts.status), esc(entry.description), esc(hours)].join(',') + '\n';
+                });
+            });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'timesheets_export.csv';
+        a.click();
     }
 
     // ── User mutations ────────────────────────────────────────────────────────
