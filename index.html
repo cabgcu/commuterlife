@@ -15175,6 +15175,7 @@
         container.innerHTML = `
         <div class="ts-week-nav">
             <h2>My Timesheet — ${weekLabel}</h2>
+            <button class="btn-outline" onclick="tsExportPdf('${currentUserEmail}','${weekStartIso}')" style="font-size:0.8rem; padding:6px 14px;" title="Print / Save PDF">🖨 Export PDF</button>
         </div>
         <div class="ts-card">
             <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
@@ -15391,6 +15392,7 @@
                     </div>
                 </div>
                 <span class="ts-status-badge ts-status-${ts.status}">${ts.status}</span>
+                <button class="btn-outline" onclick="tsExportPdf('${email}','${weekStartIso}')" style="font-size:0.8rem; padding:6px 14px;" title="Print / Save PDF">🖨 Export PDF</button>
             </div>
             <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
                 <span>Description</span><span style="text-align:center;">Hours</span><span></span>
@@ -15423,6 +15425,52 @@
     function tsAdminBack() {
         _tsAdminViewEmail = null;
         renderTimesheet(); // returns to whichever mode was active before drilling in
+    }
+
+    // ── PDF export (opens a print-ready window; user saves via browser's Print → Save as PDF) ──
+
+    function tsExportPdf(email, weekStartIso) {
+        const ts = (appData.timesheets || []).find(t => t.userEmail === email && t.weekStart === weekStartIso);
+        if (!ts) { showToast('No timesheet data for that week.'); return; }
+
+        const user = (appData.settings.users || []).find(u => u.email === email);
+        const name = user ? (user.name || user.email) : email;
+
+        const [y, m, d] = weekStartIso.split('-').map(Number);
+        const weekStart = new Date(y, m - 1, d);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        const fmtOpts = { month: 'long', day: 'numeric' };
+        const weekLabel = `${weekStart.toLocaleDateString('en-US', fmtOpts)} – ${weekEnd.toLocaleDateString('en-US', { ...fmtOpts, year: 'numeric' })}`;
+
+        const total = _tsCalcTotal(ts.entries);
+        const rows = (ts.entries || []).map(entry => `<tr>
+            <td>${escapeHtml(entry.description || '')}</td>
+            <td style="text-align:right;">${entry.hours !== '' && entry.hours !== undefined ? entry.hours : '0'}</td>
+        </tr>`).join('');
+
+        const win = window.open('', '_blank');
+        win.document.write(`<!DOCTYPE html><html><head><title>Timesheet — ${escapeHtml(name)} — ${weekLabel}</title>
+        <style>
+            body{font-family:-apple-system,sans-serif;background:#111;color:#eee;margin:0;padding:24px;}
+            h1{font-size:1.3rem;margin:0 0 4px;font-weight:800;}
+            .sub{color:#aaa;font-size:0.9rem;margin-bottom:20px;}
+            table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+            th{text-align:left;padding:8px 10px;border-bottom:2px solid #333;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;}
+            td{padding:9px 10px;border-bottom:1px solid #222;vertical-align:top;}
+            tr:last-child td{border-bottom:none;}
+            tfoot td{font-weight:800;border-top:2px solid #333;border-bottom:none;padding-top:12px;}
+            @media print{body{background:#fff;color:#000;} td,th{border-color:#ccc;} h1,.sub{color:#000;} tfoot td{border-color:#000;}}
+        </style></head><body>
+        <h1>${escapeHtml(name)}</h1>
+        <div class="sub">Week of ${weekLabel} · Status: ${ts.status}</div>
+        <table><thead><tr><th>Description</th><th style="text-align:right;">Hours</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="2" style="color:#888;">No entries</td></tr>'}</tbody>
+        <tfoot><tr><td>Total</td><td style="text-align:right;">${total % 1 === 0 ? total : total.toFixed(1)}</td></tr></tfoot>
+        </table>
+        <script>window.onload=()=>window.print();<\/script>
+        </body></html>`);
+        win.document.close();
     }
 
     // ── User mutations ────────────────────────────────────────────────────────
