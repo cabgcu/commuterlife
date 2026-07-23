@@ -10058,9 +10058,10 @@
             if (taskIndex > -1) {
                 const task = appData.tasks[taskIndex];
                 const oldColId = task.columnId;
-                
-                appData.tasks[taskIndex] = { ...task, columnId: colId, title, description: desc, text: desc, dueDate, eventLocation, priority, postingSchedule: postingObj, customFields: currentEditingTask.customFields || [], attachments: currentEditingTask.attachments || [], coverImage: currentEditingTask.coverImage || '', checklist: currentEditingTask.checklist || [], members: currentEditingTask.members || [], labels: currentEditingTask.labels || [], comments: currentEditingTask.comments || [] };
-                
+
+                const savedTask = { ...task, columnId: colId, title, description: desc, text: desc, dueDate, eventLocation, priority, postingSchedule: postingObj, customFields: currentEditingTask.customFields || [], attachments: currentEditingTask.attachments || [], coverImage: currentEditingTask.coverImage || '', checklist: currentEditingTask.checklist || [], members: currentEditingTask.members || [], labels: currentEditingTask.labels || [], comments: currentEditingTask.comments || [] };
+                appData.tasks[taskIndex] = savedTask;
+
                 const colTasks = appData.tasks.filter(t => t.columnId === colId);
                 const actualCurrentPos = colTasks.findIndex(t => t.id === taskId);
                 
@@ -10077,8 +10078,8 @@
                     }
                 }
 
-                if (priority && priority !== prevPriority) processAutomations(appData.tasks[taskIndex], 'priority_set', { priority });
-                processAutomations(appData.tasks[taskIndex], 'task_saved');
+                if (priority && priority !== prevPriority) processAutomations(savedTask, 'priority_set', { priority });
+                processAutomations(savedTask, 'task_saved');
             }
         } else {
             const newTask = { id: generateId(), boardId: appData.activeBoardId, columnId: colId, title, description: desc, text: desc, dueDate, eventLocation, priority, postingSchedule: postingObj, customFields: currentEditingTask.customFields || [], attachments: currentEditingTask.attachments || [], coverImage: currentEditingTask.coverImage || '', checklist: currentEditingTask.checklist || [], members: currentEditingTask.members || [], labels: currentEditingTask.labels || [], comments: [] };
