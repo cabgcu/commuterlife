@@ -3109,6 +3109,12 @@
                     <button class="btn-outline" style="flex: 1; min-width: 200px; border-color: rgba(52, 199, 89, 0.4); color: #34C759;" onclick="restoreCloudBackup()">↻ Restore from Cloud</button>
                 </div>
 
+                <h3 class="section-title" style="margin-top: 30px;">Storage Bin Recovery</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Scan the cloud backup for storage bins that are missing from your live workspace and restore just those bins, without touching anything else.</p>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn-action" style="flex: 1; min-width: 200px; background: rgba(255, 149, 0, 0.2); color: #FF9500; border: 1px solid rgba(255, 149, 0, 0.4);" onclick="scanAndRecoverStorageBins()">🔍 Scan &amp; Recover Storage Bins</button>
+                </div>
+
                 <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 30px 0 20px 0;">
                             <h3 class="section-title" style="color: #FF3B30;">Danger Zone</h3>
                             <button class="btn-action" style="background: var(--gradient-danger); width: 100%; margin-bottom: 10px;" onclick="deleteCurrentBoard()">Delete Current Workspace</button>
@@ -7089,6 +7095,59 @@
         } catch (err) {
             console.error("Restore failed:", err);
             showToast("Failed to restore backup.");
+        }
+    }
+
+    // Scans the live app_state row (id:1) and the cloud backup row (id:2) for
+    // storage bins, and offers to restore any bins that exist in the backup but
+    // are missing live (e.g. lost to a sync race or accidental delete). Unlike
+    // restoreCloudBackup(), this only touches appData.storageBins — it merges in
+    // missing bins by id instead of overwriting the whole workspace.
+    async function scanAndRecoverStorageBins() {
+        showToast("Scanning Supabase for storage bins...");
+        try {
+            const [liveRes, backupRes] = await Promise.all([
+                _supabase.from('app_state').select('data').eq('id', 1).single(),
+                _supabase.from('app_state').select('data').eq('id', 2).single()
+            ]);
+
+            const liveBins = liveRes?.data?.data?.storageBins || [];
+            const backupBins = backupRes?.data?.data?.storageBins || [];
+
+            if (backupRes.error || !backupRes.data) {
+                showToast("No cloud backup found to scan for bins.");
+                return;
+            }
+
+            const liveIds = new Set(liveBins.map(b => b.id));
+            const missingBins = backupBins.filter(b => b.id && !liveIds.has(b.id));
+
+            if (missingBins.length === 0) {
+                showToast(`✓ Scan complete — all ${liveBins.length} storage bin(s) accounted for.`);
+                return;
+            }
+
+            const names = missingBins.map(b => `• ${b.name || 'Unnamed Bin'} (${(b.items || []).length} item${(b.items || []).length === 1 ? '' : 's'})`).join('\n');
+            const ok = await showConfirm(
+                'Recover Storage Bins',
+                `Found ${missingBins.length} bin(s) in the cloud backup that are missing from live data:\n\n${names}\n\nRestore them now? Existing bins won't be touched.`,
+                'Recover',
+                false
+            );
+            if (!ok) return;
+
+            showToast("Recovering storage bins...");
+            await mergeFreshDataBeforeSave(fresh => {
+                const freshIds = new Set((fresh.storageBins || []).map(b => b.id));
+                const toAdd = missingBins.filter(b => !freshIds.has(b.id));
+                fresh.storageBins = [...(fresh.storageBins || []), ...toAdd];
+            });
+            await saveData();
+            renderStorage();
+            showToast(`✅ Recovered ${missingBins.length} storage bin(s)!`);
+        } catch (err) {
+            console.error("Storage bin scan/recovery failed:", err);
+            showToast("Storage bin scan failed. Check connection.");
         }
     }
 
