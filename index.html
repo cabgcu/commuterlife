@@ -4449,6 +4449,30 @@
         }
     }
 
+    // Re-fetches the current cloud row and applies `applyDelta` to it, then swaps it
+    // in as the live appData. Used by background sync jobs (Monday.com imports,
+    // attachment syncs) that run for several seconds so that saveData() never blindly
+    // overwrites changes another user made to unrelated data (e.g. storage bins)
+    // while the sync was in flight. Falls back to leaving appData untouched if the
+    // re-fetch fails, so the caller's saveData() still persists its own changes.
+    async function mergeFreshDataBeforeSave(applyDelta) {
+        try {
+            const { data: freshRow, error } = await _supabase.from('app_state').select('data').eq('id', 1).single();
+            if (error || !freshRow || !freshRow.data) return;
+            const fresh = freshRow.data;
+            if (!fresh.boards)      fresh.boards = [];
+            if (!fresh.columns)     fresh.columns = [];
+            if (!fresh.tasks)       fresh.tasks = [];
+            if (!fresh.automations) fresh.automations = [];
+            if (!fresh.settings)    fresh.settings = {};
+            if (!fresh.storageBins) fresh.storageBins = [];
+            applyDelta(fresh);
+            appData = fresh;
+        } catch (err) {
+            console.warn('mergeFreshDataBeforeSave: re-fetch failed, saving in-memory state instead:', err);
+        }
+    }
+
     async function saveData() {
         try {
             appData._lastClientId = _realtimeClientId;
@@ -6311,13 +6335,32 @@
             }
 
             let createdCount = 0;
+            const createdTasks = [];
+            const newlyImportedIds = [];
             for (const item of newItems) {
-                if (await createCardFromMondayItem(item)) {
+                const created = await createCardFromMondayItem(item);
+                if (created) {
                     activeBoard.settings.mondayImportedIds.push(item.id);
+                    newlyImportedIds.push(item.id);
+                    createdTasks.push(created);
                     createdCount++;
                 }
             }
 
+            // Re-fetch the latest cloud state right before saving and splice in only
+            // our new cards/imported-ids, instead of blindly overwriting the whole
+            // workspace with our (possibly now-stale) in-memory copy. The Monday.com
+            // round trip above can take several seconds, which is enough time for
+            // another user to have saved unrelated changes (e.g. a new storage bin)
+            // that a blind overwrite here would silently wipe out.
+            await mergeFreshDataBeforeSave(fresh => {
+                fresh.tasks = [...(fresh.tasks || []), ...createdTasks];
+                const freshBoard = (fresh.boards || []).find(b => b.id === activeBoard.id);
+                if (freshBoard) {
+                    if (!freshBoard.settings) freshBoard.settings = {};
+                    freshBoard.settings.mondayImportedIds = Array.from(new Set([...(freshBoard.settings.mondayImportedIds || []), ...newlyImportedIds]));
+                }
+            });
             await saveData();
             if (!silent) showToast(`✅ Created ${createdCount} new card(s) from Monday.com!`);
         } catch (error) {
@@ -6547,11 +6590,12 @@
             createdAt: new Date().toISOString(),
             customFields: [],
             attachments: attachments,
+            coverImage: inspirationUrl ? toDirectDriveUrl(inspirationUrl) : '',  // Auto-set cover from the Design Inspiration/cover file field
             _mondayId: item.id  // Track original Monday.com ID to prevent re-imports
         };
 
         appData.tasks.push(newTask);
-        return true;
+        return newTask;
     }
 
     function getRevisionLabelColor(revisionRound) {
@@ -6664,6 +6708,7 @@
             }
 
             let updatedCount = 0;
+            const touchedTaskIds = [];
 
             console.log('🔍 Attachment sync — Monday items found:', parsedItems.map(p => ({
                 id: p.id, name: p.name, assetCount: p.assetIds.length, revision: p.revisionRound
@@ -6771,10 +6816,22 @@
                     if (typeof renderLabels === 'function') renderLabels();
                 }
 
+                touchedTaskIds.push(task.id);
                 updatedCount++;
             }
 
             try {
+                const updatedTasksById = new Map(
+                    touchedTaskIds.map(id => [id, appData.tasks.find(t => t.id === id)])
+                );
+                // Re-fetch the latest cloud state and splice in only the tasks we actually
+                // touched. This sync can take a long time (one upload per asset), which is
+                // plenty of time for another user to have added/changed unrelated data
+                // (e.g. a storage bin) — a blind overwrite here would silently erase it.
+                await mergeFreshDataBeforeSave(fresh => {
+                    fresh.tasks = fresh.tasks.map(t => updatedTasksById.has(t.id) ? updatedTasksById.get(t.id) : t);
+                });
+                appData._lastClientId = _realtimeClientId;
                 const { error: saveErr } = await _supabase.from('app_state').upsert({ id: 1, data: appData });
                 if (saveErr) {
                     console.error('❌ syncMondayAttachments: Supabase save FAILED:', saveErr);
@@ -10639,7 +10696,6 @@
                 if (!appData.tasks)       appData.tasks = [];
                 if (!appData.automations) appData.automations = [];
                 if (!appData.settings)    appData.settings = {};
-                showToast('🔄 Updated by another user');
                 if (!modalOpen) {
                     renderApp();
                 }
