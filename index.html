@@ -6803,6 +6803,13 @@
                 appData.tasks[taskIdx].attachments = [...manualAttachments, ...mondayAttachments];
                 console.log(`💾 "${task.title}" — attachments set: ${appData.tasks[taskIdx].attachments.length} total (${mondayAttachments.length} from Monday)`);
 
+                // Set cover image from any attachment whose filename contains "GCU Life Header"
+                const coverAttach = mondayAttachments.find(a => a.name && a.name.toLowerCase().includes('gcu life header'));
+                if (coverAttach) {
+                    appData.tasks[taskIdx].coverImage = coverAttach.url;
+                    console.log(`🖼️ "${task.title}" — cover set from: ${coverAttach.name}`);
+                }
+
                 if (parsed.revisionRound) {
                     if (!appData.tasks[taskIdx].labels) appData.tasks[taskIdx].labels = [];
                     appData.tasks[taskIdx].labels = appData.tasks[taskIdx].labels.filter(l => !l.text.startsWith(REVISION_PREFIX));
