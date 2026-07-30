@@ -3103,10 +3103,10 @@
                 </div>
 
                 <h3 class="section-title" style="margin-top: 30px;">Cloud Recovery Backup</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Save a safety snapshot directly inside Supabase. An automatic snapshot is also taken once per day.</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Save a safety snapshot directly inside Supabase. An automatic snapshot is also taken once per day. Up to 10 recent backups are kept, and restoring lets you pick which one to roll back to.</p>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
                     <button class="btn-action" style="flex: 1; min-width: 200px; background: rgba(10, 132, 255, 0.2); color: #0A84FF; border: 1px solid rgba(10, 132, 255, 0.4);" onclick="createCloudBackup()">☁️ Save Cloud Backup</button>
-                    <button class="btn-outline" style="flex: 1; min-width: 200px; border-color: rgba(52, 199, 89, 0.4); color: #34C759;" onclick="restoreCloudBackup()">↻ Restore from Cloud</button>
+                    <button class="btn-outline" style="flex: 1; min-width: 200px; border-color: rgba(52, 199, 89, 0.4); color: #34C759;" onclick="restoreCloudBackup()">↻ Restore from Cloud…</button>
                 </div>
 
                 <h3 class="section-title" style="margin-top: 30px;">Storage Bin Recovery</h3>
@@ -7064,6 +7064,12 @@
         reader.readAsText(file);
     }
 
+    // Cloud backups live in the same app_state table as live data (id:1), each
+    // in its own row so a save never clobbers another backup. A rotating pool
+    // of slot ids gives a short history to pick from instead of just "the last
+    // backup" — once all slots are full, the oldest backup is evicted.
+    const CLOUD_BACKUP_SLOT_IDS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
     async function createCloudBackup(silent = false) {
         if (!isDatabaseLoaded || appData.boards.length === 0) {
             if (!silent) showToast("Cannot backup an empty workspace.");
@@ -7071,11 +7077,25 @@
         }
         if (!silent) showToast("Saving backup to cloud...");
         try {
+            const { data: existing, error: listErr } = await _supabase.from('app_state').select('id,data').in('id', CLOUD_BACKUP_SLOT_IDS);
+            if (listErr) throw listErr;
+
+            const usedIds = new Set((existing || []).map(r => r.id));
+            let targetId = CLOUD_BACKUP_SLOT_IDS.find(id => !usedIds.has(id));
+            if (targetId === undefined) {
+                // All slots full — evict whichever backup is oldest
+                let oldest = existing[0];
+                for (const row of existing) {
+                    if ((row.data?._backupTs || 0) < (oldest.data?._backupTs || 0)) oldest = row;
+                }
+                targetId = oldest.id;
+            }
+
             const backupData = JSON.parse(JSON.stringify(appData));
+            backupData._backupTs = Date.now();
             backupData._backupTimestamp = new Date().toLocaleString();
-            
-            // Upsert the backup into ID: 2 so it doesn't overwrite live data (ID: 1)
-            const { error } = await _supabase.from('app_state').upsert({ id: 2, data: backupData });
+
+            const { error } = await _supabase.from('app_state').upsert({ id: targetId, data: backupData });
             if (error) throw error;
             if (!silent) showToast("☁️ Cloud backup saved successfully!");
         } catch (err) {
@@ -7085,36 +7105,64 @@
     }
 
     async function restoreCloudBackup() {
-        const ok = await showConfirm('Restore Backup', 'Are you sure? This will completely overwrite your current workspace with the last saved cloud backup.', 'Fetch Backup', true);
-        if (!ok) return;
-        
-        showToast("Fetching backup from cloud...");
+        showToast("Fetching backups from cloud...");
+        let rows;
         try {
-            const { data, error } = await _supabase.from('app_state').select('data').eq('id', 2).single();
-            if (error || !data || !data.data) {
-                showToast("No cloud backup found!");
-                return;
-            }
-            
-            const backupData = data.data;
-            const timestamp = backupData._backupTimestamp || 'Unknown time';
-            
-            const confirmRestore = await showConfirm('Confirm Restore', `Found backup saved on:\n${timestamp}\n\nProceed with restore?`, 'Yes, Restore', true);
-            if (confirmRestore) {
-                appData = backupData;
-                await saveData(); // Overwrite id:1 with the backup data
-                showToast("Backup restored successfully! 🎉");
-                renderTopbar();
-                renderApp();
-            }
+            const { data, error } = await _supabase.from('app_state').select('id,data').in('id', CLOUD_BACKUP_SLOT_IDS);
+            if (error) throw error;
+            rows = (data || []).filter(r => r.data);
+        } catch (err) {
+            console.error("Restore failed:", err);
+            showToast("Failed to fetch cloud backups.");
+            return;
+        }
+
+        if (rows.length === 0) {
+            showToast("No cloud backups found!");
+            return;
+        }
+
+        rows.sort((a, b) => (b.data._backupTs || 0) - (a.data._backupTs || 0));
+
+        const options = rows.map(r => {
+            const boards = r.data.boards?.length || 0;
+            const tasks = r.data.tasks?.length || 0;
+            const label = `${r.data._backupTimestamp || 'Unknown time'} — ${boards} board${boards === 1 ? '' : 's'}, ${tasks} task${tasks === 1 ? '' : 's'}`;
+            return { value: String(r.id), label };
+        });
+
+        const chosenId = await showSelect(
+            'Restore Backup',
+            `Choose which of your ${rows.length} cloud backup${rows.length === 1 ? '' : 's'} to restore. This will completely overwrite your current workspace.`,
+            options,
+            options[0].value
+        );
+        if (chosenId === null) return;
+
+        const chosen = rows.find(r => String(r.id) === chosenId);
+        if (!chosen) return;
+
+        const timestamp = chosen.data._backupTimestamp || 'Unknown time';
+        const confirmRestore = await showConfirm('Confirm Restore', `Found backup saved on:\n${timestamp}\n\nProceed with restore?`, 'Yes, Restore', true);
+        if (!confirmRestore) return;
+
+        try {
+            const backupData = JSON.parse(JSON.stringify(chosen.data));
+            delete backupData._backupTs;
+            delete backupData._backupTimestamp;
+            appData = backupData;
+            await saveData(); // Overwrite id:1 with the backup data
+            showToast("Backup restored successfully! 🎉");
+            renderTopbar();
+            renderApp();
         } catch (err) {
             console.error("Restore failed:", err);
             showToast("Failed to restore backup.");
         }
     }
 
-    // Scans the live app_state row (id:1) and the cloud backup row (id:2) for
-    // storage bins, and offers to restore any bins that exist in the backup but
+    // Scans the live app_state row (id:1) and every cloud backup slot for
+    // storage bins, and offers to restore any bins that exist in a backup but
     // are missing live (e.g. lost to a sync race or accidental delete). Unlike
     // restoreCloudBackup(), this only touches appData.storageBins — it merges in
     // missing bins by id instead of overwriting the whole workspace.
@@ -7123,19 +7171,27 @@
         try {
             const [liveRes, backupRes] = await Promise.all([
                 _supabase.from('app_state').select('data').eq('id', 1).single(),
-                _supabase.from('app_state').select('data').eq('id', 2).single()
+                _supabase.from('app_state').select('id,data').in('id', CLOUD_BACKUP_SLOT_IDS)
             ]);
 
             const liveBins = liveRes?.data?.data?.storageBins || [];
-            const backupBins = backupRes?.data?.data?.storageBins || [];
+            const backupRows = (backupRes?.data || []).filter(r => r.data);
 
-            if (backupRes.error || !backupRes.data) {
-                showToast("No cloud backup found to scan for bins.");
+            if (backupRes.error || backupRows.length === 0) {
+                showToast("No cloud backups found to scan for bins.");
                 return;
             }
 
             const liveIds = new Set(liveBins.map(b => b.id));
-            const missingBins = backupBins.filter(b => b.id && !liveIds.has(b.id));
+            const missingBinsById = new Map();
+            for (const row of backupRows) {
+                for (const b of (row.data.storageBins || [])) {
+                    if (b.id && !liveIds.has(b.id) && !missingBinsById.has(b.id)) {
+                        missingBinsById.set(b.id, b);
+                    }
+                }
+            }
+            const missingBins = [...missingBinsById.values()];
 
             if (missingBins.length === 0) {
                 showToast(`✓ Scan complete — all ${liveBins.length} storage bin(s) accounted for.`);
