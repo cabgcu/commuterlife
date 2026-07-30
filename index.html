@@ -6812,8 +6812,14 @@
                 appData.tasks[taskIdx].attachments = [...manualAttachments, ...mondayAttachments];
                 console.log(`💾 "${task.title}" — attachments set: ${appData.tasks[taskIdx].attachments.length} total (${mondayAttachments.length} from Monday)`);
 
-                // Set cover image from any attachment whose filename contains "GCU Life Header"
-                const coverAttach = mondayAttachments.find(a => a.name && a.name.toLowerCase().includes('gcu life header'));
+                // Set cover image from any attachment that looks like the GCU Life header
+                // graphic. Filenames vary ("GCU Life Header", "GCUL Header", "Com_WB_GCUL
+                // Header_V2.jpg", etc.) so match on "gcu" + "header" both appearing rather
+                // than the exact phrase "gcu life header".
+                const coverAttach = mondayAttachments.find(a => {
+                    const n = a.name && a.name.toLowerCase();
+                    return n && n.includes('gcu') && n.includes('header');
+                });
                 if (coverAttach) {
                     appData.tasks[taskIdx].coverImage = coverAttach.url;
                     console.log(`🖼️ "${task.title}" — cover set from: ${coverAttach.name}`);
