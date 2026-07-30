@@ -10854,30 +10854,76 @@
         }
     }
 
+    // Applies a freshly-fetched app_state row to the live appData, unless a
+    // modal is open (to avoid clobbering in-progress edits). Shared by the
+    // realtime UPDATE handler and the reconnect/refresh paths below so a
+    // client that missed realtime events (dropped socket, backgrounded tab)
+    // doesn't keep stale data in memory and later overwrite the server with
+    // it via saveData().
+    function _applyFreshAppState(incoming) {
+        if (!incoming) return;
+        if (incoming._lastClientId === _realtimeClientId) return; // our own save
+        if (!isAuthenticated) return; // not logged in yet, skip
+        const modalOpen = document.getElementById('taskModal')?.classList.contains('active') ||
+                          document.getElementById('settingsPanel')?.style.display === 'flex';
+        if (modalOpen) return;
+        appData = incoming;
+        if (!appData.boards)      appData.boards = [];
+        if (!appData.columns)     appData.columns = [];
+        if (!appData.tasks)       appData.tasks = [];
+        if (!appData.automations) appData.automations = [];
+        if (!appData.settings)    appData.settings = {};
+        if (!appData.storageBins) appData.storageBins = [];
+        renderApp();
+    }
+
+    // Re-fetches the current cloud row on demand. Used when the tab regains
+    // focus/connectivity or the realtime socket drops, so a client that went
+    // stale while backgrounded picks up other clients' changes before the
+    // user's next edit triggers saveData() and overwrites them.
+    async function _refreshAppStateFromServer() {
+        if (!_supabase || !isAuthenticated) return;
+        try {
+            const { data: row, error } = await _supabase.from('app_state').select('data').eq('id', 1).single();
+            if (error || !row || !row.data) return;
+            _applyFreshAppState(row.data);
+        } catch (err) {
+            console.warn('_refreshAppStateFromServer: re-fetch failed:', err);
+        }
+    }
+
+    let _realtimeChannel = null;
     function _initRealtimeSync() {
         if (!_supabase) return;
-        _supabase
+        if (_realtimeChannel) {
+            _supabase.removeChannel(_realtimeChannel);
+            _realtimeChannel = null;
+        }
+        _realtimeChannel = _supabase
             .channel('app_state_realtime')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.1' }, (payload) => {
-                const incoming = payload.new && payload.new.data;
-                if (!incoming) return;
-                if (incoming._lastClientId === _realtimeClientId) return; // our own save
-                if (!isAuthenticated) return; // not logged in yet, skip
-                // Check if a task modal is open — defer re-render to avoid clobbering edits
-                const modalOpen = document.getElementById('taskModal')?.classList.contains('active') ||
-                                  document.getElementById('settingsPanel')?.style.display === 'flex';
-                appData = incoming;
-                if (!appData.boards)      appData.boards = [];
-                if (!appData.columns)     appData.columns = [];
-                if (!appData.tasks)       appData.tasks = [];
-                if (!appData.automations) appData.automations = [];
-                if (!appData.settings)    appData.settings = {};
-                if (!modalOpen) {
-                    renderApp();
-                }
+                _applyFreshAppState(payload.new && payload.new.data);
             })
-            .subscribe();
+            .subscribe((status) => {
+                // The socket can silently drop (backgrounded tab, network blip).
+                // On error/timeout/close, resubscribe and immediately pull fresh
+                // state so we don't keep operating on a stale in-memory snapshot.
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    _refreshAppStateFromServer();
+                    setTimeout(_initRealtimeSync, 2000);
+                }
+            });
     }
+
+    // A backgrounded tab/PWA can lose its realtime connection without any
+    // error firing until the user comes back. Re-sync as soon as the tab is
+    // visible/foregrounded again or connectivity returns, rather than
+    // waiting for the next edit to discover the local state is stale.
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') _refreshAppStateFromServer();
+    });
+    window.addEventListener('focus', () => _refreshAppStateFromServer());
+    window.addEventListener('online', () => _refreshAppStateFromServer());
 
     window.onload = async () => {
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
