@@ -10921,8 +10921,12 @@
         if (!incoming) return;
         if (incoming._lastClientId === _realtimeClientId) return; // our own save
         if (!isAuthenticated) return; // not logged in yet, skip
-        const modalOpen = document.getElementById('taskModal')?.classList.contains('active') ||
-                          document.getElementById('settingsPanel')?.style.display === 'flex';
+        // All modals share the .modal-overlay container and are shown/hidden via
+        // the 'show' class (see openModal/closeModal) — checking for a nonexistent
+        // 'active' class / '#settingsPanel' element here meant this guard never
+        // actually matched, so in-progress edits in any open modal (task details,
+        // storage bins, etc.) were silently clobbered by incoming fresh state.
+        const modalOpen = !!document.querySelector('.modal-overlay.show');
         if (modalOpen) return;
         appData = incoming;
         if (!appData.boards)      appData.boards = [];
