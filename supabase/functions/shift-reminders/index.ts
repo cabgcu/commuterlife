@@ -221,18 +221,29 @@ Deno.serve(async (_req) => {
   }
 
   // ── Persist changes to app_state ─────────────────────────────────────────────
+  // IMPORTANT: this function reads app_state once at the top, then (for the push
+  // loop below) can spend many seconds awaiting web-push deliveries one at a time.
+  // Users can save unrelated changes (storage bins, tasks, checklists) at any
+  // point during that window. Writing back the stale `appData` object we read at
+  // the top would silently revert all of that. Instead, re-fetch the row
+  // immediately before each write and merge only the fields this function owns.
+  async function mergeAndSave(fields: Record<string, unknown>): Promise<any> {
+    const { data: freshRow, error: freshErr } = await supabase
+      .from("app_state")
+      .select("data")
+      .eq("id", 1)
+      .single();
+    const base = !freshErr && freshRow?.data ? freshRow.data : appData;
+    Object.assign(base, fields);
+    const { error: saveErr } = await supabase.from("app_state").update({ data: base }).eq("id", 1);
+    if (saveErr) console.error("shift-reminders: save failed", saveErr);
+    return base;
+  }
+
   const pushResults: Record<string, string> = {};
 
   if (modified) {
-    appData.notifications = notifications;
-    appData.sentShiftReminders = sent;
-
-    const { error: saveErr } = await supabase
-      .from("app_state")
-      .update({ data: appData })
-      .eq("id", 1);
-
-    if (saveErr) console.error("shift-reminders: save failed", saveErr);
+    await mergeAndSave({ notifications, sentShiftReminders: sent });
 
     // ── Send real push notifications ─────────────────────────────────────────
     if (privateKey) {
@@ -281,9 +292,7 @@ Deno.serve(async (_req) => {
       }
 
       if (subsModified) {
-        await supabase.from("app_state")
-          .update({ data: { ...appData, pushSubscriptions: subscriptions } })
-          .eq("id", 1);
+        await mergeAndSave({ pushSubscriptions: subscriptions });
       }
     } else {
       console.warn("shift-reminders: VAPID keys not set — skipping Web Push delivery");

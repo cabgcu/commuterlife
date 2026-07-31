@@ -98,9 +98,17 @@ Deno.serve(async (req) => {
 
     appData.settings.passwordResetTokens.push({ email: normalizedEmail, token, expiry });
 
+    // Re-fetch immediately before writing and merge in only the token list, so a
+    // save made by a live client between our read and write (storage bins, tasks,
+    // etc.) isn't clobbered by this function's stale copy of the rest of appData.
+    const { data: freshRow2 } = await supabase.from("app_state").select("data").eq("id", 1).single();
+    const baseForSave = freshRow2?.data || appData;
+    baseForSave.settings = baseForSave.settings || {};
+    baseForSave.settings.passwordResetTokens = appData.settings.passwordResetTokens;
+
     const { error: updateError } = await supabase
       .from("app_state")
-      .update({ data: appData })
+      .update({ data: baseForSave })
       .eq("id", 1);
 
     if (updateError) {

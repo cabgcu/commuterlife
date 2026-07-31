@@ -266,9 +266,15 @@ Deno.serve(async (req) => {
         } else {
           subscriptions[userName] = stillValid;
         }
+        // Re-fetch immediately before writing so a save made by a live client
+        // during the (potentially multi-second, sequential) push loop above
+        // isn't clobbered by this function's now-stale copy of appData.
+        const { data: freshRow } = await supabase.from("app_state").select("data").eq("id", 1).single();
+        const baseForSave = freshRow?.data || data.data;
+        baseForSave.pushSubscriptions = subscriptions;
         await supabase
           .from("app_state")
-          .update({ data: { ...data.data, pushSubscriptions: subscriptions } })
+          .update({ data: baseForSave })
           .eq("id", 1);
       }
 
