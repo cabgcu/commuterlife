@@ -7,6 +7,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// This function is public (verify_jwt = false) and previously built the reset
+// link straight from the client-supplied `appUrl` with no validation. Since
+// anyone can POST directly to this endpoint (not just the app's own
+// submitForgotPassword(), which only ever sends its own origin), an attacker
+// could request a reset for any registered email with `appUrl` pointing at a
+// look-alike domain, and the legitimate reset email would hand the victim a
+// working reset link hosted on the attacker's site. Restrict appUrl to the
+// app's known origin(s) so the link always points back to the real app.
+const ALLOWED_APP_ORIGINS = (Deno.env.get("ALLOWED_APP_ORIGINS") || "https://clgcu.com,https://www.clgcu.com")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+function isAllowedAppUrl(appUrl: string): boolean {
+  try {
+    const u = new URL(appUrl);
+    return ALLOWED_APP_ORIGINS.includes(u.origin);
+  } catch {
+    return false;
+  }
+}
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -30,6 +52,13 @@ Deno.serve(async (req) => {
     if (!email || !appUrl) {
       return new Response(
         JSON.stringify({ error: "email and appUrl are required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+      );
+    }
+
+    if (!isAllowedAppUrl(appUrl)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid appUrl" }),
         { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );
     }

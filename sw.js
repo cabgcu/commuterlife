@@ -49,32 +49,51 @@ self.addEventListener('push', (e) => {
         tag: fallbackTag,
         renotify: true
     }).then(() => {
-        // Then try to fetch and update with real content
-        return fetch(SUPABASE_URL + '/rest/v1/app_state?select=data&id=eq.1', {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-        })
-        .then(r => r.json())
-        .then(rows => {
-            if (!rows || !rows[0] || !rows[0].data) return;
-            const appData = rows[0].data;
-            const allNotifs = appData.notifications || {};
-            let latest = null;
-            for (const user in allNotifs) {
-                const userNotifs = allNotifs[user] || [];
+        // Figure out which user this device's push subscription belongs to,
+        // so the fallback only ever surfaces THIS user's notifications. This
+        // is a shared multi-user app — without this check, the fallback used
+        // to pick the single most-recently-created unread notification across
+        // every user's inbox and show its title/body on whichever device
+        // happened to receive an empty push payload, leaking another
+        // person's notification content onto your device.
+        return self.registration.pushManager.getSubscription().then(sub => {
+            const myEndpoint = sub && sub.endpoint;
+            return fetch(SUPABASE_URL + '/rest/v1/app_state?select=data&id=eq.1', {
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+            })
+            .then(r => r.json())
+            .then(rows => {
+                if (!rows || !rows[0] || !rows[0].data) return;
+                const appData = rows[0].data;
+                const allNotifs = appData.notifications || {};
+                const subscriptions = appData.pushSubscriptions || {};
+
+                let ownerName = null;
+                if (myEndpoint) {
+                    for (const user in subscriptions) {
+                        const raw = subscriptions[user];
+                        const list = Array.isArray(raw) ? raw : (raw && raw.endpoint ? [raw] : []);
+                        if (list.some(s => s && s.endpoint === myEndpoint)) { ownerName = user; break; }
+                    }
+                }
+                if (!ownerName) return; // can't identify the owner — don't guess
+
+                const userNotifs = allNotifs[ownerName] || [];
+                let latest = null;
                 for (const n of userNotifs) {
                     if (!n.read && (!latest || new Date(n.timestamp) > new Date(latest.timestamp))) {
                         latest = n;
                     }
                 }
-            }
-            if (latest) {
-                return self.registration.showNotification(latest.title || 'Commuter Life', {
-                    body: latest.body || 'You have a new notification',
-                    tag: fallbackTag,
-                    data: { taskId: latest.taskId, type: latest.type },
-                    renotify: true
-                });
-            }
+                if (latest) {
+                    return self.registration.showNotification(latest.title || 'Commuter Life', {
+                        body: latest.body || 'You have a new notification',
+                        tag: fallbackTag,
+                        data: { taskId: latest.taskId, type: latest.type },
+                        renotify: true
+                    });
+                }
+            });
         })
         .catch(err => console.error('Fallback fetch failed:', err));
     });

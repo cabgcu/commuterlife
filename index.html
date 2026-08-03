@@ -5660,13 +5660,13 @@
             header.className = 'column-header';
             const colMembers = col.members || [];
             const memberAvatars = colMembers.map((m, i) => {
-                return `<div class="avatar" style="width:22px;height:22px;font-size:0.55rem;border:2px solid #111;margin-left:${i===0?'0':'2px'};cursor:pointer;" title="Remove ${m}" onclick="event.stopPropagation(); removeColumnMember('${col.id}', '${m}')">${getAvatarContent(m)}</div>`;
+                return `<div class="avatar" style="width:22px;height:22px;font-size:0.55rem;border:2px solid #111;margin-left:${i===0?'0':'2px'};cursor:pointer;" title="Remove ${escapeHtml(m)}" onclick="event.stopPropagation(); removeColumnMember('${col.id}', '${m.replace(/'/g, "\\'")}')">${getAvatarContent(m)}</div>`;
             }).join('');
             const memberBar = `<div style="display:flex;align-items:center;margin-top:5px;">${memberAvatars}<button onclick="event.stopPropagation();addColumnMember('${col.id}')" style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.07);border:1.5px dashed rgba(167, 139, 250, 0.2);color:var(--text-muted);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:${colMembers.length?'2px':'0'};flex-shrink:0;transition:0.2s;" onmouseover="this.style.background='rgba(10,132,255,0.2)';this.style.borderColor='#0A84FF';this.style.color='#0A84FF'" onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='var(--text-muted)'" title="Add member">+</button></div>`;
-            let assignedHtml = col.assignedTo ? `<div class="column-assignee">${col.assignedTo}</div>` : '';
+            let assignedHtml = col.assignedTo ? `<div class="column-assignee">${escapeHtml(col.assignedTo)}</div>` : '';
             header.innerHTML = `
                 <div style="display: flex; flex-direction: column; flex-grow: 1; padding-right: 10px; align-items: flex-start;">
-                    <span style="line-height: 1.2;">${col.title}</span>
+                    <span style="line-height: 1.2;">${escapeHtml(col.title)}</span>
                     ${assignedHtml}
                     ${memberBar}
                 </div>
@@ -5736,7 +5736,7 @@
                             <span style="font-size: 0.78rem; color: #fff; font-weight: 700;">📅 ${dateStr} @ ${timeStr}</span>
                             <span style="font-size: 0.72rem; font-weight: 800; ${countdownColor}">${countdownStr}</span>
                         </div>
-                        ${task.eventLocation ? `<div style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600;">📍 ${task.eventLocation}</div>` : ''}
+                        ${task.eventLocation ? `<div style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600;">📍 ${escapeHtml(task.eventLocation)}</div>` : ''}
                     </div>`;
                 }
 
@@ -5760,7 +5760,7 @@
                 }
                 let labelsHtml = '';
                 if(task.labels && task.labels.length > 0) {
-                    labelsHtml = `<div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">${task.labels.map(l => `<span class="label-tag ${l.color}" style="font-size: 0.65rem; padding: 2px 6px;">${l.text}</span>`).join('')}</div>`;
+                    labelsHtml = `<div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">${task.labels.map(l => `<span class="label-tag ${l.color}" style="font-size: 0.65rem; padding: 2px 6px;">${escapeHtml(l.text)}</span>`).join('')}</div>`;
                 }
                 const colMembersList = col.members || [];
                 const taskMembersList = task.members || [];
@@ -5784,7 +5784,7 @@
                         const isTaskMember = taskMembersList.includes(m);
                         const borderStyle = (isListMember && isTaskMember) ? 'border-color:#0A84FF;' : isListMember ? 'border-color:#BF5AF2;' : '';
                         const titleNote = (isListMember && isTaskMember) ? ' (list + card)' : isListMember ? ' (list member)' : ' (card member)';
-                        return '<div class="avatar" style="width:24px;height:24px;font-size:0.6rem;' + borderStyle + '" title="' + m + titleNote + '">' + getAvatarContent(m) + '</div>';
+                        return '<div class="avatar" style="width:24px;height:24px;font-size:0.6rem;' + borderStyle + '" title="' + escapeHtml(m) + titleNote + '">' + getAvatarContent(m) + '</div>';
                     }).join('');
                     membersHtml = collabBadge + '<div class="collab-avatars">' + avatars + '</div>';
                 }
@@ -5803,7 +5803,7 @@
                     </div>
                 `;
 
-                taskEl.innerHTML = `${coverHtml}${completeBtnHtml}${labelsHtml}<div class="card-title" style="font-weight: 800; font-size: 1rem; margin-bottom: 5px; padding-right: 36px; word-break: break-word;">${priorityDotHtml}${task.title || 'Untitled Task'}</div>${postingHtml}${clHtml}<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">${orderBtnsHtml}<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">${attachmentBadge}${membersHtml}</div></div>`;
+                taskEl.innerHTML = `${coverHtml}${completeBtnHtml}${labelsHtml}<div class="card-title" style="font-weight: 800; font-size: 1rem; margin-bottom: 5px; padding-right: 36px; word-break: break-word;">${priorityDotHtml}${escapeHtml(task.title || 'Untitled Task')}</div>${postingHtml}${clHtml}<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">${orderBtnsHtml}<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">${attachmentBadge}${membersHtml}</div></div>`;
                 taskEl.onclick = (e) => {
                     if (e.target.classList.contains('complete-btn')) return;
                     if (e.shiftKey || selectedCards.size > 0) {
@@ -9361,7 +9361,7 @@
         const list = document.getElementById('taskMembersList');
         const members = currentEditingTask.members || [];
         list.innerHTML = members.map(m => `
-            <div class="avatar" title="Click to remove ${m}" style="cursor:pointer;" onclick="removeMember('${m}')">
+            <div class="avatar" title="Click to remove ${escapeHtml(m)}" style="cursor:pointer;" onclick="removeMember('${m.replace(/'/g, "\\'")}')">
                 ${getAvatarContent(m)}
             </div>
         `).join('') +
@@ -9371,7 +9371,7 @@
     function renderLabels() {
         const list = document.getElementById('taskLabelsList');
         const labels = currentEditingTask.labels || [];
-        list.innerHTML = labels.map(l => `<span class="label-tag ${l.color}">${l.text} <span style="cursor:pointer; margin-left:4px;" onclick="removeLabel('${l.text}')">&times;</span></span>`).join('') + 
+        list.innerHTML = labels.map(l => `<span class="label-tag ${l.color}">${escapeHtml(l.text)} <span style="cursor:pointer; margin-left:4px;" onclick="removeLabel('${(l.text || '').replace(/'/g, "\\'")}')">&times;</span></span>`).join('') +
             `<button type="button" class="sidebar-btn" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; justify-content: center; background: rgba(255,255,255,0.1);" onclick="addLabel()">+</button>`;
     }
 
@@ -9937,7 +9937,7 @@
             <div class="checklist-item ${item.done ? 'done' : ''}" data-cl-id="${item.id}" style="display: flex; align-items: center; gap: 8px;">
                 <span class="cl-drag-handle" title="Drag to reorder"><svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></svg></span>
                 <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem('${item.id}')" style="margin: 0; flex-shrink: 0;">
-                <div class="checklist-text" contenteditable="true" onblur="updateChecklistItemText('${item.id}', this.innerText)" style="flex-grow: 1; line-height: 1.4; min-width: 60px; padding-right: 4px;">${item.text}</div>
+                <div class="checklist-text" contenteditable="true" onblur="updateChecklistItemText('${item.id}', this.innerText)" style="flex-grow: 1; line-height: 1.4; min-width: 60px; padding-right: 4px;">${escapeHtml(item.text)}</div>
                 ${dateBadge}
                 ${assignHtml}
                 <button type="button" class="task-btn delete" onclick="deleteChecklistItem('${item.id}')" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:1.2rem; line-height:1; padding:0 4px; flex-shrink: 0; min-height: 44px; display: flex; align-items: center;" title="Remove">&times;</button>
@@ -9954,6 +9954,18 @@
     function initChecklistDrag() {
         const container = document.getElementById('checklistContainer');
         if (!container) return;
+        // renderChecklist() only replaces the container's innerHTML — the
+        // container element itself persists across renders — but this is
+        // re-invoked after every single render (see the renderChecklist
+        // monkey-patch below), and event delegation means one listener
+        // already handles every current and future .cl-drag-handle inside
+        // it. Without this guard, each render stacked another anonymous
+        // pointerdown listener on the same node, so after a few checklist
+        // edits a single drag gesture fired N times: N floating drag
+        // clones (only the last one ever got cleaned up) and N concurrent
+        // reorderChecklistItem() calls corrupting the item order.
+        if (container.dataset.dragInit) return;
+        container.dataset.dragInit = '1';
 
         container.addEventListener('pointerdown', (e) => {
             const handle = e.target.closest('.cl-drag-handle');
@@ -10902,7 +10914,7 @@
 
     function scheduleAutoSave() {
         clearTimeout(_autoSaveTimer);
-        _autoSaveTimer = setTimeout(() => doAutoSave(), 600);
+        _autoSaveTimer = setTimeout(() => { _autoSaveTimer = null; doAutoSave(); }, 600);
     }
 
     function doAutoSave(silent = false) {
@@ -10994,6 +11006,7 @@
     async function handleSaveTask(e) {
         if (e) e.preventDefault();
         clearTimeout(_autoSaveTimer);
+        _autoSaveTimer = null;
         doAutoSave(false);
         showToast("Task saved manually!");
     }
@@ -11685,6 +11698,7 @@
         if (e && e.target.classList.contains('modal-content')) return;
         if (id === 'taskModal') {
             clearTimeout(_autoSaveTimer);
+            _autoSaveTimer = null;
             doAutoSave(true);
             renderApp();
         }
@@ -14056,7 +14070,14 @@
                     ws = new Date(ws.getTime() + 7 * 86400000);
                 }
                 shifts.filter(s => {
-                    const d = new Date(s.date);
+                    // s.date is a bare "YYYY-MM-DD"; new Date(s.date) parses that
+                    // as UTC midnight, and getFullYear()/getMonth() below read it
+                    // back in local time — for any negative-UTC-offset user (all
+                    // of the US) a shift dated the 1st of the month rolls back to
+                    // the last day of the previous month and gets silently
+                    // dropped from this list. Parse at local noon instead, same
+                    // as the date-header parse two lines below this block.
+                    const d = new Date(s.date+'T12:00:00');
                     return d.getFullYear()===yr && d.getMonth()===mo && !coveredDates.has(s.date);
                 }).forEach(s => {
                     if (!monthEffMap[s.date]) monthEffMap[s.date] = [];
@@ -16580,7 +16601,7 @@
     let _tsAutoSaveTimer = null;
     function _tsAutoSave() {
         clearTimeout(_tsAutoSaveTimer);
-        _tsAutoSaveTimer = setTimeout(() => saveData(), 1200);
+        _tsAutoSaveTimer = setTimeout(() => { _tsAutoSaveTimer = null; saveData(); }, 1200);
     }
 
     // ── User mutations ────────────────────────────────────────────────────────
