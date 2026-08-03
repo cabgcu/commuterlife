@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Commuter Life">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#020617">
 
     <title>Commuter Life</title>
     <link id="dynamic-favicon" rel="icon" href="">
@@ -51,7 +51,7 @@
         }
 
         html {
-            background-color: #050505;
+            background-color: #020617;
             color-scheme: dark;
             font-size: 14px;
         }
@@ -292,7 +292,7 @@
         .ntab-icon { display: flex; align-items: center; width: 18px; height: 18px; flex-shrink: 0; }
         .ntab-icon svg { width: 18px; height: 18px; stroke-width: 2; }
         .ntab-label { display: inline; font-size: 15px; font-weight: 500; line-height: 1; }
-        .nav-divider { width: 1px; height: 20px; background-color: #3f3f46; margin: 0 4px; flex-shrink: 0; }
+        .nav-divider { width: 1px; height: 20px; background-color: rgba(167, 139, 250, 0.25); margin: 0 4px; flex-shrink: 0; }
 
         .app-view { display: none; flex-grow: 1; overflow: hidden; padding-bottom: 100px; }
         .app-view.active { display: flex; }
@@ -322,7 +322,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .btn-outline:hover { background: rgba(40, 40, 40, 0.9); border-color: rgba(167, 139, 250, 0.2); }
+        .btn-outline:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(167, 139, 250, 0.2); }
         .cl-btn { padding: 4px 10px !important; font-size: 0.75rem !important; min-height: 0 !important; border-radius: 8px !important; white-space: nowrap; }
 
         /* Enforce 16px to stop iOS auto-zoom on inputs */
@@ -371,7 +371,7 @@
 
         .board-container::-webkit-scrollbar { height: 10px; }
         .board-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
-        .board-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; border: 2px solid #050505; }
+        .board-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; border: 2px solid #020617; }
         .board-container::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
         .kanban-column {
@@ -1057,7 +1057,7 @@
         /* Notification System */
         .notif-bell { position: relative; background: none; border: 1px solid rgba(167, 139, 250, 0.15); border-radius: 12px; padding: 6px 12px; font-size: 1.1rem; cursor: pointer; color: #ddd; transition: all 0.2s; }
         .notif-bell:hover { background: rgba(255,255,255,0.08); border-color: rgba(167, 139, 250, 0.25); }
-        .notif-badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; font-size: 0.65rem; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid rgba(15,15,15,0.9); }
+        .notif-badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; font-size: 0.65rem; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid rgba(8, 13, 28, 0.9); }
         .notif-tab-bell { display: none; }
         .notif-panel { position: fixed; top: 0; right: -400px; width: 380px; max-width: 92vw; height: 100vh;
             background: rgba(8, 13, 28, 0.92);
@@ -1081,7 +1081,7 @@
         .notif-body-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .notif-body-time { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-top: 4px; }
         .notif-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-        .notif-prefs-section { border-top: 1px solid var(--glass-border); padding: 16px 20px; flex-shrink: 0; background: rgba(20, 20, 20, 0.4); }
+        .notif-prefs-section { border-top: 1px solid var(--glass-border); padding: 16px 20px; flex-shrink: 0; background: rgba(8, 13, 28, 0.4); }
         .notif-pref-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.85rem; color: #ccc; }
 
         /* Commuter AI Assistant */
@@ -1211,7 +1211,7 @@
             box-shadow: 0 0 0 1.5px rgba(191,90,242,0.5), 0 0 18px rgba(191,90,242,0.18), 0 4px 15px rgba(0,0,0,0.15) !important;
         }
         .collab-avatars { display: flex; }
-        .collab-avatars .avatar { margin-left: -4px; border: 2px solid #0f0f0f; transition: transform 0.15s; }
+        .collab-avatars .avatar { margin-left: -4px; border: 2px solid #080d1c; transition: transform 0.15s; }
         .collab-avatars .avatar:first-child { margin-left: 0; }
         .collab-avatars .avatar:hover { transform: translateY(-3px); z-index: 2; }
         .collab-badge {
@@ -1261,7 +1261,7 @@
             margin-bottom: 8px; cursor: pointer; transition: 0.2s;
             display: flex; align-items: center; gap: 14px;
         }
-        .due-row:hover { background: #252525; border-color: #3f3f46; transform: translateX(4px); }
+        .due-row:hover { background: rgba(8, 13, 28, 0.92); border-color: rgba(167, 139, 250, .4); transform: translateX(4px); }
         .due-countdown { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
 
         /* EVENTS VIEW */
@@ -1273,11 +1273,11 @@
             font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
             color: #ddd; padding: 10px 10px; text-align: left;
             border-bottom: 1px solid rgba(167, 139, 250, 0.15); position: sticky; top: 0;
-            background: rgba(40,40,40,0.98); z-index: 2;
+            background: rgba(8, 13, 28, 0.96); z-index: 2;
         }
-        .events-table tbody tr { transition: 0.15s; background: rgba(25,25,25,0.95); }
-        .events-table tbody tr:hover { background: rgba(45,45,50,0.95); }
-        .events-table tbody tr:nth-child(even) { background: rgba(32,32,32,0.95); }
+        .events-table tbody tr { transition: 0.15s; background: rgba(8, 13, 28, 0.55); }
+        .events-table tbody tr:hover { background: rgba(30, 24, 55, 0.9); }
+        .events-table tbody tr:nth-child(even) { background: rgba(8, 13, 28, 0.4); }
         .events-table td { padding: 4px 6px; border-bottom: 1px solid rgba(167, 139, 250, 0.08); vertical-align: middle; }
         .events-table .ev-input {
             background: transparent; border: 1px solid transparent; color: #fff; font-size: 0.85rem;
@@ -1326,7 +1326,7 @@
             }
             .notif-tab-bell .notif-badge {
                 top: -2px; right: -2px;
-                border-color: rgba(15, 15, 15, 0.98);
+                border-color: rgba(8, 13, 28, 0.98);
             }
 
             /* Mobile panel slides up from bottom like other modals */
@@ -1985,8 +1985,8 @@
             position: relative;
         }
         .storage-bin-card:hover {
-            background: #252525;
-            border-color: #3f3f46;
+            background: rgba(8, 13, 28, 0.92);
+            border-color: rgba(124, 58, 237, .5);
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
@@ -2194,7 +2194,7 @@
         /* Public Bin Card */
         #publicBinOverlay {
             position: fixed; inset: 0; z-index: 9999999;
-            background: #050505; display: none;
+            background: #020617; display: none;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
         .public-bin-card { max-width: 520px; margin: 0 auto; padding: 30px 20px 80px; }
@@ -2413,10 +2413,11 @@
         /* Public availability page */
         #publicAvailOverlay {
             position: fixed; inset: 0; z-index: 9999999;
-            background: #050505;
+            background-color: #020617;
             background-image:
-                radial-gradient(circle at 5% 5%, rgba(10, 132, 255, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 95% 95%, rgba(191, 90, 242, 0.12) 0%, transparent 45%);
+                linear-gradient(135deg, #1a1638 0%, #0f172a 45%, #020617 100%),
+                radial-gradient(circle at 5% 5%, rgba(124, 58, 237, 0.22) 0%, transparent 50%),
+                radial-gradient(circle at 95% 95%, rgba(29, 78, 216, 0.22) 0%, transparent 50%);
             display: none;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
@@ -3844,8 +3845,8 @@
             "description": "Commuter Life Project Management",
             "start_url": "./",
             "display": "standalone",
-            "background_color": "#050505",
-            "theme_color": "#050505",
+            "background_color": "#020617",
+            "theme_color": "#020617",
             "icons": iconUrl ? [
                 { "src": iconUrl, "sizes": "192x192", "type": "image/png" },
                 { "src": iconUrl, "sizes": "512x512", "type": "image/png" }
@@ -4769,17 +4770,30 @@
         }
     }
 
-    async function saveData() {
+    // Concurrent saveData() calls are chained (not fired in parallel) so a
+    // slow earlier request can't resolve after a faster later one and stomp
+    // it with an older snapshot of appData — each link in the chain reads
+    // appData at the moment it actually runs, which is always the freshest
+    // state available once its turn comes up.
+    let _saveChain = Promise.resolve();
+    function saveData() {
+        _saveChain = _saveChain.then(_doSaveData, _doSaveData);
+        return _saveChain;
+    }
+
+    async function _doSaveData() {
         try {
             appData._lastClientId = _realtimeClientId;
             const { error } = await _supabase.from('app_state').upsert({ id: 1, data: appData });
             if (error) {
                 console.error("Supabase sync error:", error);
+                showToast("Couldn't save changes — check your connection and try again.");
             } else if (appData.settings && appData.settings.googleCalendarAutoSync && appData.settings.googleCalendarWebhook) {
                 queueGoogleCalendarAutoSync();
             }
         } catch (err) {
             console.error("Supabase request failed:", err);
+            showToast("Couldn't save changes — check your connection and try again.");
         }
     }
 
@@ -4932,7 +4946,7 @@
         const bgContainer = document.getElementById('bg-container');
         const activeBoard = appData.boards.find(b => b.id === appData.activeBoardId);
         if (activeBoard && activeBoard.backgroundImage) {
-            bgContainer.style.backgroundImage = `linear-gradient(rgba(5, 5, 5, 0.3), rgba(5, 5, 5, 0.5)), url('${activeBoard.backgroundImage}')`;
+            bgContainer.style.backgroundImage = `linear-gradient(rgba(2, 6, 23, 0.4), rgba(2, 6, 23, 0.6)), url('${activeBoard.backgroundImage}')`;
         } else {
             bgContainer.style.backgroundImage = `radial-gradient(circle at 5% 5%, rgba(10, 132, 255, 0.12) 0%, transparent 45%), radial-gradient(circle at 95% 95%, rgba(191, 90, 242, 0.12) 0%, transparent 45%)`;
         }
@@ -7139,13 +7153,10 @@
                 await mergeFreshDataBeforeSave(fresh => {
                     fresh.tasks = fresh.tasks.map(t => updatedTasksById.has(t.id) ? updatedTasksById.get(t.id) : t);
                 });
-                appData._lastClientId = _realtimeClientId;
-                const { error: saveErr } = await _supabase.from('app_state').upsert({ id: 1, data: appData });
-                if (saveErr) {
-                    console.error('❌ syncMondayAttachments: Supabase save FAILED:', saveErr);
-                    if (!silent) showToast('⚠️ Files uploaded but save failed: ' + saveErr.message);
-                    return;
-                }
+                // Routed through the shared, serialized saveData() so this long-running
+                // sync can't race a concurrent local save and overwrite it — saveData()
+                // already surfaces failures to the user via toast.
+                await saveData();
                 console.log(`✅ syncMondayAttachments: Supabase save succeeded — ${updatedCount} task(s) modified`);
             } catch (saveEx) {
                 console.error('❌ syncMondayAttachments: Supabase save threw:', saveEx);
@@ -9015,15 +9026,24 @@
             // Update local appData with merged remote data
             ensureNotifStructures();
             appData.notifications[currentUserName] = remoteNotifs;
-            // Also sync other fields that may have changed (tasks, columns, etc.)
-            if (data.data.tasks) appData.tasks = data.data.tasks;
-            if (data.data.columns) appData.columns = data.data.columns;
-            if (data.data.boards) appData.boards = data.data.boards;
-            if (data.data.notifPrefs) appData.notifPrefs = data.data.notifPrefs;
-            // Sync read/cleared status back to Supabase so other tabs and future polls stay in sync
+            // Also sync other fields that may have changed (tasks, columns, etc.) —
+            // but only when nothing is unsaved locally. This poll runs every 30s
+            // regardless of what the user is doing, and unconditionally overwriting
+            // appData.tasks/columns/boards here was clobbering in-progress edits
+            // (typing in a task, dragging cards, editing the schedule, etc.).
+            if (!_hasPendingLocalEdits()) {
+                if (data.data.tasks) appData.tasks = data.data.tasks;
+                if (data.data.columns) appData.columns = data.data.columns;
+                if (data.data.boards) appData.boards = data.data.boards;
+                if (data.data.notifPrefs) appData.notifPrefs = data.data.notifPrefs;
+            }
+            // Persist read/cleared status through the normal serialized save path
+            // (saveData) instead of writing the separately-fetched `data.data`
+            // snapshot straight back to the server — that bypassed appData
+            // entirely and could silently overwrite newer local changes that
+            // hadn't made it into this fetch yet.
             if (readStatusChanged || _clearedNotifIds.size > 0) {
-                data.data.notifications[currentUserName] = remoteNotifs;
-                await _supabase.from('app_state').update({ data: data.data }).eq('id', 1);
+                saveData();
             }
             // Update UI
             updateNotifBadge();
@@ -9167,7 +9187,7 @@
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100010;display:flex;align-items:center;justify-content:center;padding:20px;';
             const card = document.createElement('div');
-            card.style.cssText = 'background:#1c1c1e;border:1px solid rgba(167, 139, 250, 0.12);border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;';
+            card.style.cssText = 'background:rgba(8, 13, 28, 0.92);backdrop-filter:blur(24px) saturate(110%);-webkit-backdrop-filter:blur(24px) saturate(110%);border:1px solid rgba(167, 139, 250, 0.12);border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;';
             card.innerHTML = '<h3 style="margin:0 0 20px;font-weight:800;">&#9889; Auto-fill Posting Schedule</h3><div>' + bodyHtml + '</div><div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;"><button id="_pafCancel" class="btn-outline" style="padding:10px 20px;">Cancel</button><button id="_pafConfirm" class="btn-action" style="padding:10px 20px;">Generate</button></div>';
             overlay.appendChild(card);
             document.body.appendChild(overlay);
@@ -9888,7 +9908,7 @@
                 if (assignees.length > 0) {
                     const visibleAssignees = assignees.slice(0, 3);
                     const hiddenCount = Math.max(0, assignees.length - visibleAssignees.length);
-                    const avatars = visibleAssignees.map((u, i) => `<span class="cl-assign-avatar" style="margin-left:${i > 0 ? '-6px' : '0'};border:2px solid var(--card-bg,#1c1c1e);position:relative;z-index:${visibleAssignees.length - i};" title="${u}">${getAvatarContent(u)}</span>`).join('');
+                    const avatars = visibleAssignees.map((u, i) => `<span class="cl-assign-avatar" style="margin-left:${i > 0 ? '-6px' : '0'};border:2px solid var(--card-bg,#080d1c);position:relative;z-index:${visibleAssignees.length - i};" title="${u}">${getAvatarContent(u)}</span>`).join('');
                     const moreBadge = hiddenCount > 0 ? `<span class="cl-assign-more">+${hiddenCount}</span>` : '';
                     assignHtml = `<button type="button" onclick="showChecklistAssignPicker('${item.id}', this)" class="cl-assign-btn assigned" title="${assignees.join(', ')}">${avatars}${moreBadge}</button>`;
                 } else {
@@ -9935,7 +9955,7 @@
 
             // Create floating clone for visual feedback
             _clDragClone = row.cloneNode(true);
-            _clDragClone.style.cssText = `position:fixed; left:${row.getBoundingClientRect().left}px; top:${row.getBoundingClientRect().top}px; width:${row.offsetWidth}px; opacity:0.85; z-index:10002; pointer-events:none; border-radius:8px; background:var(--card-bg,#1c1c1e); border:1px solid rgba(10,132,255,0.4); box-shadow:0 8px 24px rgba(0,0,0,0.4); transition:none;`;
+            _clDragClone.style.cssText = `position:fixed; left:${row.getBoundingClientRect().left}px; top:${row.getBoundingClientRect().top}px; width:${row.offsetWidth}px; opacity:0.85; z-index:10002; pointer-events:none; border-radius:8px; background:var(--card-bg,#080d1c); border:1px solid rgba(10,132,255,0.4); box-shadow:0 8px 24px rgba(0,0,0,0.4); transition:none;`;
             document.body.appendChild(_clDragClone);
 
             const onMove = (ev) => {
@@ -11685,23 +11705,34 @@
         }
     }
 
-    // Applies a freshly-fetched app_state row to the live appData, unless a
-    // modal is open (to avoid clobbering in-progress edits). Shared by the
-    // realtime UPDATE handler and the reconnect/refresh paths below so a
-    // client that missed realtime events (dropped socket, backgrounded tab)
-    // doesn't keep stale data in memory and later overwrite the server with
-    // it via saveData().
+    // True while the user has local changes that haven't reached the server yet:
+    // a modal is open, a debounced autosave is pending, or a text field/editor
+    // is currently focused (covers non-modal inline editing too — Timesheet
+    // entries, Storage/Schedule forms, Settings fields, Events table rows,
+    // etc.). Used to avoid clobbering in-progress edits with incoming state.
+    function _hasPendingLocalEdits() {
+        if (document.querySelector('.modal-overlay.show')) return true;
+        if (_autoSaveTimer) return true;
+        if (typeof _tsAutoSaveTimer !== 'undefined' && _tsAutoSaveTimer) return true;
+        const ae = document.activeElement;
+        if (ae) {
+            const tag = ae.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || ae.isContentEditable) return true;
+        }
+        return false;
+    }
+
+    // Applies a freshly-fetched app_state row to the live appData, unless the
+    // user has unsaved local edits in progress (see _hasPendingLocalEdits).
+    // Shared by the realtime UPDATE handler and the reconnect/refresh paths
+    // below so a client that missed realtime events (dropped socket,
+    // backgrounded tab) doesn't keep stale data in memory and later overwrite
+    // the server with it via saveData().
     function _applyFreshAppState(incoming) {
         if (!incoming) return;
         if (incoming._lastClientId === _realtimeClientId) return; // our own save
         if (!isAuthenticated) return; // not logged in yet, skip
-        // All modals share the .modal-overlay container and are shown/hidden via
-        // the 'show' class (see openModal/closeModal) — checking for a nonexistent
-        // 'active' class / '#settingsPanel' element here meant this guard never
-        // actually matched, so in-progress edits in any open modal (task details,
-        // storage bins, etc.) were silently clobbered by incoming fresh state.
-        const modalOpen = !!document.querySelector('.modal-overlay.show');
-        if (modalOpen) return;
+        if (_hasPendingLocalEdits()) return;
         appData = incoming;
         if (!appData.boards)      appData.boards = [];
         if (!appData.columns)     appData.columns = [];
@@ -11756,9 +11787,21 @@
     // waiting for the next edit to discover the local state is stale.
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') _refreshAppStateFromServer();
+        else _flushPendingSaves();
     });
     window.addEventListener('focus', () => _refreshAppStateFromServer());
     window.addEventListener('online', () => _refreshAppStateFromServer());
+
+    // Debounced autosaves (600ms for task edits, 1200ms for timesheet edits)
+    // are silently lost if the tab/PWA is closed or backgrounded before the
+    // timer fires. Flush any pending timers immediately whenever the page is
+    // about to be hidden so a quick "edit then switch apps" doesn't drop data.
+    function _flushPendingSaves() {
+        if (_autoSaveTimer) { clearTimeout(_autoSaveTimer); _autoSaveTimer = null; doAutoSave(true); }
+        if (typeof _tsAutoSaveTimer !== 'undefined' && _tsAutoSaveTimer) { clearTimeout(_tsAutoSaveTimer); _tsAutoSaveTimer = null; saveData(); }
+    }
+    window.addEventListener('pagehide', _flushPendingSaves);
+    window.addEventListener('beforeunload', _flushPendingSaves);
 
     window.onload = async () => {
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -11840,7 +11883,7 @@
             if (!isAuthenticated) {
                 const overlay = document.getElementById('login-overlay');
                 if (!overlay || window.getComputedStyle(overlay).display === 'none' || window.getComputedStyle(overlay).opacity === '0') {
-                    document.body.innerHTML = '<div style="display:flex; height:100vh; align-items:center; justify-content:center; color:#FF3B30; font-weight:800; font-family:sans-serif; background:#050505; font-size:1.2rem;">Security Error: Authentication overlay tampered. Access Denied.</div>';
+                    document.body.innerHTML = '<div style="display:flex; height:100vh; align-items:center; justify-content:center; color:#FF3B30; font-weight:800; font-family:sans-serif; background:#020617; font-size:1.2rem;">Security Error: Authentication overlay tampered. Access Denied.</div>';
                 }
             }
         }, 1000);
@@ -11876,7 +11919,9 @@
     opacity: 0; transition: opacity 0.2s ease;
 ">
     <div style="
-        background: #161616;
+        background: rgba(8, 13, 28, 0.92);
+        backdrop-filter: blur(24px) saturate(110%);
+        -webkit-backdrop-filter: blur(24px) saturate(110%);
         border: 1px solid rgba(167, 139, 250, 0.12);
         border-radius: 24px;
         padding: 28px;
@@ -11895,7 +11940,7 @@
         </div>
         <div id="customDialogComboWrap" style="margin-bottom: 20px; display: none; position: relative;">
             <input id="customDialogComboInput" type="text" class="modern-input" style="font-size: 1rem;" autocomplete="off">
-            <div id="customDialogComboList" style="position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 12px; margin-top: 4px; max-height: 150px; overflow-y: auto; z-index: 10; display: none;"></div>
+            <div id="customDialogComboList" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(8, 13, 28, 0.96); backdrop-filter: blur(20px) saturate(110%); -webkit-backdrop-filter: blur(20px) saturate(110%); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 12px; margin-top: 4px; max-height: 150px; overflow-y: auto; z-index: 10; display: none;"></div>
         </div>
         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
             <button id="customDialogCancel" class="btn-outline" style="border: none; padding: 10px 16px;">Cancel</button>
@@ -11914,7 +11959,9 @@
     opacity: 0; transition: opacity 0.3s ease;
 ">
     <div id="notifBlockBox" style="
-        background: #161616;
+        background: rgba(8, 13, 28, 0.92);
+        backdrop-filter: blur(24px) saturate(110%);
+        -webkit-backdrop-filter: blur(24px) saturate(110%);
         border: 1px solid rgba(167, 139, 250, 0.12);
         border-radius: 24px;
         padding: 36px 28px;
@@ -16517,6 +16564,7 @@
         if (!ts) return;
         ts.entries.push({ id: 'tse_' + Date.now(), description: '', hours: '' });
         renderTimesheet();
+        _tsAutoSave();
         // focus the new textarea after render
         setTimeout(() => {
             const rows = document.querySelectorAll('.ts-entry-desc');
@@ -16550,6 +16598,7 @@
         if (!ts) return;
         ts.entries.push({ id: 'tse_' + Date.now(), description: '', hours: '' });
         renderTimesheet();
+        _tsAutoSave();
         setTimeout(() => {
             const rows = document.querySelectorAll('.ts-entry-desc');
             if (rows.length) rows[rows.length - 1].focus();
@@ -16562,6 +16611,7 @@
         ts.entries.splice(idx, 1);
         ts.totalHours = _tsCalcTotal(ts.entries);
         renderTimesheet();
+        _tsAutoSave();
     }
 
     function tsAdminUpdateEntry(email, weekStartIso, idx, field, value) {
@@ -16571,6 +16621,7 @@
         ts.totalHours = _tsCalcTotal(ts.entries);
         const el = document.getElementById('ts-total-display');
         if (el) { const v = ts.totalHours; el.textContent = v % 1 === 0 ? v : v.toFixed(1); }
+        _tsAutoSave();
     }
 
     function tsAdminSave(email, weekStartIso) {
