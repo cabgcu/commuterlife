@@ -53,7 +53,7 @@ begin
             old.id;
     end if;
 
-    return old; -- BEFORE UPDATE: let the update proceed with NEW as given
+    return new; -- BEFORE UPDATE: let the update proceed with NEW as given
 end;
 $$;
 
