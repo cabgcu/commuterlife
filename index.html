@@ -110,7 +110,7 @@
 
         #login-bg-photo {
             position: absolute; inset: 0;
-            background-image: url("https://i.imgur.com/IMiv0pU.jpeg");
+            background-image: url("https://i.imgur.com/XmPiaYA.jpeg");
             background-size: cover;
             background-position: center;
             filter: brightness(.55) contrast(1.05);
@@ -237,8 +237,7 @@
         .brand { display: flex; align-items: center; gap: 16px; }
         .brand-text h1 {
             font-size: 1.4rem; font-weight: 800; margin: 0;
-            background: var(--gradient-accent);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            color: #ffffff;
             line-height: 1.2;
         }
 
@@ -2703,7 +2702,7 @@
             var cached = localStorage.getItem('cachedLogoUrl');
             if (cached) {
                 document.addEventListener('DOMContentLoaded', function() {
-                    ['login-brand-logo','login-brand-logo-pwd','login-brand-logo-setup','brand-logo'].forEach(function(id) {
+                    ['login-brand-logo','login-brand-logo-setup','brand-logo'].forEach(function(id) {
                         var el = document.getElementById(id);
                         if (el) { el.src = cached; el.style.display = 'block'; }
                     });
@@ -2750,23 +2749,15 @@
 
     <div class="login-box frosted" id="login-overlay-email">
         <div class="login-logo-box"><img id="login-brand-logo" src="" style="display: none;" alt="Logo"></div>
-        <h1 style="margin-top:0; font-weight:800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Commuter Life</h1>
-        <p style="color:var(--text-muted); margin-bottom: 25px;">Enter workspace email to continue</p>
-        <input type="email" id="loginEmail" aria-label="Email" class="modern-input" placeholder="Email" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') checkEmailStep()">
-        <button class="btn-action" style="width:100%;" onclick="checkEmailStep()">Next</button>
-    </div>
-
-    <div class="login-box frosted" id="login-overlay-password" style="display: none;">
-        <div class="login-logo-box"><img id="login-brand-logo-pwd" src="" style="display: none;" alt="Logo"></div>
-        <h1 style="margin-top:0; font-weight:800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Welcome Back</h1>
-        <p style="color:var(--text-muted); margin-bottom: 25px;" id="pwdEmailDisplay"></p>
-        <input type="password" id="loginPassword" aria-label="Password" class="modern-input" placeholder="Password" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') playLoginZoomSequence(() => checkLogin(false, true), 'login-overlay-password')">
-        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="playLoginZoomSequence(() => checkLogin(false, true), 'login-overlay-password')">
-            <span class="btn-text">Unlock</span>
+        <h1 style="margin-top:0; font-weight:800; color: #ffffff;">Welcome Back</h1>
+        <p style="color:var(--text-muted); margin-bottom: 25px;">Sign in to continue</p>
+        <input type="email" id="loginEmail" aria-label="Email" class="modern-input" placeholder="Email Address" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()">
+        <input type="password" id="loginPassword" aria-label="Password" class="modern-input" placeholder="Password" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') playLoginZoomSequence(() => handleLoginSubmit(false, true))">
+        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="playLoginZoomSequence(() => handleLoginSubmit(false, true))">
+            <span class="btn-text">Sign In</span>
             <span class="btn-loader"></span>
         </button>
-        <button class="btn-outline" style="width:100%; border: none;" onclick="goBackToEmail()">Back</button>
-        <button class="btn-outline" style="width:100%; border: none; margin-top: 6px; font-size: 0.85rem; opacity: 0.65;" onclick="showForgotPassword()">Forgot Password?</button>
+        <button class="btn-outline login-forgot-link" style="width:100%; border: none; font-size: 0.85rem; opacity: 0.65;" onclick="showForgotPassword()">Forgot Password?</button>
     </div>
 
     <div class="login-box frosted" id="login-overlay-setup" style="display: none;">
@@ -4222,56 +4213,15 @@
         if (shouldSave) saveData();
     }
 
-    function checkEmailStep() {
-        if (!isDatabaseLoaded) { 
-            showToast("Database is still loading or failed. Please refresh."); 
-            return; 
+    function handleLoginSubmit(isAuto = false, deferVisualClose = false) {
+        if (!isDatabaseLoaded) {
+            if (!isAuto) showToast("Database is still loading or failed. Please refresh.");
+            return false;
         }
-        
+
         const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-        
-        if (email === 'admin' || email === '') {
-            pendingLoginEmail = email;
-            document.getElementById('login-overlay-email').style.display = 'none';
-            document.getElementById('pwdEmailDisplay').innerText = email === '' ? 'Admin' : email;
-            document.getElementById('login-overlay-password').style.display = 'block';
-            setTimeout(() => document.getElementById('loginPassword').focus(), 100);
-            return;
-        }
-
-        if (!appData.settings.users) appData.settings.users = [];
-        const user = appData.settings.users.find(u => u.email.toLowerCase() === email);
-        
-        if (!user) {
-            showToast("Email not registered.");
-            return;
-        }
-
-        pendingLoginEmail = email;
-
-        if (!user.password) {
-            document.getElementById('login-overlay-email').style.display = 'none';
-            document.getElementById('login-overlay-setup').style.display = 'block';
-            document.getElementById('setupEmailDisplay').innerText = email;
-            setTimeout(() => document.getElementById('setupName').focus(), 100);
-            return;
-        }
-
-        document.getElementById('login-overlay-email').style.display = 'none';
-        document.getElementById('pwdEmailDisplay').innerText = user.name ? `${user.name} (${email})` : email;
-        document.getElementById('login-overlay-password').style.display = 'block';
-        setTimeout(() => document.getElementById('loginPassword').focus(), 100);
-    }
-
-    function goBackToEmail() {
-        document.getElementById('login-overlay-password').style.display = 'none';
-        document.getElementById('login-overlay-email').style.display = 'block';
-        document.getElementById('loginPassword').value = '';
-    }
-
-    function checkLogin(isAuto = false, deferVisualClose = false) {
-        const email = pendingLoginEmail;
         const pass = document.getElementById('loginPassword').value;
+        pendingLoginEmail = email;
         const storedPass = appData.settings?.password || 'Marketing49!';
 
         if ((email === 'admin' || email === '') && pass === storedPass) {
@@ -4285,8 +4235,27 @@
             return true;
         }
 
+        if (!appData.settings.users) appData.settings.users = [];
         const user = appData.settings.users.find(u => u.email.toLowerCase() === email);
-        if (user && user.password === pass) {
+
+        if (!user) {
+            if (!isAuto) showToast("Email not registered.");
+            if (isAuto) {
+                localStorage.removeItem('cab_auth_email');
+                localStorage.removeItem('cab_auth_pass');
+            }
+            return false;
+        }
+
+        if (!user.password) {
+            document.getElementById('login-overlay-email').style.display = 'none';
+            document.getElementById('login-overlay-setup').style.display = 'block';
+            document.getElementById('setupEmailDisplay').innerText = email;
+            setTimeout(() => document.getElementById('setupName').focus(), 100);
+            return false;
+        }
+
+        if (user.password === pass) {
             isAuthenticated = true;
             currentUserRole = user.role === 'admin' ? 'admin' : 'user';
             currentUserEmail = email;
@@ -4295,15 +4264,15 @@
             localStorage.setItem('cab_auth_pass', pass);
             closeLoginOverlay(deferVisualClose);
             return true;
-        } else {
-            if (!isAuto) showToast("Incorrect Password");
-            document.getElementById('loginPassword').value = '';
-            if (isAuto) {
-                localStorage.removeItem('cab_auth_email');
-                localStorage.removeItem('cab_auth_pass');
-            }
-            return false;
         }
+
+        if (!isAuto) showToast("Incorrect Password");
+        document.getElementById('loginPassword').value = '';
+        if (isAuto) {
+            localStorage.removeItem('cab_auth_email');
+            localStorage.removeItem('cab_auth_pass');
+        }
+        return false;
     }
 
     function closeLoginOverlay(deferVisualClose = false) {
@@ -4329,8 +4298,8 @@
     // Shared by returning-user auto-login, manual password sign-in, and
     // first-time account setup — performAction runs the actual auth logic
     // (sync or async) and should resolve truthy on success.
-    function playLoginZoomSequence(performAction, panelId = 'login-overlay-password', options = {}) {
-        const { authenticatingText = 'Authenticating', revertText = 'Unlock', delayMs = 900 } = options;
+    function playLoginZoomSequence(performAction, panelId = 'login-overlay-email', options = {}) {
+        const { authenticatingText = 'Authenticating', revertText = 'Sign In', delayMs = 900 } = options;
         const panel = document.getElementById(panelId);
         if (!panel || !window.gsap) { performAction(); return; }
 
@@ -4499,7 +4468,6 @@
         document.getElementById('setupProfilePicturePreview').style.display = 'none';
         setupProfilePictureFile = null;
         document.getElementById('login-overlay-setup').style.display = 'none';
-        document.getElementById('login-overlay-password').style.display = 'none';
         document.getElementById('login-overlay-email').style.display = 'block';
         document.getElementById('login-overlay').style.display = 'flex';
         setTimeout(() => { document.getElementById('login-overlay').style.opacity = '1'; }, 10);
@@ -4507,7 +4475,6 @@
 
     function showForgotPassword() {
         const email = pendingLoginEmail || document.getElementById('loginEmail')?.value?.trim() || '';
-        document.getElementById('login-overlay-password').style.display = 'none';
         document.getElementById('login-overlay-email').style.display = 'none';
         document.getElementById('login-overlay-forgot').style.display = 'block';
         if (email) document.getElementById('forgotEmail').value = email;
@@ -6038,7 +6005,6 @@
     function applyBranding() {
         const logoEl = document.getElementById('brand-logo');
         const loginLogoEl = document.getElementById('login-brand-logo');
-        const pwdLogoEl = document.getElementById('login-brand-logo-pwd');
         const setupLogoEl = document.getElementById('login-brand-logo-setup');
         const logoUrl = (appData.settings && appData.settings.logoUrl) ? toDirectDriveUrl(appData.settings.logoUrl) : '';
         const appIconUrl = (appData.settings && appData.settings.appIconUrl) ? toDirectDriveUrl(appData.settings.appIconUrl) : '';
@@ -6051,7 +6017,7 @@
 
         // Set logo images (login screens + topbar)
         if (logoUrl) {
-            [logoEl, loginLogoEl, pwdLogoEl, setupLogoEl].forEach(el => {
+            [logoEl, loginLogoEl, setupLogoEl].forEach(el => {
                 if (!el) return;
                 el.src = logoUrl;
                 el.style.display = 'block';
@@ -11710,14 +11676,11 @@
             pendingLoginEmail = savedEmail;
             document.getElementById('loginEmail').value = savedEmail;
             document.getElementById('loginPassword').value = savedPass;
-            document.getElementById('pwdEmailDisplay').innerText = (savedEmail === '' || savedEmail === 'admin') ? 'Admin' : savedEmail;
-            document.getElementById('login-overlay-email').style.display = 'none';
-            document.getElementById('login-overlay-password').style.display = 'block';
             if (typeof playLoginEntrance === 'function') playLoginEntrance();
             // Let the entrance animation play out, then run the "Welcome Home" auto-login sequence.
             setTimeout(() => {
-                if (typeof playLoginZoomSequence === 'function') playLoginZoomSequence(() => checkLogin(true, true), 'login-overlay-password');
-                else checkLogin(true);
+                if (typeof playLoginZoomSequence === 'function') playLoginZoomSequence(() => handleLoginSubmit(true, true));
+                else handleLoginSubmit(true);
             }, 1400);
         }
     }
