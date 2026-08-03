@@ -24,6 +24,9 @@
     <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 
+    <!-- GSAP (login screen animations) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
     <!-- Mobile Drag and Drop Polyfill -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
     <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
@@ -98,12 +101,32 @@
 
         #login-overlay {
             position: fixed; inset: 0; z-index: 999999;
-            background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(12px) saturate(110%); -webkit-backdrop-filter: blur(12px) saturate(110%);
             display: flex; align-items: center; justify-content: center; flex-direction: column;
             transition: opacity 0.5s ease;
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        #login-bg-photo {
+            position: absolute; inset: 0;
+            background-image: url("https://i.imgur.com/IMiv0pU.jpeg");
+            background-size: cover;
+            background-position: center;
+            filter: brightness(.55) contrast(1.05);
+            z-index: -2;
+            animation: loginBgZoom 25s infinite alternate;
+        }
+
+        @keyframes loginBgZoom {
+            from { transform: scale(1); }
+            to { transform: scale(1.07); }
+        }
+
+        #login-bg-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: -1;
         }
 
         @keyframes loginLogoGlow {
@@ -143,6 +166,43 @@
             position: relative; z-index: 2;
             filter: drop-shadow(0 15px 30px rgba(0,0,0,.8));
         }
+
+        .login-box .modern-input {
+            height: 54px;
+            padding: 0 18px;
+            border-radius: 16px;
+        }
+
+        .login-box .modern-input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 30px rgba(96,165,250,.45);
+        }
+
+        .login-box .btn-action {
+            height: 54px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5, #1d4ed8);
+            font-size: 16px;
+            box-shadow: 0 20px 45px rgba(79,70,229,.45);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-box .btn-action:hover { transform: translateY(-3px); }
+
+        .login-box .btn-action .btn-loader {
+            display: none;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,.35);
+            border-top-color: #fff;
+            animation: loginSpin .8s linear infinite;
+        }
+
+        .login-box .btn-action.loading .btn-text { display: none; }
+        .login-box .btn-action.loading .btn-loader { display: block; }
+
+        @keyframes loginSpin { to { transform: rotate(360deg); } }
 
         @media (max-width: 480px) {
             .login-box { padding: 32px 24px 34px; border-radius: 28px; }
@@ -263,7 +323,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .btn-outline:hover { background: rgba(40, 40, 40, 0.9); border-color: rgba(255,255,255,0.2); }
+        .btn-outline:hover { background: rgba(40, 40, 40, 0.9); border-color: rgba(167, 139, 250, 0.2); }
         .cl-btn { padding: 4px 10px !important; font-size: 0.75rem !important; min-height: 0 !important; border-radius: 8px !important; white-space: nowrap; }
 
         /* Enforce 16px to stop iOS auto-zoom on inputs */
@@ -354,7 +414,7 @@
         .col-action-btn {
             background: rgba(255,255,255,0.05); border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; transition: 0.2s; padding: 4px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase;
         }
-        .col-action-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+        .col-action-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(167, 139, 250, 0.2); color: #fff; }
         .col-action-btn.delete { background: transparent; border: none; font-size: 1.2rem; padding: 0 4px; text-transform: none; }
         .col-action-btn.delete:hover { color: #FF3B30; background: transparent; border-color: transparent; }
 
@@ -410,14 +470,14 @@
         .dnd-poly-drag-image { opacity: 0.8 !important; box-shadow: 0 15px 30px rgba(0,0,0,0.5) !important; transform: scale(1.05); }
 
         .add-task-btn {
-            background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: var(--text-muted);
+            background: transparent; border: 1px dashed rgba(167, 139, 250, 0.2); color: var(--text-muted);
             padding: 12px; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; text-align: center; margin-top: auto;
         }
-        .add-task-btn:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.4); }
+        .add-task-btn:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(167, 139, 250, 0.4); }
 
         .add-col-btn {
             background: rgba(255,255,255,0.02);
-            border: 1px dashed rgba(255,255,255,0.2);
+            border: 1px dashed rgba(167, 139, 250, 0.2);
             border-radius: var(--radius-card);
             min-width: 340px; 
             display: flex; 
@@ -443,10 +503,10 @@
         .calendar-cell.today { background: #0a1f3d; border-color: #0A84FF; }
         .calendar-cell.other-month { opacity: 0.3; }
         .calendar-date { font-weight: 700; font-size: 1.1rem; margin-bottom: 5px; color: #fff; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .calendar-task-pill { background: rgba(255,255,255,0.1); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; flex-shrink: 0;}
+        .calendar-task-pill { background: rgba(255,255,255,0.1); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(167, 139, 250, 0.1); transition: 0.2s; flex-shrink: 0;}
         .calendar-task-pill:hover { background: rgba(255,255,255,0.2); }
         
-        .add-post-btn-cal { display: none; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: var(--text-muted); font-size: 0.7rem; padding: 2px 6px; cursor: pointer; transition: 0.2s; }
+        .add-post-btn-cal { display: none; background: rgba(255,255,255,0.1); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 4px; color: var(--text-muted); font-size: 0.7rem; padding: 2px 6px; cursor: pointer; transition: 0.2s; }
         .add-post-btn-cal:hover { background: rgba(255,255,255,0.2); color: #fff; }
         .calendar-cell:hover .add-post-btn-cal { display: block; }
 
@@ -455,9 +515,9 @@
         .list-view-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
         .list-view-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         .planner-date-group { margin-bottom: 30px; }
-        .planner-date-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;}
+        .planner-date-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(167, 139, 250, 0.1); padding-bottom: 8px;}
         .planner-task-row { background: linear-gradient(145deg, rgba(10, 132, 255, 0.08) 0%, rgba(191, 90, 242, 0.08) 100%); border: 1px solid rgba(167, 139, 250, .32); padding: 15px 20px; border-radius: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.15); backdrop-filter: blur(20px) saturate(200%); -webkit-backdrop-filter: blur(20px) saturate(200%); }
-        .planner-task-row:hover { background: linear-gradient(145deg, rgba(10, 132, 255, 0.15) 0%, rgba(191, 90, 242, 0.15) 100%); transform: translateX(5px); border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 8px 25px rgba(0,0,0,0.25), inset 0 1px 3px rgba(255,255,255,0.25); }
+        .planner-task-row:hover { background: linear-gradient(145deg, rgba(10, 132, 255, 0.15) 0%, rgba(191, 90, 242, 0.15) 100%); transform: translateX(5px); border-color: rgba(167, 139, 250, 0.3); box-shadow: 0 8px 25px rgba(0,0,0,0.25), inset 0 1px 3px rgba(255,255,255,0.25); }
         .planner-task-row .planner-row-main { display: flex; align-items: center; gap: 15px; min-width: 0; flex: 1; flex-wrap: wrap; }
         .planner-task-row .planner-row-title { font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; flex-wrap: wrap; word-break: break-word; }
         .planner-task-row .planner-row-time { color: var(--text-muted); font-family: monospace; font-size: 0.9rem; min-width: 75px; flex-shrink: 0; white-space: nowrap; }
@@ -470,15 +530,15 @@
         .post-date-row .modern-input { flex: 1; min-width: 0; font-size: 16px; }
         .post-date-remove { flex-shrink: 0; width: 32px; height: 32px; min-width: 32px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, 0.35); background: rgba(255, 59, 48, 0.12); color: #FF3B30; cursor: pointer; font-size: 1.1rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: 0.15s; padding: 0; }
         .post-date-remove:hover { background: rgba(255, 59, 48, 0.25); }
-        .post-date-add-btn { background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.18); color: var(--ps-color, var(--text-muted)); font-size: 0.82rem; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; width: 100%; }
-        .post-date-add-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--ps-color, rgba(255,255,255,0.3)); }
+        .post-date-add-btn { background: rgba(255,255,255,0.04); border: 1px dashed rgba(167, 139, 250, 0.18); color: var(--ps-color, var(--text-muted)); font-size: 0.82rem; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; width: 100%; }
+        .post-date-add-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--ps-color, rgba(167, 139, 250, 0.3)); }
         .post-date-empty { font-size: 0.78rem; color: var(--text-muted); padding: 6px 2px; font-style: italic; }
 
         .settings-wrapper { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; padding-bottom: 120px; box-sizing: border-box; }
         .settings-card { background: rgba(8, 13, 28, 0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, .25); padding: 30px; border-radius: var(--radius-card); margin-bottom: 20px; }
 
         .user-profile-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 20px; }
-        .user-profile-picture { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 600; color: white; border: 3px solid rgba(255,255,255,0.2); overflow: hidden; position: relative; flex-shrink: 0; }
+        .user-profile-picture { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 600; color: white; border: 3px solid rgba(167, 139, 250, 0.2); overflow: hidden; position: relative; flex-shrink: 0; }
         .user-profile-picture img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; z-index: 2; }
         .user-profile-picture span { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 1; }
         .user-profile-picture.has-image img { display: block; }
@@ -625,7 +685,7 @@
 
         .accordion-header:hover {
             background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(167, 139, 250, 0.2);
         }
 
         .accordion-header.active {
@@ -725,7 +785,7 @@
                 align-items: center;
                 background: rgba(255,255,255,0.05);
                 border-radius: 8px;
-                border: 1px solid rgba(255,255,255,0.08);
+                border: 1px solid rgba(167, 139, 250, 0.08);
                 color: var(--text-muted);
                 transition: all 0.2s;
             }
@@ -795,18 +855,18 @@
         .modal-main { display: flex; flex-direction: column; gap: 20px; }
         .modal-sidebar { display: flex; flex-direction: column; gap: 10px; }
         
-        .sidebar-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px 15px; border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
-        .sidebar-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+        .sidebar-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(167, 139, 250, 0.1); color: #fff; padding: 10px 15px; border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .sidebar-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(167, 139, 250, 0.3); }
         
         .section-title { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; margin: 0 0 10px 0; color: #fff; }
         
         .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gradient-accent); display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; flex-shrink: 0; overflow: hidden; position: relative;}
         .avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
-        .badge { background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block; border: 1px solid rgba(255,255,255,0.1);}
+        .badge { background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block; border: 1px solid rgba(167, 139, 250, 0.1);}
         .badge.warning { background: rgba(255, 149, 0, 0.2); color: #FF9500; border-color: rgba(255, 149, 0, 0.4); }
         
         /* Checklist view toggle (List | Calendar) */
-        .cl-view-toggle { background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; display: inline-flex; gap: 2px; border: 1px solid rgba(255,255,255,0.06); }
+        .cl-view-toggle { background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; display: inline-flex; gap: 2px; border: 1px solid rgba(167, 139, 250, 0.06); }
         .cl-view-toggle-btn { background: transparent; border: none; color: var(--text-muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 700; transition: 0.2s; line-height: 1; }
         .cl-view-toggle-btn:hover { color: #fff; }
         .cl-view-toggle-btn.active { background: var(--gradient-accent); color: #fff; box-shadow: 0 1px 4px rgba(10,132,255,0.25); }
@@ -827,17 +887,17 @@
         .cl-cal-pill.overdue { background: rgba(255, 59, 48, 0.18); border-color: rgba(255, 59, 48, 0.4); }
         .cl-cal-empty { text-align: center; color: var(--text-muted); margin-top: 14px; font-size: 0.88rem; font-style: italic; }
 
-        .checklist-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);}
+        .checklist-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.05);}
         .checklist-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; accent-color: #0A84FF; cursor: pointer; }
         .checklist-text { flex-grow: 1; font-size: 0.95rem; line-height: 1.4; color: #ddd; outline: none; word-break: break-word; }
         .checklist-item.done .checklist-text { text-decoration: line-through; color: var(--text-muted); }
-        .cl-assign-btn { width: 32px; height: 32px; min-height: 32px; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0; transition: all 0.2s; }
+        .cl-assign-btn { width: 32px; height: 32px; min-height: 32px; border-radius: 50%; border: 1.5px dashed rgba(167, 139, 250, 0.2); background: rgba(255,255,255,0.03); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0; transition: all 0.2s; }
         .cl-assign-btn:hover { border-color: rgba(10,132,255,0.5); color: #0A84FF; background: rgba(10,132,255,0.08); }
         .cl-assign-btn.assigned { border: none; background: linear-gradient(135deg, #0A84FF, #BF5AF2); border-radius: 999px; width: auto; min-width: 40px; padding: 0 6px; gap: 0; overflow: visible; }
         .cl-assign-avatar { width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 50%; background: linear-gradient(135deg, #0A84FF, #BF5AF2); color: white; font-size: 0.58rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 24px; box-sizing: border-box; line-height: 1; overflow: hidden; position: relative; }
         .cl-assign-avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
         .cl-assign-more { margin-left: 5px; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.95); white-space: nowrap; flex-shrink: 0; }
-        .cl-assign-picker { position: fixed; z-index: 10001; background: rgba(8, 13, 28, 0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.55); padding: 6px; width: 220px; animation: clPickerIn 0.15s ease-out; }
+        .cl-assign-picker { position: fixed; z-index: 10001; background: rgba(8, 13, 28, 0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(167, 139, 250, 0.12); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.55); padding: 6px; width: 220px; animation: clPickerIn 0.15s ease-out; }
         @keyframes clPickerIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
         .cl-assign-picker-title { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 10px 4px; }
         .cl-assign-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border: none; background: none; color: #e0e0e0; font-size: 0.9rem; cursor: pointer; border-radius: 10px; transition: background 0.15s; text-align: left; }
@@ -855,7 +915,7 @@
         
         .attachment-item { 
             background: rgba(255,255,255,0.02); 
-            border: 1px solid rgba(255,255,255,0.05); 
+            border: 1px solid rgba(167, 139, 250, 0.05); 
             padding: 10px 12px; 
             border-radius: 12px; 
             display: flex; 
@@ -873,7 +933,7 @@
             border-radius: 8px; 
             background-size: cover; background-position: center; 
             flex-shrink: 0; 
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(167, 139, 250, 0.1);
         }
         .attachment-details { flex: 1 1 0; min-width: 0; max-width: 180px; overflow: hidden; flex-basis: calc(100% - 60px); }
         .attachment-name { 
@@ -884,11 +944,11 @@
         .attachment-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
         .attachment-actions { 
             display: flex; gap: 5px; align-items: center; flex-shrink: 0;
-            width: 100%; justify-content: flex-end; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;
+            width: 100%; justify-content: flex-end; margin-top: 4px; border-top: 1px solid rgba(167, 139, 250, 0.05); padding-top: 8px;
         }
         .attachment-btn { 
             background: rgba(255,255,255,0.07); 
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(167, 139, 250, 0.1);
             color: #ccc; 
             padding: 5px 9px; 
             border-radius: 7px; 
@@ -898,7 +958,7 @@
             display: inline-flex; align-items: center; justify-content: center;
             white-space: nowrap; letter-spacing: 0.3px;
         }
-        .attachment-btn:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); }
+        .attachment-btn:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(167, 139, 250, 0.3); }
         .attachment-btn.view:hover  { background: rgba(10,132,255,0.2); border-color: #0A84FF; color: #0A84FF; }
         .attachment-btn.dl:hover    { background: rgba(52,199,89,0.2);  border-color: #34C759; color: #34C759; }
         .attachment-btn.rename-btn:hover { background: rgba(191,90,242,0.2); border-color: #BF5AF2; color: #BF5AF2; }
@@ -918,7 +978,7 @@
 
         .comment-box { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; }
         .activity-item { display: flex; gap: 15px; margin-bottom: 15px; }
-        .activity-details { font-size: 0.9rem; color: #ccc; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); flex-grow: 1;}
+        .activity-details { font-size: 0.9rem; color: #ccc; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.05); flex-grow: 1;}
         .activity-details strong { color: #fff; }
 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -926,7 +986,7 @@
         #toast { visibility: hidden; min-width: 250px; background: var(--gradient-accent); color: #fff; text-align: center; border-radius: var(--radius-button); padding: 12px 20px; position: fixed; z-index: 9999999; left: 50%; bottom: 80px; transform: translateX(-50%); font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s, bottom 0.3s; pointer-events: none;}
         #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
         
-        .label-tag { background: rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,0.2); display: inline-flex; align-items: center; gap: 5px;}
+        .label-tag { background: rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #fff; border: 1px solid rgba(167, 139, 250, 0.2); display: inline-flex; align-items: center; gap: 5px;}
         .label-tag.blue { background: rgba(10, 132, 255, 0.2); color: #0A84FF; border-color: rgba(10, 132, 255, 0.4); }
         .label-tag.purple { background: rgba(191, 90, 242, 0.2); color: #BF5AF2; border-color: rgba(191, 90, 242, 0.4); }
         .label-tag.pink { background: rgba(255, 45, 85, 0.2); color: #FF2D55; border-color: rgba(255, 45, 85, 0.4); }
@@ -939,7 +999,7 @@
             margin: -18px -18px 15px -18px;
             height: 140px;
             border-radius: 20px 20px 0 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(167, 139, 250, 0.05);
             overflow: hidden;
             position: relative;
         }
@@ -960,7 +1020,7 @@
             border-radius: var(--radius-card) var(--radius-card) 0 0;
             position: relative;
             display: none;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(167, 139, 250, 0.05);
         }
 
         .remove-cover-btn {
@@ -981,23 +1041,23 @@
         }
         .remove-cover-btn:hover { background: rgba(255, 59, 48, 0.8); border-color: #FF3B30; }
 
-        .editable-label { border-bottom: 1px dashed rgba(255,255,255,0.3); cursor: text; padding-bottom: 2px; transition: 0.2s; }
+        .editable-label { border-bottom: 1px dashed rgba(167, 139, 250, 0.3); cursor: text; padding-bottom: 2px; transition: 0.2s; }
         .editable-label:focus { border-bottom: 1px solid #0A84FF; outline: none; }
         
-        .automation-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .automation-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(167, 139, 250, 0.08); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .automation-text { font-size: 0.95rem; line-height: 1.5; }
         .automation-highlight { color: #BF5AF2; font-weight: bold; }
         
         .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;}
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .3s; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2);}
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .3s; border-radius: 24px; border: 1px solid rgba(167, 139, 250, 0.2);}
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background: var(--gradient-success); border-color: transparent;}
         input:checked + .slider:before { transform: translateX(20px); }
 
         /* Notification System */
-        .notif-bell { position: relative; background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 6px 12px; font-size: 1.1rem; cursor: pointer; color: #ddd; transition: all 0.2s; }
-        .notif-bell:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25); }
+        .notif-bell { position: relative; background: none; border: 1px solid rgba(167, 139, 250, 0.15); border-radius: 12px; padding: 6px 12px; font-size: 1.1rem; cursor: pointer; color: #ddd; transition: all 0.2s; }
+        .notif-bell:hover { background: rgba(255,255,255,0.08); border-color: rgba(167, 139, 250, 0.25); }
         .notif-badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; font-size: 0.65rem; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid rgba(15,15,15,0.9); }
         .notif-tab-bell { display: none; }
         .notif-panel { position: fixed; top: 0; right: -400px; width: 380px; max-width: 92vw; height: 100vh;
@@ -1027,7 +1087,7 @@
 
         /* Commuter AI Assistant */
         .commuter-fab { position: fixed; right: 22px; bottom: 22px; z-index: 9998; width: 58px; height: 58px; border-radius: 50%;
-            background: var(--gradient-accent); border: 1px solid rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: var(--gradient-accent); border: 1px solid rgba(167, 139, 250, 0.12); cursor: pointer; display: flex; align-items: center; justify-content: center;
             font-size: 1.6rem; box-shadow: 0 10px 30px rgba(79,70,229,0.5), 0 0 0 1px rgba(255,255,255,0.08); transition: transform 0.2s ease, box-shadow 0.2s ease;
             touch-action: none; user-select: none; -webkit-user-select: none; }
         .commuter-fab:hover { transform: scale(1.07); box-shadow: 0 14px 36px rgba(79,70,229,0.65), 0 0 0 1px rgba(255,255,255,0.1); }
@@ -1061,7 +1121,7 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.05);
             backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
         }
-        .commuter-ai-msg.user { align-self: flex-end; background: var(--gradient-accent); border: 1px solid rgba(255,255,255,0.12); color: #fff; }
+        .commuter-ai-msg.user { align-self: flex-end; background: var(--gradient-accent); border: 1px solid rgba(167, 139, 250, 0.12); color: #fff; }
         .commuter-ai-msg.bot { align-self: flex-start; background: linear-gradient(160deg, rgba(35,35,45,0.6) 0%, rgba(15,15,20,0.4) 100%); border: 1px solid var(--glass-border); color: #eee; }
         .commuter-ai-msg.system-note { align-self: center; background: none; box-shadow: none; backdrop-filter: none; color: var(--text-muted); font-size: 0.75rem; font-style: italic; text-align: center; padding: 4px 10px; }
         .commuter-ai-msg.error { border-color: rgba(255,59,48,0.4); background: rgba(255,59,48,0.1); }
@@ -1120,14 +1180,14 @@
             color: #a1a1aa;
         }
 
-        .member-chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; padding: 6px 12px; font-size: 0.85rem; }
+        .member-chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 100px; padding: 6px 12px; font-size: 0.85rem; }
         .member-chip button { background: none; border: none; color: #FF3B30; cursor: pointer; font-size: 0.9rem; padding: 0; line-height: 1; }
 
         /* SEARCH */
         .search-wrap { position: relative; }
         .search-input {
             background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(167, 139, 250, 0.1);
             color: #fff; padding: 9px 16px 9px 38px;
             border-radius: 100px; font-size: 0.88rem;
             outline: none; font-family: inherit;
@@ -1166,7 +1226,7 @@
             position: absolute; top: 10px; right: 10px;
             width: 24px; height: 24px; border-radius: 50%;
             background: rgba(255,255,255,0.1);
-            border: 1.5px solid rgba(255,255,255,0.3);
+            border: 1.5px solid rgba(167, 139, 250, 0.3);
             color: #fff; font-size: 0.75rem; font-weight: 700;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: 0.2s; z-index: 2; flex-shrink: 0; line-height: 1;
@@ -1192,7 +1252,7 @@
 
         /* DUE SOON VIEW */
         .due-soon-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 8px 20px; box-sizing: border-box; }
-        .due-section-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 18px 4px 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 10px; }
+        .due-section-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 18px 4px 8px 4px; border-bottom: 1px solid rgba(167, 139, 250, 0.07); margin-bottom: 10px; }
         .due-row {
             background: rgba(8, 13, 28, 0.72);
             backdrop-filter: blur(20px);
@@ -1213,13 +1273,13 @@
         .events-table thead th {
             font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
             color: #ddd; padding: 10px 10px; text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.15); position: sticky; top: 0;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.15); position: sticky; top: 0;
             background: rgba(40,40,40,0.98); z-index: 2;
         }
         .events-table tbody tr { transition: 0.15s; background: rgba(25,25,25,0.95); }
         .events-table tbody tr:hover { background: rgba(45,45,50,0.95); }
         .events-table tbody tr:nth-child(even) { background: rgba(32,32,32,0.95); }
-        .events-table td { padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: middle; }
+        .events-table td { padding: 4px 6px; border-bottom: 1px solid rgba(167, 139, 250, 0.08); vertical-align: middle; }
         .events-table .ev-input {
             background: transparent; border: 1px solid transparent; color: #fff; font-size: 0.85rem;
             padding: 5px 8px; border-radius: 8px; width: 100%; font-family: inherit;
@@ -1234,7 +1294,7 @@
         }
         .ev-delete-btn:hover { color: #ff3b30; background: rgba(255,59,48,0.1); }
         .ev-add-row {
-            background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04); border: 1px dashed rgba(167, 139, 250, 0.12);
             border-radius: 10px; padding: 10px; text-align: center; margin-top: 6px;
             cursor: pointer; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; transition: 0.15s;
         }
@@ -1372,7 +1432,7 @@
 
             .attachment-item { flex-wrap: wrap; gap: 8px; }
             .attachment-details { flex-basis: calc(100% - 60px); }
-            .attachment-actions { width: 100%; justify-content: flex-end; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
+            .attachment-actions { width: 100%; justify-content: flex-end; margin-top: 4px; border-top: 1px solid rgba(167, 139, 250, 0.05); padding-top: 8px; }
 
             .modal-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 5px; min-width: 0; }
             .form-row { grid-template-columns: 1fr; gap: 8px; min-width: 0; }
@@ -1433,7 +1493,7 @@
             
             /* Posting Schedule stacks vertically on mobile to prevent label/input bubble overlap */
             .posting-schedule-grid { grid-template-columns: 1fr; gap: 18px; padding: 16px !important; }
-            .posting-schedule-col { padding: 12px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; }
+            .posting-schedule-col { padding: 12px; background: rgba(255,255,255,0.025); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 12px; }
             .post-date-remove { width: 38px; height: 38px; min-width: 38px; }
             .post-date-add-btn { padding: 12px; min-height: 44px; }
 
@@ -1507,7 +1567,7 @@
             .events-table thead tr { display: none; }
             .events-table tbody tr {
                 background: rgba(8, 13, 28, 0.80) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important;
-                border: 1px solid rgba(255,255,255,0.1);
+                border: 1px solid rgba(167, 139, 250, 0.1);
                 border-radius: 14px; margin-bottom: 10px;
                 padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
             }
@@ -1754,14 +1814,14 @@
             .smlsd-count { font-size: 0.75rem; color: var(--text-muted); }
             .smlsd-shift {
                 display: flex; align-items: center; gap: 12px;
-                padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.06);
+                padding: 10px 16px; border-top: 1px solid rgba(167, 139, 250, 0.06);
                 cursor: pointer;
             }
             .smlsd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
             .smlsd-time { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; min-width: 58px; }
             .smlsd-name { font-size: 0.9rem; font-weight: 700; flex: 1; }
             .smlsd-role { font-size: 0.75rem; color: var(--text-muted); }
-            .smlsd-add { width: 100%; padding: 10px; border-radius: 0; border: none; border-top: 1px dashed rgba(255,255,255,0.1); background: transparent; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+            .smlsd-add { width: 100%; padding: 10px; border-radius: 0; border: none; border-top: 1px dashed rgba(167, 139, 250, 0.1); background: transparent; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; }
             .sched-mobile-timeline {
                 display: none; flex-direction: column; gap: 14px;
             }
@@ -1810,7 +1870,7 @@
             .sched-no-shifts {
                 padding: 24px 16px; text-align: center; color: var(--text-muted);
                 font-size: 0.88rem; border-radius: 14px;
-                background: rgba(24,24,28,0.4); border: 1px solid rgba(255,255,255,0.06);
+                background: rgba(8, 13, 28, 0.4); border: 1px solid rgba(167, 139, 250, 0.06);
             }
             /* Mobile worker cards */
             #view-schedule .worker-card {
@@ -1851,7 +1911,7 @@
             background: rgba(8, 13, 28, 0.95);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.12);
+            border: 1px solid rgba(167, 139, 250, 0.12);
             border-radius: 10px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             z-index: 10002;
@@ -1900,7 +1960,7 @@
         }
         .storage-section-header-pill {
             background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 1px solid rgba(167, 139, 250, 0.15);
             border-radius: 100px;
             padding: 5px 14px;
             font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
@@ -1939,7 +1999,7 @@
         .storage-bin-reorder button {
             width: 26px; height: 26px;
             background: rgba(0,0,0,0.55);
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 1px solid rgba(167, 139, 250, 0.15);
             border-radius: 7px;
             color: rgba(255,255,255,0.65);
             font-size: 0.72rem;
@@ -1977,7 +2037,7 @@
         .storage-bin-hero:hover .storage-bin-hero-overlay span { opacity: 1; }
         .storage-bin-icon {
             width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(167, 139, 250, 0.1);
             display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
         }
         .storage-bin-body { padding: 14px 16px 12px; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -1998,13 +2058,13 @@
         .storage-item-chip {
             font-size: 0.72rem; font-weight: 600;
             padding: 3px 9px; border-radius: 100px;
-            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(167, 139, 250, 0.1);
             color: var(--text-main); white-space: nowrap;
         }
         .storage-item-chip .chip-qty { color: #0A84FF; font-weight: 800; margin-right: 3px; }
         .storage-bin-actions {
             display: flex; gap: 8px; padding: 12px 14px;
-            border-top: 1px solid rgba(255,255,255,0.07);
+            border-top: 1px solid rgba(167, 139, 250, 0.07);
             align-items: center;
         }
 
@@ -2016,7 +2076,7 @@
         .bin-item-pic-btn {
             width: 46px; height: 46px; border-radius: 10px;
             overflow: hidden; cursor: pointer; flex-shrink: 0;
-            background: rgba(255,255,255,0.06); border: 1px dashed rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.06); border: 1px dashed rgba(167, 139, 250, 0.2);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.1rem; transition: 0.15s; position: relative;
         }
@@ -2032,7 +2092,7 @@
         }
         .storage-item-tile-img {
             width: 60px; height: 60px; border-radius: 10px; overflow: hidden;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(167, 139, 250, 0.1);
             display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;
         }
         .storage-item-tile-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -2060,13 +2120,13 @@
         .checkout-item-row.is-out { opacity: 0.9; }
         .checkout-item-thumb {
             width: 40px; height: 40px; border-radius: 9px; overflow: hidden; flex-shrink: 0;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(167, 139, 250, 0.1);
             display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
         }
         .checkout-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
         .checkout-item-check {
             width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
-            border: 2px solid rgba(255,255,255,0.25);
+            border: 2px solid rgba(167, 139, 250, 0.25);
             display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
             transition: all 0.12s;
         }
@@ -2094,7 +2154,7 @@
         .bin-lightbox-close {
             position: fixed; top: 16px; right: 16px; z-index: 10;
             width: 44px; height: 44px; border-radius: 50%;
-            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(167, 139, 250, 0.2);
             color: #fff; font-size: 1.4rem; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
@@ -2112,13 +2172,13 @@
         .bin-lightbox-item {
             display: flex; flex-direction: column; align-items: center; gap: 8px;
             background: rgba(8, 13, 28, 0.80); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 16px; padding: 16px 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-top: 1px solid rgba(255,255,255,0.18);
+            border: 1px solid rgba(167, 139, 250, 0.1);
+            border-top: 1px solid rgba(167, 139, 250, 0.18);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         .bin-lightbox-item-img {
             width: 72px; height: 72px; border-radius: 12px; overflow: hidden;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(167, 139, 250, 0.1);
             display: flex; align-items: center; justify-content: center; font-size: 2rem;
         }
         .bin-lightbox-item-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -2222,14 +2282,14 @@
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid rgba(167, 139, 250, 0.06);
         }
         .schedule-shift-card .shift-worker { font-size: 0.8rem; font-weight: 800; line-height: 1.2; }
         .schedule-shift-card .shift-role { font-size: 0.65rem; opacity: 0.8; line-height: 1.2; }
         .schedule-add-shift-btn {
             opacity: 0; transition: opacity 0.15s;
             background: rgba(255,255,255,0.04);
-            border: 1px dashed rgba(255,255,255,0.15);
+            border: 1px dashed rgba(167, 139, 250, 0.15);
             border-radius: 10px; padding: 6px; text-align: center;
             cursor: pointer; font-size: 0.75rem; color: var(--text-muted);
             min-height: 36px; display: flex; align-items: center; justify-content: center;
@@ -2238,7 +2298,7 @@
         /* Workers panel */
         .workers-panel {
             margin-top: 24px; padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.07);
+            border-top: 1px solid rgba(167, 139, 250, 0.07);
         }
         /* Schedule nav row — flex on all screen sizes */
         .sched-nav-row { display: flex; align-items: center; gap: 8px; }
@@ -2273,13 +2333,13 @@
         .worker-sub { font-size: 0.72rem; color: var(--text-muted); }
         .avail-day-row {
             display: flex; align-items: center; gap: 10px; padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(167, 139, 250, 0.05);
         }
         .avail-day-row:last-child { border-bottom: none; }
         .avail-day-label { width: 36px; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
         .avail-time-inputs { display: flex; align-items: center; gap: 8px; flex: 1; }
         .avail-time-inputs input[type="time"] {
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(167, 139, 250, 0.12);
             border-radius: 8px; color: var(--text-main); font-size: 0.82rem;
             padding: 6px 8px; width: 110px;
         }
@@ -2374,7 +2434,7 @@
         }
         .em-subnav::-webkit-scrollbar { display: none; }
         .em-subtab {
-            padding: 8px 18px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
+            padding: 8px 18px; border-radius: 100px; border: 1px solid rgba(167, 139, 250, 0.12);
             background: transparent; color: var(--text-muted); cursor: pointer;
             font-size: 0.82rem; font-weight: 700; transition: all 0.2s;
         }
@@ -2400,9 +2460,9 @@
         .em-table th, .em-th {
             background: rgba(255,255,255,0.04); padding: 14px 16px;
             font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted);
-            border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; white-space: nowrap;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.1); text-align: left; white-space: nowrap;
         }
-        .em-table td { padding: 14px 16px; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .em-table td { padding: 14px 16px; font-size: 0.9rem; border-bottom: 1px solid rgba(167, 139, 250, 0.05); }
         .em-table tr:hover td { background: rgba(255,255,255,0.025); }
         .em-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .em-cal-cell {
@@ -2437,12 +2497,12 @@
             border: 1px solid rgba(167, 139, 250, .25); border-radius: 20px;
             width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;
         }
-        .em-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .em-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.1); }
         .em-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-        .em-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .em-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(167, 139, 250, 0.1); }
         .em-input {
             background: rgba(0,0,0,0.3); color: #fff;
-            border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+            border: 1px solid rgba(167, 139, 250, 0.15); border-radius: 10px;
             padding: 10px 14px; outline: none; width: 100%; box-sizing: border-box;
             font-family: var(--font-stack); font-size: 0.9rem;
         }
@@ -2498,51 +2558,51 @@
         .ts-wrapper { max-width: 860px; margin: 0 auto; padding: 16px 4px 120px; }
         .ts-week-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         .ts-week-nav h2 { margin: 0; font-size: 1.1rem; font-weight: 800; flex: 1; }
-        .ts-week-btn { background: rgba(24,24,28,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 100px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+        .ts-week-btn { background: rgba(8, 13, 28, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 100px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
         .ts-week-btn:hover { background: rgba(255,255,255,0.1); }
         .ts-status-badge { border-radius: 100px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
         .ts-status-draft    { background: rgba(161,161,170,0.15); color: #a1a1aa; }
         .ts-status-submitted { background: rgba(10,132,255,0.18); color: #0A84FF; }
-        .ts-card { background: rgba(18,18,22,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .ts-card { background: rgba(8, 13, 28, 0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(167, 139, 250, 0.09); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
         .ts-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
         .ts-card-title { font-size: 1rem; font-weight: 800; margin: 0; }
         .ts-entry-row { display: grid; grid-template-columns: 1fr 90px 32px; gap: 10px; align-items: start; margin-bottom: 10px; }
-        .ts-entry-desc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; resize: none; width: 100%; height: 42px; box-sizing: border-box; }
-        .ts-entry-hours { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; width: 100%; text-align: center; height: 42px; box-sizing: border-box; }
+        .ts-entry-desc { background: rgba(255,255,255,0.04); border: 1px solid rgba(167, 139, 250, 0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; resize: none; width: 100%; height: 42px; box-sizing: border-box; }
+        .ts-entry-hours { background: rgba(255,255,255,0.04); border: 1px solid rgba(167, 139, 250, 0.09); border-radius: 12px; color: var(--text-main); padding: 9px 12px; font-size: 0.88rem; font-family: inherit; width: 100%; text-align: center; height: 42px; box-sizing: border-box; }
         .ts-entry-desc:focus, .ts-entry-hours:focus { outline: none; border-color: rgba(10,132,255,0.5); background: rgba(10,132,255,0.04); }
         .ts-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 8px 0; line-height: 1; }
         .ts-del-btn:hover { color: #FF3B30; }
-        .ts-add-entry-btn { background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); color: var(--text-muted); border-radius: 12px; padding: 9px 16px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 4px; }
+        .ts-add-entry-btn { background: rgba(255,255,255,0.02); border: 1px dashed rgba(167, 139, 250, 0.15); color: var(--text-muted); border-radius: 12px; padding: 9px 16px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 4px; }
         .ts-add-entry-btn:hover { border-color: rgba(10,132,255,0.5); color: #0A84FF; background: rgba(10,132,255,0.04); }
-        .ts-total-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .ts-total-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(167, 139, 250, 0.08); }
         .ts-total-label { color: var(--text-muted); font-size: 0.82rem; font-weight: 600; }
         .ts-total-value { font-size: 1.15rem; font-weight: 800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .ts-action-bar { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
-        .ts-btn-save { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: var(--text-main); border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .ts-btn-save { background: rgba(255,255,255,0.07); border: 1px solid rgba(167, 139, 250, 0.12); color: var(--text-main); border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
         .ts-btn-save:hover { background: rgba(255,255,255,0.12); }
         .ts-btn-submit { background: linear-gradient(135deg, #0A84FF 0%, #BF5AF2 100%); border: none; color: #fff; border-radius: 100px; padding: 9px 22px; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
         .ts-btn-submit:hover { opacity: 0.88; }
         .ts-btn-unsubmit { background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.2); color: #FF6B6B; border-radius: 100px; padding: 9px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
         .ts-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .ts-summary-card { background: rgba(18,18,22,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.09); border-radius: 16px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s; }
+        .ts-summary-card { background: rgba(8, 13, 28, 0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(167, 139, 250, 0.09); border-radius: 16px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s; }
         .ts-summary-card:hover { border-color: rgba(10,132,255,0.4); }
         .ts-summary-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
-        .ts-empty { text-align: center; color: var(--text-muted); padding: 48px 24px; border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1); font-size: 0.95rem; }
+        .ts-empty { text-align: center; color: var(--text-muted); padding: 48px 24px; border-radius: 16px; border: 1px dashed rgba(167, 139, 250, 0.1); font-size: 0.95rem; }
         /* All-time spreadsheet */
         .ts-view-toggle { display: flex; gap: 6px; margin-bottom: 18px; }
-        .ts-view-btn { background: rgba(24,24,28,0.85); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 100px; padding: 6px 16px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.15s; }
+        .ts-view-btn { background: rgba(8, 13, 28, 0.85); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 100px; padding: 6px 16px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.15s; }
         .ts-view-btn.active { background: rgba(10,132,255,0.18); border-color: rgba(10,132,255,0.4); color: #0A84FF; }
-        .ts-sheet-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid rgba(255,255,255,0.09); background: rgba(18,18,22,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); margin-bottom: 20px; }
+        .ts-sheet-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.09); background: rgba(8, 13, 28, 0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); margin-bottom: 20px; }
         .ts-sheet { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 0.82rem; }
-        .ts-sheet th, .ts-sheet td { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
+        .ts-sheet th, .ts-sheet td { padding: 9px 14px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); border-right: 1px solid rgba(167, 139, 250, 0.06); white-space: nowrap; }
         .ts-sheet th { background: rgba(255,255,255,0.04); color: var(--text-muted); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; }
-        .ts-sheet td:first-child, .ts-sheet th:first-child { position: sticky; left: 0; z-index: 3; background: rgba(22,22,28,0.97); min-width: 130px; }
+        .ts-sheet td:first-child, .ts-sheet th:first-child { position: sticky; left: 0; z-index: 3; background: rgba(8, 13, 28, 0.97); min-width: 130px; }
         .ts-sheet th:first-child { z-index: 4; }
         .ts-sheet tr:last-child td { border-bottom: none; }
         .ts-sheet td:last-child, .ts-sheet th:last-child { border-right: none; }
         .ts-sheet .ts-sheet-name { font-weight: 700; color: var(--text-main); }
         .ts-sheet .ts-sheet-total { font-weight: 800; color: var(--text-main); }
-        .ts-sheet .ts-sheet-footer td { background: rgba(255,255,255,0.04); font-weight: 700; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); border-bottom: none; }
+        .ts-sheet .ts-sheet-footer td { background: rgba(255,255,255,0.04); font-weight: 700; color: var(--text-muted); border-top: 1px solid rgba(167, 139, 250, 0.1); border-bottom: none; }
         .ts-sheet-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 56px; }
         .ts-sheet-hrs { font-weight: 700; color: var(--text-main); }
         .ts-sheet-hrs.zero { color: rgba(255,255,255,0.2); }
@@ -2656,7 +2716,38 @@
             }
         } catch(e) {}
     })();
+
+    // Night Glass login entrance animation: plays for a fresh login card AND
+    // for a silently auto-logging-in returning user (see tryAutoLogin()).
+    function playLoginEntrance() {
+        try {
+            if (!window.gsap) return;
+            var panel = document.querySelector('#login-overlay .login-box:not([style*="display: none"])')
+                || document.getElementById('login-overlay-email');
+            if (!panel || panel.dataset.entranceDone) return;
+            panel.dataset.entranceDone = '1';
+
+            var logo = panel.querySelector('.login-logo-box img');
+            var textEls = panel.querySelectorAll('h1, p');
+
+            var tl = gsap.timeline();
+            tl.from(panel, { opacity: 0, y: 80, duration: 1.2, ease: 'power4.out' });
+            if (logo) {
+                tl.from(logo, { scale: 0, rotation: 360, duration: 1, ease: 'elastic.out(1,.4)' }, '-=0.5');
+            }
+            if (textEls.length) {
+                tl.from(textEls, { opacity: 0, y: 25, stagger: 0.15, duration: 0.5 }, '-=0.6');
+            }
+            if (logo) {
+                gsap.to(logo, { y: -8, duration: 2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+            }
+        } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', playLoginEntrance);
     </script>
+    <div id="login-bg-photo"></div>
+    <div id="login-bg-overlay"></div>
+
     <div class="login-box frosted" id="login-overlay-email">
         <div class="login-logo-box"><img id="login-brand-logo" src="" style="display: none;" alt="Logo"></div>
         <h1 style="margin-top:0; font-weight:800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Commuter Life</h1>
@@ -2669,8 +2760,11 @@
         <div class="login-logo-box"><img id="login-brand-logo-pwd" src="" style="display: none;" alt="Logo"></div>
         <h1 style="margin-top:0; font-weight:800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Welcome Back</h1>
         <p style="color:var(--text-muted); margin-bottom: 25px;" id="pwdEmailDisplay"></p>
-        <input type="password" id="loginPassword" aria-label="Password" class="modern-input" placeholder="Password" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') checkLogin()">
-        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="checkLogin()">Unlock</button>
+        <input type="password" id="loginPassword" aria-label="Password" class="modern-input" placeholder="Password" style="margin-bottom: 15px; text-align: center;" onkeydown="if(event.key==='Enter') playLoginZoomSequence(() => checkLogin(false, true), 'login-overlay-password')">
+        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="playLoginZoomSequence(() => checkLogin(false, true), 'login-overlay-password')">
+            <span class="btn-text">Unlock</span>
+            <span class="btn-loader"></span>
+        </button>
         <button class="btn-outline" style="width:100%; border: none;" onclick="goBackToEmail()">Back</button>
         <button class="btn-outline" style="width:100%; border: none; margin-top: 6px; font-size: 0.85rem; opacity: 0.65;" onclick="showForgotPassword()">Forgot Password?</button>
     </div>
@@ -2696,7 +2790,10 @@
             </div>
         </div>
 
-        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="createNewPassword()">Save &amp; Enter</button>
+        <button class="btn-action" style="width:100%; margin-bottom: 10px;" onclick="createNewPassword()">
+            <span class="btn-text">Save &amp; Enter</span>
+            <span class="btn-loader"></span>
+        </button>
         <button class="btn-outline" style="width:100%; border: none;" onclick="cancelSetup()">Cancel</button>
     </div>
 
@@ -2818,7 +2915,7 @@
                 <button class="em-subtab" id="em-tab-budget" onclick="emSwitchTab('budget')">Budget</button>
                 <button class="em-subtab" id="em-tab-photos" onclick="emSwitchTab('photos')">Photos</button>
                 <button class="em-btn-add" onclick="emOpenEventModal()">+ New Event</button>
-                <button onclick="emOpenManagerSettings()" style="padding:8px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:var(--text-muted);cursor:pointer;font-size:0.85rem;" title="Manager Settings">⚙️</button>
+                <button onclick="emOpenManagerSettings()" style="padding:8px 12px;border-radius:100px;border:1px solid rgba(167, 139, 250, 0.15);background:transparent;color:var(--text-muted);cursor:pointer;font-size:0.85rem;" title="Manager Settings">⚙️</button>
             </div>
 
             <!-- Sub-view: Events -->
@@ -2836,7 +2933,7 @@
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button id="em-toggle-list" class="em-view-toggle active" onclick="emToggleViewMode('list')">List</button>
                         <button id="em-toggle-card" class="em-view-toggle" onclick="emToggleViewMode('card')">Card</button>
-                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.1); background:rgba(24,24,28,0.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
+                        <button onclick="emExportCSV()" style="padding:7px 14px; border-radius:100px; border:1px solid rgba(167, 139, 250, 0.1); background:rgba(8, 13, 28, 0.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:var(--text-muted); cursor:pointer; font-size:0.78rem; font-weight:700;">CSV ↓</button>
                     </div>
                 </div>
                 <div id="em-events-inner"></div>
@@ -2870,7 +2967,7 @@
                 <div id="em-budget-tables">
                 <!-- Event Financials Table -->
                 <div class="em-frosted" style="border-radius:16px; overflow:hidden; margin-bottom:20px;">
-                    <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="padding:16px 20px; border-bottom:1px solid rgba(167, 139, 250, 0.08); display:flex; justify-content:space-between; align-items:center;">
                         <h3 style="margin:0; font-weight:700;">Event Financials</h3>
                     </div>
                     <div class="em-table-wrap">
@@ -2889,7 +2986,7 @@
 
                 <!-- Monthly Breakdown Table -->
                 <div class="em-frosted" style="border-radius:16px; overflow:hidden; margin-bottom:20px;">
-                    <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="padding:16px 20px; border-bottom:1px solid rgba(167, 139, 250, 0.08); display:flex; justify-content:space-between; align-items:center;">
                         <h3 style="margin:0; font-weight:700;">Monthly Budget</h3>
                         <button onclick="emAddBudgetMonth()" style="background:rgba(10,132,255,0.12); color:#0A84FF; border:1px solid rgba(10,132,255,0.3); padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Month</button>
                     </div>
@@ -2928,7 +3025,7 @@
                     <div style="margin-bottom:16px;">
                         <label class="em-label">Receipt (optional)</label>
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                            <button type="button" onclick="document.getElementById('em-exp-receipt-input').click()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:var(--text-main);padding:8px 16px;cursor:pointer;font-size:0.85rem;font-family:inherit;">📎 Attach Receipt</button>
+                            <button type="button" onclick="document.getElementById('em-exp-receipt-input').click()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(167, 139, 250, 0.15);border-radius:10px;color:var(--text-main);padding:8px 16px;cursor:pointer;font-size:0.85rem;font-family:inherit;">📎 Attach Receipt</button>
                             <input type="file" id="em-exp-receipt-input" accept="image/*" style="display:none;" onchange="emHandleReceiptSelect(event)">
                             <span id="em-exp-receipt-name" style="font-size:0.8rem;color:var(--text-muted);"></span>
                         </div>
@@ -3039,7 +3136,7 @@
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Change the master password required to access this application.</p>
                 <button class="btn-outline" style="width: 100%; border-color: #0A84FF; color: #0A84FF;" onclick="changePassword()">Change Workspace Password</button>
 
-                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                <hr style="border:0; border-top:1px solid rgba(167, 139, 250, 0.1); margin: 20px 0;">
 
                 <h3 class="section-title">Default Workspace</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Choose which workspace loads automatically on startup.</p>
@@ -3084,7 +3181,7 @@
                 </div>
                 <button class="btn-action" style="margin-top: 25px; width: 100%; padding: 15px;" onclick="saveLogoSettings()">Save Logo</button>
 
-                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 25px 0;">
+                <hr style="border:0; border-top:1px solid rgba(167, 139, 250, 0.1); margin: 25px 0;">
 
                 <label class="stat-label">App Icon / Home Screen (Square, Max 2MB)</label>
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
@@ -3176,7 +3273,7 @@
                     <button class="btn-outline" style="flex:1; min-width: 200px; border-color:rgba(255,152,0,0.4); color:#FF9500;" onclick="clearMondayImportHistory()">Refresh Old Imports</button>
                 </div>
 
-                <hr style="border-color:rgba(255,255,255,0.08); margin:24px 0;">
+                <hr style="border-color:rgba(167, 139, 250, 0.08); margin:24px 0;">
 
                 <h3 class="section-title" style="font-size:0.95rem; margin-bottom:8px;">📎 Attachment &amp; Revision Sync</h3>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
@@ -3268,7 +3365,7 @@
                     <button class="btn-action" style="flex: 1; min-width: 200px; background: rgba(255, 149, 0, 0.2); color: #FF9500; border: 1px solid rgba(255, 149, 0, 0.4);" onclick="scanAndRecoverStorageBins()">🔍 Scan &amp; Recover Storage Bins</button>
                 </div>
 
-                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 30px 0 20px 0;">
+                <hr style="border:0; border-top:1px solid rgba(167, 139, 250, 0.1); margin: 30px 0 20px 0;">
                             <h3 class="section-title" style="color: #FF3B30;">Danger Zone</h3>
                             <button class="btn-action" style="background: var(--gradient-danger); width: 100%; margin-bottom: 10px;" onclick="deleteCurrentBoard()">Delete Current Workspace</button>
                         </div>
@@ -3366,8 +3463,8 @@
                         </div>
                         <div style="margin-top: 20px;">
                             <h3 class="section-title">Description</h3>
-                            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; background: rgba(255,255,255,0.02); overflow: hidden;">
-                                <div style="display: flex; gap: 5px; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); flex-wrap: wrap;">
+                            <div style="border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 16px; background: rgba(255,255,255,0.02); overflow: hidden;">
+                                <div style="display: flex; gap: 5px; padding: 8px; border-bottom: 1px solid rgba(167, 139, 250, 0.1); background: rgba(255,255,255,0.03); flex-wrap: wrap;">
                                     <button type="button" class="rt-btn" onclick="formatText('bold')" title="Bold" style="min-height:44px;min-width:44px;"><b>B</b></button>
                                     <button type="button" class="rt-btn" onclick="formatText('italic')" title="Italic" style="min-height:44px;min-width:44px;"><i>I</i></button>
                                     <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 4px 5px;"></div>
@@ -3448,7 +3545,7 @@
                             <div class="activity-item" style="margin-top: 15px;">
                                 <div class="avatar" id="currentUserAvatar">Me</div>
                                 <div style="flex-grow:1; display:flex; flex-direction:column; gap:8px;">
-                                    <textarea id="commentInput" class="modern-input" rows="2" placeholder="Press Enter to post a comment..." style="font-size:16px; resize:none; background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.1);" onkeydown="if(event.key==='Enter' && !event.shiftKey) { var dd=document.getElementById('mentionDropdown'); if(dd && dd.style.display!=='none') return; event.preventDefault(); submitComment(); }"></textarea>
+                                    <textarea id="commentInput" class="modern-input" rows="2" placeholder="Press Enter to post a comment..." style="font-size:16px; resize:none; background:rgba(255,255,255,0.03); border-color:rgba(167, 139, 250, 0.1);" onkeydown="if(event.key==='Enter' && !event.shiftKey) { var dd=document.getElementById('mentionDropdown'); if(dd && dd.style.display!=='none') return; event.preventDefault(); submitComment(); }"></textarea>
                                 </div>
                             </div>
                             <div id="activityLog" style="margin-top: 20px;"></div>
@@ -3508,7 +3605,7 @@
             <label class="stat-label">Select List</label>
             <select id="copyTaskColSelect" class="modern-input" style="margin-bottom: 20px; font-size:16px;" required></select>
 
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.08);">
                 <input type="checkbox" id="copyTaskAttachmentsCheckbox" checked style="cursor: pointer;">
                 <label for="copyTaskAttachmentsCheckbox" style="cursor: pointer; margin: 0; flex: 1; font-size: 0.95rem;">Re-upload files to Google Drive</label>
             </div>
@@ -3662,7 +3759,7 @@
         <button class="close-modal" onclick="closeModal(null, 'importModal')">&times;</button>
         <h2 style="margin-top:0; margin-bottom:10px; font-weight: 800;">Import from Trello</h2>
 
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(167, 139, 250, 0.1); padding-bottom: 15px;">
             <button class="btn-outline" id="importTabWorkspace" onclick="switchImportTab('workspace')" style="flex: 1; border-bottom: 2px solid #0A84FF; border-radius: 0;">New Workspace</button>
             <button class="btn-outline" id="importTabCards" onclick="switchImportTab('cards')" style="flex: 1; border-bottom: none; border-radius: 0;">Add Cards</button>
         </div>
@@ -4172,7 +4269,7 @@
         document.getElementById('loginPassword').value = '';
     }
 
-    function checkLogin(isAuto = false) {
+    function checkLogin(isAuto = false, deferVisualClose = false) {
         const email = pendingLoginEmail;
         const pass = document.getElementById('loginPassword').value;
         const storedPass = appData.settings?.password || 'Marketing49!';
@@ -4184,8 +4281,8 @@
             currentUserName = 'Admin';
             localStorage.setItem('cab_auth_email', email);
             localStorage.setItem('cab_auth_pass', pass);
-            closeLoginOverlay();
-            return;
+            closeLoginOverlay(deferVisualClose);
+            return true;
         }
 
         const user = appData.settings.users.find(u => u.email.toLowerCase() === email);
@@ -4196,7 +4293,8 @@
             currentUserName = user.name || email.split('@')[0];
             localStorage.setItem('cab_auth_email', email);
             localStorage.setItem('cab_auth_pass', pass);
-            closeLoginOverlay();
+            closeLoginOverlay(deferVisualClose);
+            return true;
         } else {
             if (!isAuto) showToast("Incorrect Password");
             document.getElementById('loginPassword').value = '';
@@ -4204,12 +4302,15 @@
                 localStorage.removeItem('cab_auth_email');
                 localStorage.removeItem('cab_auth_pass');
             }
+            return false;
         }
     }
 
-    function closeLoginOverlay() {
-        document.getElementById('login-overlay').style.opacity = '0';
-        setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; }, 500);
+    function closeLoginOverlay(deferVisualClose = false) {
+        if (!deferVisualClose) {
+            document.getElementById('login-overlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; }, 500);
+        }
         // Reload cleared notification IDs for the now-logged-in user
         _loadClearedIds();
         applyUserPermissions();
@@ -4221,6 +4322,54 @@
         autoPromptNotifPermission();
         // Start midnight Monday auto-submit for timesheets
         tsScheduleMidnightAutoSubmit();
+    }
+
+    // "Welcome Home" sequence: the form morphs into an "Authenticating" state,
+    // then zooms into a full-screen welcome before the real app is revealed.
+    // Shared by returning-user auto-login, manual password sign-in, and
+    // first-time account setup — performAction runs the actual auth logic
+    // (sync or async) and should resolve truthy on success.
+    function playLoginZoomSequence(performAction, panelId = 'login-overlay-password', options = {}) {
+        const { authenticatingText = 'Authenticating', revertText = 'Unlock', delayMs = 900 } = options;
+        const panel = document.getElementById(panelId);
+        if (!panel || !window.gsap) { performAction(); return; }
+
+        const btn = panel.querySelector('.btn-action');
+        const btnText = btn ? btn.querySelector('.btn-text') : null;
+        const inputs = panel.querySelectorAll('.modern-input');
+        const forgotLink = panel.querySelector('.login-forgot-link');
+
+        if (btn) btn.classList.add('loading');
+        if (btnText) btnText.textContent = authenticatingText;
+
+        gsap.to(inputs, { opacity: 0, y: -20, duration: .5, stagger: .1 });
+        if (forgotLink) gsap.to(forgotLink, { opacity: 0, duration: .4 });
+        gsap.to(panel, { scale: 1.03, duration: .8, ease: 'power2.out' });
+
+        setTimeout(async () => {
+            const success = await performAction();
+
+            if (!success) {
+                // Bad credentials / failed setup: revert back to an editable form.
+                if (btn) btn.classList.remove('loading');
+                if (btnText) btnText.textContent = revertText;
+                gsap.to(inputs, { opacity: 1, y: 0, duration: .4, stagger: .05 });
+                if (forgotLink) gsap.to(forgotLink, { opacity: 1, duration: .4 });
+                gsap.to(panel, { scale: 1, duration: .4 });
+                return;
+            }
+
+            const bgPhoto = document.getElementById('login-bg-photo');
+            if (bgPhoto) bgPhoto.style.animation = 'none'; // stop the CSS zoom loop so GSAP's scale isn't fought over
+
+            gsap.timeline()
+                .to(panel, { scale: 3, opacity: 0, duration: 1.3, ease: 'power4.in' })
+                .to(bgPhoto, { scale: 1.5, duration: 1.5, ease: 'power4.in' }, '-=1')
+                .call(() => {
+                    document.getElementById('login-overlay').style.opacity = '0';
+                    setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; }, 500);
+                }, null, '-=.6');
+        }, delayMs);
     }
 
     let setupProfilePictureFile = null;
@@ -4252,7 +4401,7 @@
         reader.readAsDataURL(file);
     }
 
-    async function createNewPassword() {
+    function createNewPassword() {
         const name = document.getElementById('setupName').value.trim();
         const pass1 = document.getElementById('newPassword1').value;
         const pass2 = document.getElementById('newPassword2').value;
@@ -4261,6 +4410,14 @@
         if (pass1 !== pass2) { showToast("Passwords do not match!"); return; }
         if (pass1.length < 6) { showToast("Password must be at least 6 characters."); return; }
 
+        playLoginZoomSequence(() => finishAccountSetup(name, pass1), 'login-overlay-setup', {
+            authenticatingText: 'Creating Account',
+            revertText: 'Save & Enter',
+            delayMs: 600,
+        });
+    }
+
+    async function finishAccountSetup(name, pass1) {
         const email = document.getElementById('setupEmailDisplay').innerText;
         const user = appData.settings.users.find(u => u.email.toLowerCase() === email);
         if (user) {
@@ -4307,9 +4464,11 @@
             currentUserName = name;
             localStorage.setItem('cab_auth_email', email);
             localStorage.setItem('cab_auth_pass', pass1);
-            closeLoginOverlay();
+            closeLoginOverlay(true);
             showToast("Account ready!");
+            return true;
         }
+        return false;
     }
 
     function cancelSetup() {
@@ -5191,7 +5350,7 @@
     function showAttachmentOptions(attachmentList) {
         document.getElementById('attachmentCount').innerText = attachmentList.length;
         const listHtml = attachmentList.slice(0, 20).map(att => `
-            <div style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem;">
+            <div style="padding: 8px; border-bottom: 1px solid rgba(167, 139, 250, 0.1); font-size: 0.85rem;">
                 <div style="color: var(--text-muted);">📎 ${att.fileName}</div>
                 <div style="color: #0A84FF; font-size: 0.75rem;">from: ${att.cardName}</div>
             </div>
@@ -5514,7 +5673,7 @@
             const memberAvatars = colMembers.map((m, i) => {
                 return `<div class="avatar" style="width:22px;height:22px;font-size:0.55rem;border:2px solid #111;margin-left:${i===0?'0':'2px'};cursor:pointer;" title="Remove ${m}" onclick="event.stopPropagation(); removeColumnMember('${col.id}', '${m}')">${getAvatarContent(m)}</div>`;
             }).join('');
-            const memberBar = `<div style="display:flex;align-items:center;margin-top:5px;">${memberAvatars}<button onclick="event.stopPropagation();addColumnMember('${col.id}')" style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.07);border:1.5px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:${colMembers.length?'2px':'0'};flex-shrink:0;transition:0.2s;" onmouseover="this.style.background='rgba(10,132,255,0.2)';this.style.borderColor='#0A84FF';this.style.color='#0A84FF'" onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='var(--text-muted)'" title="Add member">+</button></div>`;
+            const memberBar = `<div style="display:flex;align-items:center;margin-top:5px;">${memberAvatars}<button onclick="event.stopPropagation();addColumnMember('${col.id}')" style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.07);border:1.5px dashed rgba(167, 139, 250, 0.2);color:var(--text-muted);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:${colMembers.length?'2px':'0'};flex-shrink:0;transition:0.2s;" onmouseover="this.style.background='rgba(10,132,255,0.2)';this.style.borderColor='#0A84FF';this.style.color='#0A84FF'" onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='var(--text-muted)'" title="Add member">+</button></div>`;
             let assignedHtml = col.assignedTo ? `<div class="column-assignee">${col.assignedTo}</div>` : '';
             header.innerHTML = `
                 <div style="display: flex; flex-direction: column; flex-grow: 1; padding-right: 10px; align-items: flex-start;">
@@ -5583,7 +5742,7 @@
                     
                     const dateStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(evDate);
                     const timeStr = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(evDate);
-                    postingHtml = `<div style="margin-top: 12px; padding: 10px 14px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+                    postingHtml = `<div style="margin-top: 12px; padding: 10px 14px; background: rgba(0,0,0,0.25); border: 1px solid rgba(167, 139, 250, 0.05); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.78rem; color: #fff; font-weight: 700;">📅 ${dateStr} @ ${timeStr}</span>
                             <span style="font-size: 0.72rem; font-weight: 800; ${countdownColor}">${countdownStr}</span>
@@ -6100,7 +6259,7 @@
         }
         container.innerHTML = appData.settings.users.map(u => {
             const perms = { ...DEFAULT_SECTION_PERMISSIONS, ...(u.sectionPermissions || {}) };
-            return `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:14px;">
+            return `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(167, 139, 250, 0.08); padding:16px; border-radius:14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                     <div>
                         <div style="font-weight:bold;">${u.name ? escapeHtml(u.name) + ' <span style="font-weight:normal;color:var(--text-muted);">(' + escapeHtml(u.email) + ')</span>' : escapeHtml(u.email)}</div>
@@ -6112,11 +6271,11 @@
                         <button class="btn-outline" style="padding:6px 12px; font-size:0.75rem; border-color:rgba(255,59,48,0.4); color:#FF3B30;" onclick="removeUser('${u.email}')">Remove</button>
                     </div>
                 </div>
-                <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                <div style="border-top:1px solid rgba(167, 139, 250, 0.06); padding-top:10px;">
                     <div style="font-size:0.72rem; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Section Access</div>
                     <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:6px;">
                         ${Object.entries(SECTION_LABELS).map(([section, label]) => `
-                            <label style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; cursor:pointer;">
+                            <label style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.03); border:1px solid rgba(167, 139, 250, 0.07); border-radius:8px; cursor:pointer;">
                                 <input type="checkbox" ${perms[section] !== false ? 'checked' : ''}
                                     onchange="toggleUserSectionPermission('${u.email}', '${section}', this.checked)"
                                     style="width:16px; height:16px; accent-color:#0A84FF; cursor:pointer; flex-shrink:0;">
@@ -6183,7 +6342,7 @@
         container.innerHTML = boardCols.map(col => {
             const hideable = col.hideable !== false; // Default to true
             return `
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px;">
                     <div style="flex: 1;">
                         <div style="font-weight: 600;">${col.title}</div>
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Can be hidden by users</div>
@@ -8967,7 +9126,7 @@
                     <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:6px;">Or use a fixed start date instead</label>
                     <input type="date" id="pafStartDate" class="modern-input" style="width:100%;">
                 </div>
-                ${!eventDate ? `<button type="button" onclick="document.getElementById('pafManualWrap').style.display='block';this.style.display='none';" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--text-muted);font-size:0.78rem;padding:6px 12px;cursor:pointer;text-align:left;">Use a fixed start date instead &#8594;</button>` : ''}
+                ${!eventDate ? `<button type="button" onclick="document.getElementById('pafManualWrap').style.display='block';this.style.display='none';" style="background:none;border:1px solid rgba(167, 139, 250, 0.15);border-radius:8px;color:var(--text-muted);font-size:0.78rem;padding:6px 12px;cursor:pointer;text-align:left;">Use a fixed start date instead &#8594;</button>` : ''}
                 <div>
                     <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:8px;">Apply to</label>
                     <div style="display:flex;flex-direction:column;gap:8px;">
@@ -9042,7 +9201,7 @@
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100010;display:flex;align-items:center;justify-content:center;padding:20px;';
             const card = document.createElement('div');
-            card.style.cssText = 'background:#1c1c1e;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;';
+            card.style.cssText = 'background:#1c1c1e;border:1px solid rgba(167, 139, 250, 0.12);border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;';
             card.innerHTML = '<h3 style="margin:0 0 20px;font-weight:800;">&#9889; Auto-fill Posting Schedule</h3><div>' + bodyHtml + '</div><div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;"><button id="_pafCancel" class="btn-outline" style="padding:10px 20px;">Cancel</button><button id="_pafConfirm" class="btn-action" style="padding:10px 20px;">Generate</button></div>';
             overlay.appendChild(card);
             document.body.appendChild(overlay);
@@ -9772,8 +9931,8 @@
             }
             // Date badge — tappable to change, or show add-date icon
             const dateBadge = item.dueDate
-                ? `<button type="button" onclick="showChecklistDatePicker('${item.id}', this)" style="font-size: 0.75rem; color: ${dateColor}; white-space: nowrap; flex-shrink: 0; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='rgba(10,132,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">${dueDateDisplay}</button>`
-                : `<button type="button" onclick="showChecklistDatePicker('${item.id}', this)" style="flex-shrink:0;width:28px;height:28px;min-height:28px;border-radius:50%;border:1.5px dashed rgba(255,255,255,0.15);background:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all 0.15s;" title="Set due date" onmouseover="this.style.borderColor='rgba(10,132,255,0.4)';this.style.color='#0A84FF'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='var(--text-muted)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>`;
+                ? `<button type="button" onclick="showChecklistDatePicker('${item.id}', this)" style="font-size: 0.75rem; color: ${dateColor}; white-space: nowrap; flex-shrink: 0; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid rgba(167, 139, 250, 0.08); cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='rgba(10,132,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">${dueDateDisplay}</button>`
+                : `<button type="button" onclick="showChecklistDatePicker('${item.id}', this)" style="flex-shrink:0;width:28px;height:28px;min-height:28px;border-radius:50%;border:1.5px dashed rgba(167, 139, 250, 0.15);background:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all 0.15s;" title="Set due date" onmouseover="this.style.borderColor='rgba(10,132,255,0.4)';this.style.color='#0A84FF'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='var(--text-muted)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>`;
             return `
             <div class="checklist-item ${item.done ? 'done' : ''}" data-cl-id="${item.id}" style="display: flex; align-items: center; gap: 8px;">
                 <span class="cl-drag-handle" title="Drag to reorder"><svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></svg></span>
@@ -10334,7 +10493,7 @@
             return `
             <div class="activity-item" style="margin-bottom:12px; align-items:flex-start;">
                 <div class="avatar" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;">${getAvatarContent(c.user || 'Me')}</div>
-                <div style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 14px;">
+                <div style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(167, 139, 250, 0.08); border-radius:12px; padding:10px 14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="font-weight:700; font-size:0.85rem;">${c.user || 'Me'}</span>
                         <div style="display:flex; align-items:center; gap:10px;">
@@ -11233,7 +11392,7 @@
                         <button class="col-delete-btn" style="font-size:1.4rem; padding:0; border: none; background: transparent; color: var(--text-muted); cursor: pointer;" onclick="deleteAutomation('${a.id}')" title="Delete">&times;</button>
                     </div>
                 </div>
-                <div style="display:flex; gap:10px; align-items:center; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex; gap:10px; align-items:center; padding-top:8px; border-top:1px solid rgba(167, 139, 250, 0.06);">
                     ${runBadge} ${lastRun}
                 </div>
             </div>`;
@@ -11267,7 +11426,7 @@
         const rowId = generateId();
         const row = document.createElement('div');
         row.id = 'actRow_' + rowId;
-        row.style.cssText = 'background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:10px;';
+        row.style.cssText = 'background:rgba(255,255,255,0.03); border:1px solid rgba(167, 139, 250, 0.08); border-radius:14px; padding:14px; margin-bottom:10px;';
         row.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <select class="modern-input act-type-select" style="flex:1; margin-right:10px;" onchange="updateActionRow('${rowId}')">
@@ -11549,8 +11708,17 @@
         const savedPass = localStorage.getItem('cab_auth_pass');
         if (savedEmail !== null && savedPass !== null) {
             pendingLoginEmail = savedEmail;
+            document.getElementById('loginEmail').value = savedEmail;
             document.getElementById('loginPassword').value = savedPass;
-            checkLogin(true);
+            document.getElementById('pwdEmailDisplay').innerText = (savedEmail === '' || savedEmail === 'admin') ? 'Admin' : savedEmail;
+            document.getElementById('login-overlay-email').style.display = 'none';
+            document.getElementById('login-overlay-password').style.display = 'block';
+            if (typeof playLoginEntrance === 'function') playLoginEntrance();
+            // Let the entrance animation play out, then run the "Welcome Home" auto-login sequence.
+            setTimeout(() => {
+                if (typeof playLoginZoomSequence === 'function') playLoginZoomSequence(() => checkLogin(true, true), 'login-overlay-password');
+                else checkLogin(true);
+            }, 1400);
         }
     }
 
@@ -11746,7 +11914,7 @@
 ">
     <div style="
         background: #161616;
-        border: 1px solid rgba(255,255,255,0.12);
+        border: 1px solid rgba(167, 139, 250, 0.12);
         border-radius: 24px;
         padding: 28px;
         width: 100%; max-width: 420px;
@@ -11764,7 +11932,7 @@
         </div>
         <div id="customDialogComboWrap" style="margin-bottom: 20px; display: none; position: relative;">
             <input id="customDialogComboInput" type="text" class="modern-input" style="font-size: 1rem;" autocomplete="off">
-            <div id="customDialogComboList" style="position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top: 4px; max-height: 150px; overflow-y: auto; z-index: 10; display: none;"></div>
+            <div id="customDialogComboList" style="position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 12px; margin-top: 4px; max-height: 150px; overflow-y: auto; z-index: 10; display: none;"></div>
         </div>
         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
             <button id="customDialogCancel" class="btn-outline" style="border: none; padding: 10px 16px;">Cancel</button>
@@ -11784,7 +11952,7 @@
 ">
     <div id="notifBlockBox" style="
         background: #161616;
-        border: 1px solid rgba(255,255,255,0.12);
+        border: 1px solid rgba(167, 139, 250, 0.12);
         border-radius: 24px;
         padding: 36px 28px;
         width: 100%; max-width: 400px;
@@ -11858,7 +12026,7 @@
                         comboList.innerHTML = matches.map(m => {
                             const valStr = typeof m === 'string' ? m : m.value;
                             const labelStr = typeof m === 'string' ? m : m.label;
-                            return `<div style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05);" class="combo-item" data-value="${valStr}">${labelStr}</div>`;
+                            return `<div style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.05);" class="combo-item" data-value="${valStr}">${labelStr}</div>`;
                         }).join('');
                         comboList.style.display = 'block';
                         comboList.querySelectorAll('.combo-item').forEach(el => {
@@ -12388,7 +12556,7 @@
     </div>
 </div>
 <div id="itemPhotoOverlay" onclick="closeItemPhoto()" style="display:none; position:fixed; inset:0; z-index:99999999; background:rgba(0,0,0,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
-    <button onclick="closeItemPhoto()" style="position:fixed; top:20px; right:16px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">✕</button>
+    <button onclick="closeItemPhoto()" style="position:fixed; top:20px; right:16px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(167, 139, 250, 0.2); color:#fff; font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">✕</button>
     <img id="itemPhotoImg" src="" alt="" style="max-width:100%; max-height:90vh; border-radius:18px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6);">
 </div>
 
@@ -12496,7 +12664,7 @@
 
         // Custom Fields
         if (task.customFields && task.customFields.length > 0) {
-            html += '<div style="margin-bottom:20px; background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">';
+            html += '<div style="margin-bottom:20px; background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(167, 139, 250, 0.06);">';
             html += '<div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Custom Fields</div>';
             task.customFields.forEach(cf => {
                 let val = cf.value || '—';
@@ -12504,7 +12672,7 @@
                     const d = new Date(cf.value);
                     val = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                 }
-                html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(167, 139, 250, 0.04);">
                     <span style="color:var(--text-muted); font-size:0.88rem;">${escapeHtml(cf.name)}</span>
                     <span style="font-size:0.88rem;">${escapeHtml(val)}</span>
                 </div>`;
@@ -12522,7 +12690,7 @@
                 <div style="height:100%; width:${pct}%; background:${pct === 100 ? 'var(--gradient-success)' : '#0A84FF'}; border-radius:4px; transition:width 0.3s;"></div>
             </div>`;
             task.checklist.forEach(item => {
-                html += `<div style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                html += `<div style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid rgba(167, 139, 250, 0.04);">
                     <span style="color:${item.done ? '#34C759' : 'var(--text-muted)'}; font-size:1rem; flex-shrink:0;">${item.done ? '✓' : '○'}</span>
                     <span style="font-size:0.9rem; ${item.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(item.text)}</span>
                 </div>`;
@@ -12533,7 +12701,7 @@
         // Posting Schedule
         const ps = normalizePostingSchedule(task.postingSchedule);
         if (ps.story.length || ps.photo.length || ps.reel.length) {
-            html += '<div style="margin-bottom:20px; background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">';
+            html += '<div style="margin-bottom:20px; background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(167, 139, 250, 0.06);">';
             html += '<div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Posting Schedule</div>';
             const formatPS = (val) => { if (!val) return '—'; const d = new Date(val); return d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) + ' at ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }); };
             const renderRows = (arr, label, color) => arr.filter(Boolean).forEach(val => {
@@ -12553,7 +12721,7 @@
                 const safeName = escapeHtml(att.name || 'Untitled');
                 const isLink = att.isLink && att.size !== 'Google Drive';
                 const viewUrl = att.viewerUrl || att.url;
-                html += `<a href="${viewUrl}" target="_blank" style="display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; margin-bottom:8px; text-decoration:none; color:inherit; transition:0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                html += `<a href="${viewUrl}" target="_blank" style="display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid rgba(167, 139, 250, 0.06); border-radius:12px; margin-bottom:8px; text-decoration:none; color:inherit; transition:0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                     <span style="font-size:1.2rem;">${isLink ? '🔗' : '📄'}</span>
                     <div style="flex:1; min-width:0;">
                         <div style="font-size:0.88rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${safeName}</div>
@@ -12572,7 +12740,7 @@
             task.comments.slice().reverse().forEach(c => {
                 html += `<div style="display:flex; gap:10px; margin-bottom:12px; align-items:flex-start;">
                     <div class="avatar" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;">${getAvatarContent(c.user || 'Me')}</div>
-                    <div style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:10px 14px;">
+                    <div style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(167, 139, 250, 0.06); border-radius:12px; padding:10px 14px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                             <span style="font-weight:700; font-size:0.85rem;">${escapeHtml(c.user || 'Me')}</span>
                             <span style="color:var(--text-muted); font-size:0.75rem;">${c.time || ''}</span>
@@ -12751,7 +12919,7 @@
             html += `<div class="frosted" style="text-align:center; padding:32px 20px; border-radius:12px; color:var(--text-muted); font-size:0.88rem;">No items listed for this bin.</div>`;
         }
 
-        html += `<div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); margin-top:4px;">
+        html += `<div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:8px; border-top:1px solid rgba(167, 139, 250, 0.1); margin-top:4px;">
             <button class="btn-action" onclick="closeBinPhotoLightbox(); openPublicBinCardModal('${bin.id}')" style="flex:1; min-height:52px; font-size:1rem;">
                 ${_binHasActiveCheckouts(bin) ? 'Check In' : 'Check Out'}
             </button>
@@ -13251,7 +13419,7 @@
         const items = bin.items || [];
         const history = (bin.checkouts || []).slice().reverse().slice(0, 10);
         if (history.length === 0) return '';
-        let h = `<div style="margin-top:18px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px;">
+        let h = `<div style="margin-top:18px;border-top:1px solid rgba(167, 139, 250, 0.07);padding-top:14px;">
             <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">History</div>`;
         history.forEach(c => {
             const out = new Date(c.checkedOutAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -13575,7 +13743,7 @@
         const canClaim = isOpen && !isAdmin && isAuthenticated;
         const bgStyle = isOpen
             ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
-            : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
+            : 'background:linear-gradient(160deg,rgba(8,13,28,0.88),rgba(8,13,28,0.72));';
         const isMyShift = !isOpen && currentWorker2 && shift.workerId === currentWorker2.id;
         const isVolunteerSlot = !!shift.volunteerSlot;
         return `<div class="schedule-shift-card" onclick="${isAdmin ? `openShiftModal('${shift.id}')` : ''}"
@@ -13741,7 +13909,7 @@
                     <div class="wc-avail-section">
                         <div class="wc-avail-label">Availability</div>
                         ${avail.length ? avail.sort((a,b)=>a.day-b.day).map(a=>`
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(167, 139, 250, 0.04);">
                                 <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); width:32px;">${DAY_NAMES[a.day]}</span>
                                 <span style="font-size:0.75rem; font-weight:600; color:var(--text-main);">${_fmtTime(a.startTime)} – ${_fmtTime(a.endTime)}</span>
                             </div>`).join('')
@@ -14452,7 +14620,7 @@
                         : (canClaim ? claimFn : '');
                     const bgStyle = isOpenShift
                         ? 'background:linear-gradient(160deg,rgba(15,40,20,0.92),rgba(10,30,15,0.88)); border-style:dashed;'
-                        : 'background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));';
+                        : 'background:linear-gradient(160deg,rgba(8,13,28,0.88),rgba(8,13,28,0.72));';
                     html += `<div class="schedule-shift-card${shift.isOverridden?' is-overridden':''}"
                         onclick="${clickAction}"
                         style="${bgStyle}
@@ -14472,7 +14640,7 @@
                         ${isMyShift&&!isAdmin&&!isVolunteerSlot&&!hasPendingSwap?`
                         <button onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
                             style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
-                            border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
+                            border:1px solid rgba(167, 139, 250, 0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
                             ↔ Request Swap
                         </button>`:''}
                     </div>`;
@@ -14501,7 +14669,7 @@
                 html += `<div class="sched-no-shifts">No shifts scheduled</div>`;
                 if (isAdmin) {
                     const addFn = useTemplate ? `openWeekOverrideModal(null,'${dateStr}')` : `openShiftModal(null,'${dateStr}')`;
-                    html += `<button onclick="${addFn}" style="margin-top:8px;padding:12px;border-radius:14px;width:100%;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);color:var(--text-muted);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Add Shift</button>`;
+                    html += `<button onclick="${addFn}" style="margin-top:8px;padding:12px;border-radius:14px;width:100%;background:rgba(255,255,255,0.04);border:1px dashed rgba(167, 139, 250, 0.15);color:var(--text-muted);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Add Shift</button>`;
                 }
             } else {
                 dayShifts.forEach(shift => {
@@ -14534,13 +14702,13 @@
                             ${canClaim ? `<button class="smc-action" onclick="event.stopPropagation();claimOpenTemplateShift('${shift.templateShiftId||''}','${shift.id||''}','${weekStartStr}')"
                                 style="background:${color}33;color:${color};">Sign Up →</button>` : ''}
                             ${isMyShift&&!isAdmin&&!isVolunteerSlot&&!hasPendingSwap ? `<button class="smc-action" onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
-                                style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);">↔ Request Swap</button>` : ''}
+                                style="background:rgba(255,255,255,0.06);border:1px solid rgba(167, 139, 250, 0.15);color:rgba(255,255,255,0.7);">↔ Request Swap</button>` : ''}
                         </div>
                     </div>`;
                 });
                 if (isAdmin) {
                     const addFn = useTemplate ? `openWeekOverrideModal(null,'${dateStr}')` : `openShiftModal(null,'${dateStr}')`;
-                    html += `<button onclick="${addFn}" style="padding:10px;border-radius:14px;width:100%;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);color:var(--text-muted);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">+ shift</button>`;
+                    html += `<button onclick="${addFn}" style="padding:10px;border-radius:14px;width:100%;background:rgba(255,255,255,0.04);border:1px dashed rgba(167, 139, 250, 0.15);color:var(--text-muted);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">+ shift</button>`;
                 }
             }
             html += `</div>`;
@@ -14577,7 +14745,7 @@
                 const color = isOpenTs ? '#34C759' : (worker ? (worker.color || '#0A84FF') : '#636366');
                 const wName = isOpenTs ? 'OPEN' : (worker ? worker.name.split(' ')[0] : '?');
                 html += `<div class="schedule-shift-card" onclick="${isAdmin?`openTemplateShiftModal('${ts.id}')`:'void(0)'}"
-                    style="background:linear-gradient(160deg,rgba(35,35,35,0.88),rgba(18,18,18,0.80));
+                    style="background:linear-gradient(160deg,rgba(8,13,28,0.88),rgba(8,13,28,0.72));
                     border-color:${color}66; border-top-color:${color}99;
                     box-shadow:inset 0 0 0 1px ${color}22, 0 4px 14px rgba(0,0,0,0.35);
                     cursor:${isAdmin?'pointer':'default'};${isOpenTs?'border-style:dashed;':''}">
@@ -14723,12 +14891,12 @@
                             <div style="font-weight:800;font-size:0.92rem;">${escapeHtml(target?.name||'Unknown')}</div>
                         </div>
                     </div>
-                    ${r.note?`<div style="font-size:0.82rem;color:var(--text-main);margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">"${escapeHtml(r.note)}"</div>`:''}
+                    ${r.note?`<div style="font-size:0.82rem;color:var(--text-main);margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(167, 139, 250, 0.08);">"${escapeHtml(r.note)}"</div>`:''}
                 </div>
                 <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start;padding-top:2px;">
                     ${canAct?`<button class="btn-action" onclick="approveSwapRequest('${r.id}')" style="font-size:0.8rem;padding:6px 14px;background:var(--gradient-success);">Approve</button>
                     <button class="btn-outline" onclick="denySwapRequest('${r.id}')" style="font-size:0.8rem;padding:6px 14px;border-color:rgba(255,59,48,0.4);color:#FF3B30;">Deny</button>`:''}
-                    ${isAdmin?`<button class="btn-outline" onclick="deleteSwapRequest('${r.id}')" style="font-size:0.72rem;padding:4px 10px;border-color:rgba(255,255,255,0.12);color:var(--text-muted);">×</button>`:''}
+                    ${isAdmin?`<button class="btn-outline" onclick="deleteSwapRequest('${r.id}')" style="font-size:0.72rem;padding:4px 10px;border-color:rgba(167, 139, 250, 0.12);color:var(--text-muted);">×</button>`:''}
                 </div>
             </div>
         </div>`;
@@ -15495,7 +15663,7 @@
             expList.innerHTML = expenses.slice().reverse().map(function(exp) {
                 var evName = exp.eventId ? ((d.events||[]).find(function(e) { return e.id===exp.eventId; }) || {name:'Unknown'}).name : 'General';
                 return '<div class="em-frosted" style="padding:14px 16px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;">' +
-                    (exp.receiptUrl ? '<img src="' + exp.receiptUrl + '" alt="receipt" onclick="emOpenReceiptLightbox(\"' + exp.receiptUrl + '\")" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;border:1px solid rgba(255,255,255,0.1);">' : '') +
+                    (exp.receiptUrl ? '<img src="' + exp.receiptUrl + '" alt="receipt" onclick="emOpenReceiptLightbox(\"' + exp.receiptUrl + '\")" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;border:1px solid rgba(167, 139, 250, 0.1);">' : '') +
                     '<div style="flex:1;min-width:0;">' +
                     '<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + exp.name + '</div>' +
                     '<div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">' + (exp.date||'-') + ' • ' + evName + ' • ' + exp.month + (exp.category ? ' • ' + exp.category : '') + '</div></div>' +
@@ -16472,12 +16640,12 @@
 <!-- EVENTS MANAGER MODAL -->
 <div id="em-event-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);">
     <div class="em-frosted" style="width:100%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;">
-        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(167, 139, 250, 0.1);display:flex;justify-content:space-between;align-items:center;">
             <h2 id="em-modal-title" style="margin:0;font-weight:800;background:var(--gradient-accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">New Event</h2>
             <button onclick="emCloseEventModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;">✕</button>
         </div>
         <div id="em-modal-body" style="padding:24px;overflow-y:auto;flex:1;"></div>
-        <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);">
+        <div style="padding:16px 24px;border-top:1px solid rgba(167, 139, 250, 0.1);">
             <button onclick="emSaveEvent()" class="em-btn-save">Save Event</button>
         </div>
     </div>
@@ -16486,7 +16654,7 @@
 <!-- MANAGER SETTINGS MODAL -->
 <div id="em-settings-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);">
     <div class="em-frosted" style="width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;">
-        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(167, 139, 250, 0.1);display:flex;justify-content:space-between;align-items:center;">
             <h2 style="margin:0;font-weight:800;">⚙️ Manager Settings</h2>
             <button onclick="document.getElementById('em-settings-modal').style.display='none'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;">✕</button>
         </div>
@@ -16500,7 +16668,7 @@
             <div id="em-settings-rows" style="display:flex;flex-direction:column;gap:8px;"></div>
             <button onclick="emSettingsAddRow()" style="margin-top:14px;width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(10,132,255,0.35);background:rgba(10,132,255,0.06);color:#0A84FF;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Add Deadline Column</button>
         </div>
-        <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);">
+        <div style="padding:16px 24px;border-top:1px solid rgba(167, 139, 250, 0.1);">
             <button onclick="emSaveManagerSettings()" class="em-btn-save">Save Settings</button>
         </div>
     </div>
