@@ -3887,6 +3887,14 @@
     });
     window.addEventListener('touchmove', function() {}, {passive: false});
 
+    // True only for devices with a real mouse/trackpad (matches the CSS
+    // `@media (hover: hover) and (pointer: fine)` breakpoint used to show
+    // drag styling vs. the mobile reorder arrows). Used to keep
+    // draggable="true" off touch-only devices, where the mobile-drag-drop
+    // polyfill above would otherwise hijack scroll gestures on any
+    // draggable card.
+    const _supportsHoverDrag = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     // ── HELPER: convert any Google Drive URL to a direct-serving lh3 URL ──────
     function toDirectDriveUrl(url) {
         if (!url) return url;
@@ -12852,12 +12860,24 @@
 
                 const iconHtml = '';
 
-                html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')" draggable="true"
+                // Native drag-and-drop is desktop-only (see the matching
+                // `@media (hover: hover) and (pointer: fine)` rule that hides
+                // the mobile reorder arrows and shows the grab cursor). On
+                // touch devices the global mobile-drag-drop polyfill
+                // (index.html init: MobileDragDrop.polyfill) translates touch
+                // gestures on any draggable="true" element into native drag
+                // events — leaving it on here hijacked ordinary scroll swipes
+                // on the card list and snapped the scroll back to where it
+                // started. Mobile already has the up/down arrow buttons for
+                // reordering, so drag attributes are only needed for
+                // hover+fine-pointer (desktop/trackpad) input.
+                const dragAttrs = _supportsHoverDrag ? `draggable="true"
                     ondragstart="binDragStart(event,'${bin.id}')"
                     ondragend="binDragEnd(event)"
                     ondragover="binDragOver(event,'${bin.id}')"
                     ondragleave="binDragLeave(event)"
-                    ondrop="binDrop(event,'${bin.id}','${sec.replace(/'/g, "\\'")}')">
+                    ondrop="binDrop(event,'${bin.id}','${sec.replace(/'/g, "\\'")}')"` : '';
+                html += `<div class="storage-bin-card" onclick="openPublicBinCardModal('${bin.id}')" ${dragAttrs}>
                     ${heroHtml}
                     ${reorderOverlay}
                     <div class="storage-bin-body">
