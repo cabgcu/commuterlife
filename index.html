@@ -5743,7 +5743,13 @@
                 if (task._mirrored) taskEl.classList.add('is-mirrored');
                 taskEl.className = 'task-card' + (task.completed ? ' is-complete' : '') + (selectedCards.has(task.id) ? ' selected' : '') + (task._mirrored ? ' is-mirrored' : '') + (isOverdue ? ' is-overdue' : '');
                 taskEl.style.position = 'relative';
-                taskEl.draggable = !selectedCards.size;
+                // Desktop-only, same reasoning as the storage bin cards: the
+                // mobile-drag-drop polyfill translates touch gestures on any
+                // draggable element into simulated drags, which hijacks
+                // ordinary scroll swipes through a list's cards and snaps
+                // the scroll back to where it started. Touch users reorder
+                // with the ▲/▼ buttons below instead.
+                taskEl.draggable = _supportsHoverDrag && !selectedCards.size;
                 taskEl.id = task.id;
                 let clHtml = '';
                 if(task.checklist && task.checklist.length > 0) {
