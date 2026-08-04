@@ -3825,6 +3825,14 @@
     const VAPID_PUBLIC_KEY = 'BAqdVFHnd9HMVCWPCP-mRhT2jgP5bdagqdQW_gLGqrb3yVFV_uERnLdSTMAd_HkRFRJuaSt_5bUxfQOYyayDPNM';
     let _supabase;
     const _realtimeClientId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    // The app_state.version this client last confirmed as loaded/saved (see
+    // supabase/migrations/20260804070000_app_state_optimistic_concurrency.sql).
+    // null means "no row loaded yet" (first-ever bootstrap on an empty DB).
+    // Every save is conditioned on this matching the server's current
+    // version, so a device that went stale (backgrounded tab, missed
+    // realtime, long idle) can't silently blast its outdated in-memory copy
+    // over changes someone else already saved — see _doSaveData().
+    let _appStateVersion = null;
 
     const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbxA0dO3uYefvZ-QlN_bGnXxoIKU88cg3bswbF2wR38hO5JkCGaN9LEodk7a-KYcQ6ud/exec';
 
@@ -3998,19 +4006,21 @@
 
     async function initData() {
         try {
-            const { data, error } = await _supabase.from('app_state').select('data').eq('id', 1).single();
+            const { data, error } = await _supabase.from('app_state').select('data, version').eq('id', 1).single();
             if (error) {
-                if (error.code === 'PGRST116') { 
+                if (error.code === 'PGRST116') {
                     // Truly empty database. Safe to setup defaults and save to cloud.
-                    setupDefaults(true); 
+                    _appStateVersion = null; // no row yet — first save must INSERT, see _doSaveData()
+                    setupDefaults(true);
                     isDatabaseLoaded = true;
-                } else { 
-                    console.error("Supabase load error:", error); 
+                } else {
+                    console.error("Supabase load error:", error);
                     showToast("Database connection error. Please refresh the page.");
                     return; // CRITICAL: Stop execution, do NOT overwrite data
                 }
             } else if (data && data.data) {
                 appData = data.data;
+                _appStateVersion = data.version;
                 if (!appData.boards)     appData.boards = [];
                 if (!appData.columns)    appData.columns = [];
                 if (!appData.tasks)      appData.tasks = [];
@@ -4792,16 +4802,86 @@
     async function _doSaveData() {
         try {
             appData._lastClientId = _realtimeClientId;
-            const { error } = await _supabase.from('app_state').upsert({ id: 1, data: appData });
-            if (error) {
-                console.error("Supabase sync error:", error);
-                showToast("Couldn't save changes — check your connection and try again.");
-            } else if (appData.settings && appData.settings.googleCalendarAutoSync && appData.settings.googleCalendarWebhook) {
+
+            if (_appStateVersion === null) {
+                // First-ever save on a truly empty database — no existing row to
+                // condition the write on, so this has to be a plain insert.
+                const { data: inserted, error } = await _supabase
+                    .from('app_state')
+                    .insert({ id: 1, data: appData })
+                    .select('version')
+                    .single();
+                if (error) {
+                    console.error("Supabase sync error:", error);
+                    showToast("Couldn't save changes — check your connection and try again.");
+                    return;
+                }
+                _appStateVersion = inserted.version;
+            } else {
+                // Optimistic concurrency: only write if the row is still at the
+                // version we last loaded/saved. If another device saved in
+                // between, this matches zero rows — caught below via
+                // maybeSingle() returning null — instead of silently
+                // overwriting their changes with our possibly-stale copy.
+                const { data: updated, error } = await _supabase
+                    .from('app_state')
+                    .update({ data: appData })
+                    .eq('id', 1)
+                    .eq('version', _appStateVersion)
+                    .select('version')
+                    .maybeSingle();
+
+                if (error) {
+                    console.error("Supabase sync error:", error);
+                    showToast("Couldn't save changes — check your connection and try again.");
+                    return;
+                }
+
+                if (!updated) {
+                    await _handleSaveConflict();
+                    return;
+                }
+
+                _appStateVersion = updated.version;
+            }
+
+            if (appData.settings && appData.settings.googleCalendarAutoSync && appData.settings.googleCalendarWebhook) {
                 queueGoogleCalendarAutoSync();
             }
         } catch (err) {
             console.error("Supabase request failed:", err);
             showToast("Couldn't save changes — check your connection and try again.");
+        }
+    }
+
+    // Called when _doSaveData() finds app_state has moved on since we last
+    // read it — another device saved in the gap. Force-pulls the current
+    // server row into appData, bypassing _applyFreshAppState's usual "skip if
+    // the user has pending local edits" guard: our conflicting edit just
+    // failed to persist, so continuing to trust the in-memory copy would only
+    // conflict again on the next retry. The user sees the latest data and can
+    // redo whatever they just did on top of it, instead of it being silently
+    // discarded — or, worse, silently overwriting someone else's work.
+    async function _handleSaveConflict() {
+        try {
+            const { data: row, error } = await _supabase.from('app_state').select('data, version').eq('id', 1).single();
+            if (error || !row || !row.data) {
+                showToast("Someone else made changes at the same time. Please refresh the page.");
+                return;
+            }
+            appData = row.data;
+            if (!appData.boards)      appData.boards = [];
+            if (!appData.columns)     appData.columns = [];
+            if (!appData.tasks)       appData.tasks = [];
+            if (!appData.automations) appData.automations = [];
+            if (!appData.settings)    appData.settings = {};
+            if (!appData.storageBins) appData.storageBins = [];
+            _appStateVersion = row.version;
+            renderApp();
+            showToast("Someone else made changes just now — your last edit wasn't saved. The screen has been refreshed; please redo it.");
+        } catch (err) {
+            console.warn('_handleSaveConflict: re-fetch failed:', err);
+            showToast("Someone else made changes at the same time. Please refresh the page.");
         }
     }
 
@@ -11756,12 +11836,18 @@
     // below so a client that missed realtime events (dropped socket,
     // backgrounded tab) doesn't keep stale data in memory and later overwrite
     // the server with it via saveData().
-    function _applyFreshAppState(incoming) {
+    // `version` is the server's app_state.version for this row at the moment
+    // it was fetched — kept in sync with _appStateVersion here (but only when
+    // we actually adopt `incoming`) so a later save's optimistic-concurrency
+    // check in _doSaveData() is comparing against data this client has truly
+    // seen, not data it skipped over while an edit was in progress.
+    function _applyFreshAppState(incoming, version) {
         if (!incoming) return;
         if (incoming._lastClientId === _realtimeClientId) return; // our own save
         if (!isAuthenticated) return; // not logged in yet, skip
         if (_hasPendingLocalEdits()) return;
         appData = incoming;
+        if (typeof version === 'number') _appStateVersion = version;
         if (!appData.boards)      appData.boards = [];
         if (!appData.columns)     appData.columns = [];
         if (!appData.tasks)       appData.tasks = [];
@@ -11778,9 +11864,9 @@
     async function _refreshAppStateFromServer() {
         if (!_supabase || !isAuthenticated) return;
         try {
-            const { data: row, error } = await _supabase.from('app_state').select('data').eq('id', 1).single();
+            const { data: row, error } = await _supabase.from('app_state').select('data, version').eq('id', 1).single();
             if (error || !row || !row.data) return;
-            _applyFreshAppState(row.data);
+            _applyFreshAppState(row.data, row.version);
         } catch (err) {
             console.warn('_refreshAppStateFromServer: re-fetch failed:', err);
         }
@@ -11796,7 +11882,7 @@
         _realtimeChannel = _supabase
             .channel('app_state_realtime')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.1' }, (payload) => {
-                _applyFreshAppState(payload.new && payload.new.data);
+                _applyFreshAppState(payload.new && payload.new.data, payload.new && payload.new.version);
             })
             .subscribe((status) => {
                 // The socket can silently drop (backgrounded tab, network blip).
