@@ -14249,6 +14249,10 @@
                 style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
                 border:1px solid rgba(10,132,255,0.25);background:rgba(10,132,255,0.08);color:#0A84FF;cursor:pointer;font-family:inherit;width:100%;">
                 ⇄ Swap</button>` : ''}
+            ${isMyShift && !isAdmin && !compact && isVolunteerSlot ? `<button onclick="event.stopPropagation();unclaimShift('${shift.id}')"
+                style="margin-top:2px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
+                border:1px solid rgba(255,107,107,0.25);background:rgba(255,107,107,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
+                ✕ Cancel Sign Up</button>` : ''}
         </div>`;
     }
 
@@ -14844,21 +14848,44 @@
         );
     }
 
-    function unclaimShift(shiftId) {
+    async function unclaimShift(shiftId) {
         const shift = (appData.shifts || []).find(s => s.id === shiftId);
         if (!shift) return;
+        const timeStr = shift.startTime ? _fmt12h(shift.startTime) : '';
+        const confirmed = await showConfirm(
+            'Cancel Sign Up',
+            `Give up your spot on the shift on ${shift.date}${timeStr ? ' at ' + timeStr : ''}? It will stay open for someone else to sign up.`,
+            'Cancel Sign Up'
+        );
+        if (!confirmed) return;
+        const currentWorker = _getCurrentWorker();
         shift.workerId = 'open';
         saveData();
         renderSchedule();
-        showToast('You have been removed from this shift.');
+        showToast("You're unsigned from this shift. It's open again.");
+        addNotificationFor(
+            (appData.settings?.users || []).filter(u => u.role === 'admin').map(u => u.name).filter(n => n !== currentUserName),
+            'shift_cancelled', '🙋 Shift Sign-up Cancelled',
+            `${currentWorker ? currentWorker.name : currentUserName} unsigned from the open shift on ${shift.date}${timeStr ? ' at ' + timeStr : ''}. It is open again.`,
+            null, currentUserName
+        );
     }
 
-    function unclaimTemplateShift(templateShiftId, weekStartDate) {
+    async function unclaimTemplateShift(templateShiftId, weekStartDate) {
         if (!appData.weeklyOverrides) appData.weeklyOverrides = [];
         const ts = (appData.templateShifts || []).find(t => t.id === templateShiftId);
         const existing = appData.weeklyOverrides.find(o =>
             o.templateShiftId === templateShiftId && o.weekStartDate === weekStartDate
         );
+        const timeStr = (existing?.startTime || ts?.startTime) ? _fmt12h(existing?.startTime || ts.startTime) : '';
+        const dayLabel = ts?.dayOfWeek ? ts.dayOfWeek + ' (' + weekStartDate + ' week)' : weekStartDate;
+        const confirmed = await showConfirm(
+            'Cancel Sign Up',
+            `Give up your spot on the shift on ${dayLabel}${timeStr ? ' at ' + timeStr : ''}? It will stay open for someone else to sign up.`,
+            'Cancel Sign Up'
+        );
+        if (!confirmed) return;
+        const currentWorker = _getCurrentWorker();
         if (existing) {
             // Override exists — set workerId back to open (or delete if template is already open)
             if (!ts || !ts.workerId || ts.workerId === 'open') {
@@ -14878,7 +14905,13 @@
         }
         saveData();
         renderSchedule();
-        showToast('You have been removed from this shift.');
+        showToast("You're unsigned from this shift. It's open again.");
+        addNotificationFor(
+            (appData.settings?.users || []).filter(u => u.role === 'admin').map(u => u.name).filter(n => n !== currentUserName),
+            'shift_cancelled', '🙋 Shift Sign-up Cancelled',
+            `${currentWorker ? currentWorker.name : currentUserName} unsigned from the open shift on ${dayLabel}${timeStr ? ' at ' + timeStr : ''}. It is open again.`,
+            null, currentUserName
+        );
     }
 
     // ══════════════════════════════════════════════════════════
@@ -15139,6 +15172,12 @@
                             border:1px solid rgba(167, 139, 250, 0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-family:inherit;width:100%;">
                             ↔ Request Swap
                         </button>`:''}
+                        ${isMyShift&&!isAdmin&&isVolunteerSlot?`
+                        <button onclick="event.stopPropagation();${shift.templateShiftId?`unclaimTemplateShift('${shift.templateShiftId}','${weekStartStr}')`:`unclaimShift('${shift.id||''}')`}"
+                            style="margin-top:4px;padding:3px 8px;border-radius:6px;font-size:0.6rem;font-weight:800;
+                            border:1px solid rgba(255,107,107,0.25);background:rgba(255,107,107,0.08);color:#FF6B6B;cursor:pointer;font-family:inherit;width:100%;">
+                            ✕ Cancel Sign Up
+                        </button>`:''}
                     </div>`;
                 });
                 if (isCompact) html += `</div>`;
@@ -15199,6 +15238,8 @@
                                 style="background:${color}33;color:${color};">Sign Up →</button>` : ''}
                             ${isMyShift&&!isAdmin&&!isVolunteerSlot&&!hasPendingSwap ? `<button class="smc-action" onclick="event.stopPropagation();openSwapRequestModal('${shift.templateShiftId?'ts:'+shift.templateShiftId:'shift:'+(shift.id||'')}','${weekStartStr}')"
                                 style="background:rgba(255,255,255,0.06);border:1px solid rgba(167, 139, 250, 0.15);color:rgba(255,255,255,0.7);">↔ Request Swap</button>` : ''}
+                            ${isMyShift&&!isAdmin&&isVolunteerSlot ? `<button class="smc-action" onclick="event.stopPropagation();${shift.templateShiftId?`unclaimTemplateShift('${shift.templateShiftId}','${weekStartStr}')`:`unclaimShift('${shift.id||''}')`}"
+                                style="background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);color:#FF6B6B;">✕ Cancel Sign Up</button>` : ''}
                         </div>
                     </div>`;
                 });
