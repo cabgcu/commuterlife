@@ -3005,7 +3005,7 @@
                         <div><label class="em-label">Amount ($)</label><input type="number" id="em-exp-cost" class="em-input" placeholder="0.00" step="0.01"></div>
                     </div>
                     <div class="em-grid-3" style="margin-bottom:16px;">
-                        <div><label class="em-label">Date</label><input type="date" id="em-exp-date" class="em-input"></div>
+                        <div><label class="em-label">Date</label><input type="date" id="em-exp-date" class="em-input" onchange="emSyncExpenseMonthFromDate()"></div>
                         <div><label class="em-label">Month</label><select id="em-exp-month" class="em-input"></select></div>
                         <div><label class="em-label">Category</label>
                             <select id="em-exp-category" class="em-input">
@@ -16185,14 +16185,25 @@
             }).join('');
         }
 
+        // Background syncs re-run this render; rebuilding a <select> resets it to the
+        // first option (and closes the picker on mobile), so only rebuild when the
+        // options actually changed and always restore the user's selection.
         var expMonth = document.getElementById('em-exp-month');
         if (expMonth) {
-            expMonth.innerHTML = budgets.map(function(m) { return '<option value="' + m.name + '">' + m.name + '</option>'; }).join('');
+            var prevMonth = expMonth.value;
+            emSetSelectOptions(expMonth, budgets.map(function(m) { return '<option value="' + m.name + '">' + m.name + '</option>'; }).join(''));
+            if (prevMonth && budgets.some(function(m) { return m.name === prevMonth; })) {
+                expMonth.value = prevMonth;
+            } else if (!prevMonth) {
+                emSyncExpenseMonthFromDate();
+            }
         }
 
         var expEvent = document.getElementById('em-exp-event');
         if (expEvent) {
-            expEvent.innerHTML = '<option value="">-- General Expense --</option>' + (d.events||[]).map(function(ev) { return '<option value="' + ev.id + '">' + ev.name + '</option>'; }).join('');
+            var prevEvent = expEvent.value;
+            emSetSelectOptions(expEvent, '<option value="">-- General Expense --</option>' + (d.events||[]).map(function(ev) { return '<option value="' + ev.id + '">' + ev.name + '</option>'; }).join(''));
+            if (prevEvent && (d.events||[]).some(function(ev) { return ev.id === prevEvent; })) expEvent.value = prevEvent;
         }
 
         var expList = document.getElementById('em-expenses-list');
@@ -16211,6 +16222,25 @@
                     '<button onclick="emDeleteExpense(\'' + exp.id + '\')" style="background:none;border:none;color:#FF3B30;cursor:pointer;font-size:0.7rem;font-weight:700;">Delete</button>' +
                     '</div></div></div>';
             }).join('') || '<div class="em-frosted" style="text-align:center;color:var(--text-muted);padding:40px 24px;border-radius:12px;">No expenses yet.</div>';
+        }
+    }
+
+    function emSetSelectOptions(sel, html) {
+        if (sel.dataset.optionsHtml === html) return;
+        sel.innerHTML = html;
+        sel.dataset.optionsHtml = html;
+    }
+
+    // Pick the Month option matching the expense date (or today if no date yet).
+    function emSyncExpenseMonthFromDate() {
+        var sel = document.getElementById('em-exp-month');
+        if (!sel) return;
+        var dateVal = (document.getElementById('em-exp-date') || {}).value;
+        var d = dateVal ? new Date(dateVal + 'T00:00:00') : new Date();
+        if (isNaN(d)) return;
+        var name = d.toLocaleString('en-US', { month: 'long' });
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value.toLowerCase() === name.toLowerCase()) { sel.selectedIndex = i; return; }
         }
     }
 
