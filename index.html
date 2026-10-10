@@ -2647,7 +2647,7 @@
         .ts-ico { width: 16px; height: 16px; flex-shrink: 0; vertical-align: -3px; }
         .ts-user-card { max-width: 680px; margin: 0 auto 16px; padding: 24px; }
         .ts-user-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-        .ts-greeting { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+        .ts-greeting { margin: 0; padding: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
         .ts-subtle { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-top: 4px; }
         .ts-week-total { text-align: right; }
         .ts-week-total-num { display: flex; align-items: baseline; gap: 6px; justify-content: flex-end; font-size: 2.2rem; font-weight: 900; line-height: 1.1; }
@@ -2734,8 +2734,15 @@
         .ts-hist-week-hrs { font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #d4d4d8; flex-shrink: 0; }
         .ts-hist-week-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
         .ts-hist-log { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
-        .ts-goal-ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-left: auto; }
-        .ts-goal-ctl input { width: 64px; background: var(--inset-bg); border: 1px solid var(--line); color: var(--text-main); border-radius: 10px; padding: 6px 8px; font: 13px var(--font-stack); text-align: center; }
+        .ts-position { color: #d4d4d8; font-weight: 600; }
+        .ts-pos-panel { max-width: 560px; }
+        .ts-pos-help { font-size: 0.78rem; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
+        .ts-pos-row { display: grid; grid-template-columns: 1fr 120px 32px; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .ts-pos-head { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+        .ts-pos-row .ts-input { padding: 0.55rem 0.8rem; }
+        .ts-pos-min { text-align: center; }
+        .ts-pos-add { height: 32px; width: 32px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--accent-blue); color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; line-height: 1; }
+        .ts-pos-select { width: 100%; margin-bottom: 10px; background: var(--inset-bg); border: 1px solid var(--line); color: var(--text-main); border-radius: 10px; padding: 6px 10px; font: 500 0.78rem var(--font-stack); cursor: pointer; }
         @media (max-width: 600px) {
             .ts-user-card { padding: 20px 16px; }
             .ts-greeting { font-size: 1.4rem; }
@@ -2744,7 +2751,7 @@
             .ts-form { padding: 16px; }
             .ts-form-row { flex-direction: column; gap: 0; }
             .ts-field-hours { flex: 1; }
-            .ts-goal-ctl { margin-left: 0; }
+            .ts-pos-row { grid-template-columns: 1fr 84px 28px; }
         }
         @media (min-width: 900px) {
             .ts-user-card { padding: 36px 40px; }
@@ -17050,9 +17057,22 @@
         return _tsIsoDate(new Date(y, m - 1, d + 7 * n));
     }
 
-    // Weekly minimum set by an admin (0 = no minimum; streak then counts any logged week)
-    function _tsWeeklyGoal() {
-        return Math.max(0, parseFloat(appData.settings && appData.settings.tsWeeklyMinHours) || 0);
+    // Positions work like the CAB Timesheet app: admins define each position's weekly
+    // minimum and assign members a position. No position (or 0) = no minimum, and the
+    // streak then counts any week with hours logged.
+    function _tsPositions() {
+        if (!appData.settings) appData.settings = {};
+        if (!Array.isArray(appData.settings.tsPositions)) appData.settings.tsPositions = [];
+        return appData.settings.tsPositions;
+    }
+    function _tsUserPosition(email) {
+        const u = (appData.settings.users || []).find(u => u.email === email);
+        return (u && u.tsPosition) || '';
+    }
+    function _tsWeeklyGoal(email) {
+        const name = _tsUserPosition(email);
+        const p = name ? _tsPositions().find(p => p.name === name) : null;
+        return p ? Math.max(0, parseFloat(p.minHours) || 0) : 0;
     }
 
     // Rows left blank by the old "+ Add Activity" editor stay in the data but aren't shown.
@@ -17117,7 +17137,8 @@
         if (!_tsForm.date || _tsForm.date < weekStartIso || _tsForm.date > todayIso) _tsForm.date = todayIso;
 
         const total = _tsCalcTotal(entries);
-        const goal = _tsWeeklyGoal();
+        const goal = _tsWeeklyGoal(currentUserEmail);
+        const position = _tsUserPosition(currentUserEmail);
         const totals = _tsUserWeekTotals(currentUserEmail);
         const streak = _tsWeekStreak(totals, goal, weekStartIso);
         const yearStart = _tsSchoolYearStartIso();
@@ -17169,7 +17190,7 @@
             <div class="ts-user-head">
                 <div>
                     <h2 class="ts-greeting">Hello ${_escHtml(firstName)},</h2>
-                    <div class="ts-subtle">${_escHtml(_tsWeekLabel(weekStart))}</div>
+                    <div class="ts-subtle">${position ? `<span class="ts-position">${_escHtml(position)}</span> &bull; ` : ''}${_escHtml(_tsWeekLabel(weekStart))}</div>
                 </div>
                 <div class="ts-week-total">
                     <div class="ts-mini-label">This Week</div>
@@ -17309,13 +17330,14 @@
                 <button class="ts-view-btn active" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
                 <button class="ts-view-btn" onclick="tsSetAdminViewMode('alltime')">All Time</button>
             </div>
-            <label class="ts-goal-ctl" title="Minimum hours each member should log per week. Drives their progress bar and 'Weeks On Target' streak. 0 = no minimum.">Weekly min
-                <input type="number" min="0" max="168" step="0.5" value="${_tsWeeklyGoal() || ''}" placeholder="0" onchange="tsSetWeeklyGoal(this.value)"> hrs</label>
+            <button class="ts-view-btn${_tsShowPositions ? ' active' : ''}" style="margin-left:auto;" onclick="tsTogglePositions()" title="Set each position's weekly minimum hours">Positions &amp; Minimums</button>
             <button class="btn-outline" onclick="tsExportAllCsv()" style="font-size:0.8rem; padding:6px 14px;" title="Export all timesheet data as CSV">⬇ Export All (CSV)</button>
         </div>`;
 
+        const positionsPanel = _tsShowPositions ? _tsPositionsPanelHtml() : '';
+
         if (users.length === 0) {
-            container.innerHTML = `${toggle}
+            container.innerHTML = `${toggle}${positionsPanel}
             <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
             <div class="ts-empty">No team members found. Add users in Settings.</div>`;
             return;
@@ -17328,6 +17350,7 @@
             const badgeLabel = ts ? ts.status : 'not submitted';
             const badgeCls = ts ? `ts-status-${ts.status}` : 'ts-status-draft';
             const initials = (u.name || u.email).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+            const goal = _tsWeeklyGoal(u.email);
             summaryHtml += `
             <div class="ts-summary-card" onclick="tsAdminViewMember('${u.email}')">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
@@ -17337,15 +17360,17 @@
                         <div style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_escHtml(u.email)}</div>
                     </div>
                 </div>
+                ${_tsPositionSelectHtml(u)}
                 <div style="display:flex;align-items:center;justify-content:space-between;">
                     <span class="ts-status-badge ${badgeCls}">${badgeLabel}</span>
-                    <span style="font-size:0.9rem;font-weight:800;">${hours % 1 === 0 ? hours : hours.toFixed(1)} hrs</span>
+                    <span style="font-size:0.9rem;font-weight:800;${goal > 0 ? `color:${hours + 1e-9 >= goal ? '#34d399' : hours > 0 ? '#fbbf24' : 'inherit'};` : ''}">${hours % 1 === 0 ? hours : hours.toFixed(1)}${goal > 0 ? ` / ${_tsFmtHours(goal)}` : ''} hrs</span>
                 </div>
             </div>`;
         });
 
         container.innerHTML = `
         ${toggle}
+        ${positionsPanel}
         <div class="ts-week-nav">${prevBtn}<h2>Week of ${_tsWeekLabel(weekStart)}</h2>${nextBtn}</div>
         <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Team Timesheets — click a member to view &amp; edit</div>
         <div class="ts-summary-grid">${summaryHtml}</div>`;
@@ -17364,13 +17389,13 @@
                 <button class="ts-view-btn" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
                 <button class="ts-view-btn active" onclick="tsSetAdminViewMode('alltime')">All Time</button>
             </div>
-            <label class="ts-goal-ctl" title="Minimum hours each member should log per week. Drives their progress bar and 'Weeks On Target' streak. 0 = no minimum.">Weekly min
-                <input type="number" min="0" max="168" step="0.5" value="${_tsWeeklyGoal() || ''}" placeholder="0" onchange="tsSetWeeklyGoal(this.value)"> hrs</label>
+            <button class="ts-view-btn${_tsShowPositions ? ' active' : ''}" style="margin-left:auto;" onclick="tsTogglePositions()" title="Set each position's weekly minimum hours">Positions &amp; Minimums</button>
             <button class="btn-outline" onclick="tsExportAllCsv()" style="font-size:0.8rem; padding:6px 14px;" title="Export all timesheet data as CSV">⬇ Export All (CSV)</button>
         </div>`;
 
+        const positionsPanel = _tsShowPositions ? _tsPositionsPanelHtml() : '';
         if (weeks.length === 0 || users.length === 0) {
-            container.innerHTML = `${toggle}<div class="ts-empty">No timesheet data yet.</div>`;
+            container.innerHTML = `${toggle}${positionsPanel}<div class="ts-empty">No timesheet data yet.</div>`;
             return;
         }
 
@@ -17425,6 +17450,7 @@
 
         container.innerHTML = `
         ${toggle}
+        ${positionsPanel}
         <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">
             All Time Hours — ${weeks.length} week${weeks.length !== 1 ? 's' : ''} · <span style="color:#3b82f6;">●</span> submitted &nbsp;<span style="color:#a1a1aa;">●</span> draft
         </div>
@@ -17448,12 +17474,102 @@
         </div>`;
     }
 
-    function tsSetWeeklyGoal(val) {
-        const n = Math.max(0, parseFloat(val) || 0);
-        if (!appData.settings) appData.settings = {};
-        appData.settings.tsWeeklyMinHours = n;
+    // ── Positions & weekly minimums (admin) ───────────────────────────────────
+
+    let _tsShowPositions = false;
+
+    function tsTogglePositions() {
+        _tsShowPositions = !_tsShowPositions;
+        renderTimesheet();
+    }
+
+    function _tsPositionsPanelHtml() {
+        const positions = _tsPositions();
+        const rows = positions.map((p, i) => `
+            <div class="ts-pos-row">
+                <input class="ts-input" type="text" value="${_escHtml(p.name)}" placeholder="Position name" onchange="tsRenamePosition(${i}, this.value)">
+                <input class="ts-input ts-pos-min" type="number" min="0" max="168" step="0.5" value="${p.minHours || ''}" placeholder="0" onchange="tsSetPositionMin(${i}, this.value)">
+                <button class="ts-del-btn" onclick="tsRemovePosition(${i})" title="Remove position">✕</button>
+            </div>`).join('');
+        return `
+        <div class="ts-card ts-pos-panel">
+            <div class="ts-mini-label" style="margin-bottom:4px;">Positions &amp; Weekly Minimums</div>
+            <p class="ts-pos-help">Each member's position sets the hours they need per week. It drives their progress bar and "Weeks On Target" streak. Members without a position have no minimum.</p>
+            <div class="ts-pos-row ts-pos-head"><span>Position</span><span>Min hrs / week</span><span></span></div>
+            ${rows || '<div class="ts-pos-help" style="margin:4px 0 10px;">No positions yet.</div>'}
+            <div class="ts-pos-row">
+                <input class="ts-input" type="text" id="ts-new-pos-name" placeholder="e.g. Director" onkeydown="if(event.key==='Enter') tsAddPosition()">
+                <input class="ts-input ts-pos-min" type="number" id="ts-new-pos-min" min="0" max="168" step="0.5" placeholder="0" onkeydown="if(event.key==='Enter') tsAddPosition()">
+                <button class="ts-pos-add" onclick="tsAddPosition()" title="Add position">+</button>
+            </div>
+        </div>`;
+    }
+
+    function _tsPositionSelectHtml(u) {
+        const positions = _tsPositions();
+        const current = u.tsPosition || '';
+        const known = positions.some(p => p.name === current);
+        const opts = [`<option value="">No position</option>`]
+            .concat(!current || known ? [] : [`<option value="${_escHtml(current)}" selected>${_escHtml(current)}</option>`])
+            .concat(positions.map(p => `<option value="${_escHtml(p.name)}" ${p.name === current ? 'selected' : ''}>${_escHtml(p.name)}${parseFloat(p.minHours) > 0 ? ` (${_tsFmtHours(p.minHours)} hrs)` : ''}</option>`));
+        return `<select class="ts-pos-select" onclick="event.stopPropagation()" onchange="tsSetUserPosition('${_escHtml(u.email)}', this.value)">${opts.join('')}</select>`;
+    }
+
+    function tsSetUserPosition(email, name) {
+        const u = (appData.settings.users || []).find(u => u.email === email);
+        if (!u) return;
+        if (name) u.tsPosition = name; else delete u.tsPosition;
         saveData();
-        showToast(n > 0 ? `Weekly minimum set to ${_tsFmtHours(n)} hrs` : 'Weekly minimum cleared');
+        renderTimesheet();
+    }
+
+    function tsAddPosition() {
+        const nameEl = document.getElementById('ts-new-pos-name');
+        const minEl = document.getElementById('ts-new-pos-min');
+        const name = (nameEl.value || '').trim();
+        if (!name) { showToast('Enter a position name.'); return; }
+        const positions = _tsPositions();
+        if (positions.some(p => p.name.toLowerCase() === name.toLowerCase())) { showToast('That position already exists.'); return; }
+        positions.push({ name, minHours: Math.max(0, parseFloat(minEl.value) || 0) });
+        saveData();
+        renderTimesheet();
+        setTimeout(() => { const el = document.getElementById('ts-new-pos-name'); if (el) el.focus(); }, 50);
+    }
+
+    function tsSetPositionMin(i, val) {
+        const p = _tsPositions()[i];
+        if (!p) return;
+        p.minHours = Math.max(0, parseFloat(val) || 0);
+        saveData();
+        renderTimesheet();
+    }
+
+    // Renaming carries every member assigned to the old name over to the new one.
+    function tsRenamePosition(i, val) {
+        const positions = _tsPositions();
+        const p = positions[i];
+        const name = (val || '').trim();
+        if (!p || !name || name === p.name) { renderTimesheet(); return; }
+        if (positions.some((q, j) => j !== i && q.name.toLowerCase() === name.toLowerCase())) { showToast('That position already exists.'); renderTimesheet(); return; }
+        (appData.settings.users || []).forEach(u => { if (u.tsPosition === p.name) u.tsPosition = name; });
+        p.name = name;
+        saveData();
+        renderTimesheet();
+    }
+
+    async function tsRemovePosition(i) {
+        const p = _tsPositions()[i];
+        if (!p) return;
+        const count = (appData.settings.users || []).filter(u => u.tsPosition === p.name).length;
+        const ok = await showConfirm('Remove position?', `Remove "${p.name}"?${count ? ` ${count} member${count === 1 ? '' : 's'} will have no position (no weekly minimum).` : ''}`, 'Remove', true);
+        if (!ok) return;
+        const positions = _tsPositions();
+        const idx = positions.findIndex(q => q.name === p.name);
+        if (idx === -1) return;
+        positions.splice(idx, 1);
+        (appData.settings.users || []).forEach(u => { if (u.tsPosition === p.name) delete u.tsPosition; });
+        saveData();
+        renderTimesheet();
     }
 
     function tsSetAdminViewMode(mode) {
@@ -17503,6 +17619,7 @@
                         <div style="font-size:0.78rem;color:var(--text-muted);">${_escHtml(user.email)}</div>
                     </div>
                 </div>
+                <div style="min-width:180px;">${_tsPositionSelectHtml(user)}</div>
                 <span class="ts-status-badge ts-status-${ts.status}">${ts.status}</span>
                 <button class="btn-outline" onclick="tsExportPdf('${email}','${weekStartIso}')" style="font-size:0.8rem; padding:6px 14px;" title="Print / Save PDF">🖨 Export PDF</button>
             </div>
