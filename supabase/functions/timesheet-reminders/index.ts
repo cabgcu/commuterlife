@@ -92,7 +92,7 @@ function emailHtml(name: string, position: string, weekString: string, reqHours:
       </p>
     </div>
     <p style="font-size: 15px; color: #4b5563; margin-bottom: 0;">Thank you,</p>
-    <p style="font-size: 15px; color: #4b5563; font-weight: 600; margin-top: 4px;">— Canyon Activities Board</p>
+    <p style="font-size: 15px; color: #4b5563; font-weight: 600; margin-top: 4px;">— Commuter Life</p>
   </div>
   <div style="background-color: #f9fafb; padding: 16px; border-top: 1px solid #e5e7eb; text-align: center;">
     <p style="font-size: 12px; color: #9ca3af; margin: 0;">This is an automated message from Commuter Life.</p>
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "api-key": brevoApiKey, "Content-Type": "application/json" },
         body: JSON.stringify({
-          sender: { name: "Canyon Activities Board", email: "noreply@cabgcu.com" },
+          sender: { name: "Commuter Life", email: "noreply@cabgcu.com" },
           to: [{ email, name }],
           ...(ccFor.length ? { cc: ccFor } : {}),
           subject: `Action Needed: Timesheet Update - ${weekString}`,
