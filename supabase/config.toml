@@ -17,3 +17,10 @@ verify_jwt = false
 [functions.shift-reminders]
 verify_jwt = false
 schedule = "*/10 * * * *"
+
+# timesheet-reminders runs Mondays at 8:00 AM Arizona (15:00 UTC; Arizona has
+# no DST) and emails, via Brevo, everyone who missed their position's weekly
+# minimum the week before. Each person is emailed at most once per week.
+[functions.timesheet-reminders]
+verify_jwt = false
+schedule = "0 15 * * 1"
