@@ -2643,6 +2643,114 @@
             .ts-admin-member-avatar { width: 42px; height: 42px; font-size: 0.95rem; }
         }
 
+        /* ── Timesheet: member view (matches the CAB Timesheet app) ── */
+        .ts-ico { width: 16px; height: 16px; flex-shrink: 0; vertical-align: -3px; }
+        .ts-user-card { max-width: 680px; margin: 0 auto 16px; padding: 24px; }
+        .ts-user-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+        .ts-greeting { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+        .ts-subtle { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-top: 4px; }
+        .ts-week-total { text-align: right; }
+        .ts-week-total-num { display: flex; align-items: baseline; gap: 6px; justify-content: flex-end; font-size: 2.2rem; font-weight: 900; line-height: 1.1; }
+        .ts-week-total-num .met { color: #34d399; }
+        .ts-week-total-num .partial { color: #fbbf24; }
+        .ts-week-total-req { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+        .ts-mini-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 6px; }
+        .ts-progress { margin-bottom: 18px; }
+        .ts-progress-track { height: 10px; border-radius: 999px; background: var(--inset-bg); border: 1px solid var(--line); overflow: hidden; }
+        .ts-progress-fill { height: 100%; border-radius: 999px; background: #f59e0b; transition: width 0.5s; }
+        .ts-progress-fill.met { background: #10b981; }
+        .ts-progress-text { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 8px; }
+        .ts-green { color: #34d399; font-weight: 600; }
+        .ts-amber { color: #fbbf24; font-weight: 600; }
+        .ts-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+        .ts-stat { background: var(--inset-bg); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+        .ts-stat-val { font-size: 1.25rem; font-weight: 900; display: flex; align-items: center; gap: 6px; }
+        .ts-stat-unit { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+        .ts-flame { color: #fbbf24; }
+        .ts-section-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+        .ts-section-tags { display: flex; align-items: center; gap: 8px; }
+        .ts-tag { font-size: 0.62rem; padding: 3px 8px; border-radius: 6px; background: var(--inset-bg); border: 1px solid var(--line); }
+        .ts-saved { align-items: center; gap: 4px; font-size: 0.62rem; color: #34d399; padding: 3px 8px; border-radius: 6px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); }
+        .ts-saved .ts-ico { width: 12px; height: 12px; }
+        @keyframes tsSavedFade { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; } }
+        .ts-saved-flash { animation: tsSavedFade 2s ease forwards; }
+        .ts-log-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; max-height: 350px; overflow-y: auto; padding-right: 4px; }
+        .ts-log-list > * { flex-shrink: 0; }
+        .ts-log-item { display: flex; align-items: center; gap: 12px; background: var(--inset-bg); border: 1px solid var(--line); border-radius: 16px; padding: 10px 10px 10px 12px; transition: border-color 0.15s; }
+        .ts-log-item:hover { border-color: var(--line-strong); }
+        .ts-log-item.editing { border-color: rgba(245,158,11,0.6); }
+        .ts-log-hours { min-width: 3.5rem; text-align: center; font-weight: 700; padding: 8px 10px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid var(--line); color: #d4d4d8; flex-shrink: 0; }
+        .ts-log-hours.sm { min-width: 2.6rem; padding: 5px 8px; font-size: 0.78rem; border-radius: 9px; }
+        .ts-log-body { flex: 1; min-width: 0; }
+        .ts-log-task { font-size: 0.9rem; font-weight: 500; overflow-wrap: anywhere; margin-bottom: 2px; }
+        .ts-log-task.sm { font-size: 0.8rem; }
+        .ts-log-date { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+        .ts-log-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        .ts-icon-btn { background: rgba(0,0,0,0.35); border: 1px solid transparent; border-radius: 12px; padding: 9px; cursor: pointer; line-height: 0; transition: 0.15s; }
+        .ts-icon-btn.edit { color: #60a5fa; }
+        .ts-icon-btn.edit:hover { background: rgba(37,99,235,0.35); border-color: rgba(59,130,246,0.3); color: #fff; }
+        .ts-icon-btn.del { color: #fb7185; }
+        .ts-icon-btn.del:hover { background: rgba(225,29,72,0.35); border-color: rgba(244,63,94,0.3); color: #fff; }
+        @media (hover: hover) { .ts-log-item .ts-log-actions { opacity: 0; transition: opacity 0.15s; } .ts-log-item:hover .ts-log-actions, .ts-log-item.editing .ts-log-actions { opacity: 1; } }
+        .ts-log-empty { text-align: center; font-size: 0.8rem; font-style: italic; color: var(--text-muted); padding: 24px; border-radius: 16px; border: 1px dashed var(--line-strong); background: var(--inset-bg); }
+        .ts-form { background: var(--inset-bg); border: 1px solid var(--line-strong); border-radius: 18px; padding: 20px; margin-bottom: 24px; transition: 0.2s; }
+        .ts-form.editing { border-color: rgba(245,158,11,0.5); background: rgba(120,53,15,0.12); }
+        .ts-form-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .ts-form-head h4 { margin: 0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px; }
+        .ts-form-head h4 .ts-ico { color: #a1a1aa; }
+        .ts-form.editing .ts-form-head h4, .ts-form.editing .ts-form-head h4 .ts-ico { color: #fbbf24; }
+        .ts-cancel-btn { display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.35); border: none; color: #fb7185; font-size: 0.75rem; font-weight: 600; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+        .ts-cancel-btn .ts-ico { width: 12px; height: 12px; }
+        .ts-form-row { display: flex; gap: 14px; }
+        .ts-field { display: block; flex: 1; min-width: 0; margin-bottom: 14px; }
+        .ts-field-hours { flex: 0 0 34%; }
+        .ts-form-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 12px; font-weight: 500; }
+        .ts-input { width: 100%; box-sizing: border-box; background: var(--inset-bg); border: 1px solid var(--line); color: var(--text-main); border-radius: 12px; padding: 0.7rem 1rem; font: 14px var(--font-stack); outline: none; transition: border-color 0.15s; min-width: 0; -webkit-appearance: none; appearance: none; color-scheme: dark; }
+        .ts-input::placeholder { color: var(--text-dim); }
+        .ts-input:focus { border-color: #52525b; }
+        .ts-input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+        .ts-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+        .ts-recent { margin: -4px 0 16px; }
+        .ts-recent-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ts-chip { text-align: left; font: 500 0.75rem var(--font-stack); color: #f4f4f5; background: rgba(0,0,0,0.35); border: 1px solid var(--line-strong); border-radius: 12px; padding: 6px 12px; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; transition: 0.15s; }
+        .ts-chip:hover { background: var(--highlight-bg); border-color: #52525b; }
+        .ts-save-entry-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 9999px; background: var(--card-bg); border: 1px solid var(--line-strong); color: #fff; font: 700 0.9rem var(--font-stack); cursor: pointer; transition: background 0.15s, transform 0.1s; }
+        .ts-save-entry-btn:hover { background: var(--highlight-bg); }
+        .ts-save-entry-btn:active { transform: scale(0.98); }
+        .ts-save-entry-btn .ts-ico { color: #a1a1aa; }
+        .ts-save-entry-btn.editing { background: linear-gradient(90deg, #d97706, #ea580c); border-color: rgba(245,158,11,0.5); }
+        .ts-save-entry-btn.editing .ts-ico { color: #fff; }
+        .ts-footnote { text-align: center; font-size: 0.72rem; line-height: 1.6; color: var(--text-muted); padding: 20px 12px 0; margin: 0; border-top: 1px solid var(--line); }
+        .ts-user-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+        .ts-pill-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--line-strong); color: #fff; border-radius: 12px; padding: 8px 16px; font: 600 0.78rem var(--font-stack); cursor: pointer; transition: background 0.15s; }
+        .ts-pill-btn:hover { background: var(--highlight-bg); }
+        .ts-pill-btn .ts-ico { color: #a1a1aa; }
+        .ts-alltime { display: flex; justify-content: space-between; align-items: center; background: var(--inset-bg); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+        .ts-alltime-num { font-size: 1.9rem; font-weight: 900; }
+        .ts-hist-week { background: var(--inset-bg); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
+        .ts-hist-week-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: rgba(0,0,0,0.2); font-size: 0.85rem; font-weight: 700; }
+        .ts-hist-week-head > span:first-child { display: flex; align-items: center; gap: 8px; }
+        .ts-hist-week-head .ts-ico { color: #a1a1aa; }
+        .ts-hist-week-hrs { font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #d4d4d8; flex-shrink: 0; }
+        .ts-hist-week-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .ts-hist-log { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+        .ts-goal-ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-left: auto; }
+        .ts-goal-ctl input { width: 64px; background: var(--inset-bg); border: 1px solid var(--line); color: var(--text-main); border-radius: 10px; padding: 6px 8px; font: 13px var(--font-stack); text-align: center; }
+        @media (max-width: 600px) {
+            .ts-user-card { padding: 20px 16px; }
+            .ts-greeting { font-size: 1.4rem; }
+            .ts-week-total { text-align: left; }
+            .ts-week-total-num { justify-content: flex-start; }
+            .ts-form { padding: 16px; }
+            .ts-form-row { flex-direction: column; gap: 0; }
+            .ts-field-hours { flex: 1; }
+            .ts-goal-ctl { margin-left: 0; }
+        }
+        @media (min-width: 900px) {
+            .ts-user-card { padding: 36px 40px; }
+            .ts-greeting { font-size: 1.9rem; }
+        }
+
         /* ================= DASHBOARD THEME =================
            Matches the CAB Event Dashboard: charcoal palette, Inter, photo
            background, left sidebar on desktop, plain bottom bar on phones,
@@ -5100,7 +5208,7 @@
             renderSchedule();
         }
         if (viewName === 'manager') renderManager();
-        if (viewName === 'timesheet') renderTimesheet();
+        if (viewName === 'timesheet') { _tsUserMode = 'week'; renderTimesheet(); }
     }
 
     let searchQuery = '';
@@ -8127,7 +8235,7 @@
             `- Storage view: browse equipment bins, view a bin's contents, "Check Out" an item to yourself, and "Return" it when done. Bins support QR code access for quick lookup.`,
             `- Schedule view: see the shift schedule, set your own availability, and (admin) add shifts. Open/volunteer shifts can be claimed by anyone. Request a shift swap from your own shift, and approve/deny swap requests as the shift owner or admin. Shift reminders are sent 1 hour and 24 hours before a shift.`,
             `- Manager view (admin-only): Events tab for event planning, Calendar tab, Budget tab for tracking spend, and Photos tab for event photo uploads.`,
-            `- Timesheet view: clock in/out and review logged hours.`,
+            `- Timesheet view: log hours by day for the current week (date, hours, task), see weekly progress, year total and week streak, and review past weeks in My History.`,
             `- Change branding (logo, app icon, board background image): Settings -> Branding (admin-only).`,
             `- Back up or restore data: Settings -> Data (admin-only): "Export Data (JSON)"/"Import Data" for local files, or "Save Cloud Backup"/"Restore from Cloud" for a Supabase snapshot.`,
             `- Select multiple cards at once: shift-click cards on the board to multi-select, then use the bulk action bar at the bottom to move or delete them together.`,
@@ -16901,49 +17009,280 @@
     }
 
     // ── User view (current week only, no navigation) ──────────────────────────
+    // Same flow as the standalone CAB Timesheet app: pick a day, enter hours and
+    // a task, and it's recorded right away. No Student ID — the signed-in
+    // Commuter Life account is who the hours belong to.
+
+    let _tsUserMode = 'week';      // 'week' | 'history'
+    let _tsEditingId = null;       // id of the entry loaded into the form
+    let _tsForm = { date: '', hours: '', task: '' }; // survives re-renders
+    let _tsRecentTasks = [];
+
+    const _TS_ICONS = {
+        flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+        clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+        edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+        trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+        plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+        save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+        check: '<polyline points="20 6 9 17 4 12"/>',
+        x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+        history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+        calendar: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
+        back: '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+        printer: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>'
+    };
+    function _tsIcon(name, cls) {
+        return `<svg class="ts-ico ${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${_TS_ICONS[name] || ''}</svg>`;
+    }
+
+    // 2 -> "2", 2.5 -> "2.5", 2.25 -> "2.25"
+    function _tsFmtHours(h) { return String(Math.round((Number(h) || 0) * 100) / 100); }
+
+    function _tsFmtDay(iso) {
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    // Monday (YYYY-MM-DD) n weeks before/after the given Monday
+    function _tsShiftWeekIso(weekIso, n) {
+        const [y, m, d] = weekIso.split('-').map(Number);
+        return _tsIsoDate(new Date(y, m - 1, d + 7 * n));
+    }
+
+    // Weekly minimum set by an admin (0 = no minimum; streak then counts any logged week)
+    function _tsWeeklyGoal() {
+        return Math.max(0, parseFloat(appData.settings && appData.settings.tsWeeklyMinHours) || 0);
+    }
+
+    // Rows left blank by the old "+ Add Activity" editor stay in the data but aren't shown.
+    function _tsIsBlankEntry(e) {
+        return !(e.description || '').trim() && (e.hours === '' || e.hours === undefined || e.hours === null);
+    }
+
+    // Hours per week (keyed by Monday) across all of this user's timesheets.
+    function _tsUserWeekTotals(email) {
+        const totals = {};
+        (appData.timesheets || []).filter(t => t.userEmail === email).forEach(t => {
+            totals[t.weekStart] = (totals[t.weekStart] || 0) + _tsCalcTotal(t.entries || []);
+        });
+        return totals;
+    }
+
+    // Counts back from this week. The current week only counts once it's met, so an
+    // in-progress week never breaks the streak.
+    function _tsWeekStreak(totals, goal, currentWeekIso) {
+        const met = w => (totals[w] || 0) + 1e-9 >= (goal > 0 ? goal : 0.01);
+        let streak = met(currentWeekIso) ? 1 : 0;
+        for (let w = _tsShiftWeekIso(currentWeekIso, -1); met(w); w = _tsShiftWeekIso(w, -1)) streak++;
+        return streak;
+    }
+
+    // School year runs July 1 – June 30.
+    function _tsSchoolYearStartIso() {
+        const now = new Date();
+        const y = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+        return `${y}-07-01`;
+    }
+
+    // Up to six distinct tasks the user has logged, most recent first.
+    function _tsBuildRecentTasks(email) {
+        const all = [];
+        (appData.timesheets || []).filter(t => t.userEmail === email).forEach(t =>
+            (t.entries || []).forEach(e => all.push({ e, sortDate: e.date || t.weekStart })));
+        all.sort((a, b) => b.sortDate.localeCompare(a.sortDate) || String(b.e.id || '').localeCompare(String(a.e.id || '')));
+        const seen = new Set();
+        const out = [];
+        for (const { e } of all) {
+            const task = (e.description || '').trim();
+            const key = task.toLowerCase();
+            if (!key || seen.has(key)) continue;
+            seen.add(key);
+            out.push({ task, hours: e.hours });
+            if (out.length === 6) break;
+        }
+        return out;
+    }
 
     function _tsRenderUser(container) {
+        if (_tsUserMode === 'history') { _tsRenderUserHistory(container); return; }
+
         const weekStart = _tsGetWeekStart(0); // always current week for users
         const weekStartIso = _tsIsoDate(weekStart);
-        const ts = _tsGetOrCreate(currentUserEmail, currentUserName, weekStartIso);
+        const todayIso = _tsIsoDate(new Date());
+        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
+        const entries = ts ? ts.entries.filter(e => !_tsIsBlankEntry(e)) : [];
 
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        const fmtOpts = { month: 'long', day: 'numeric' };
-        const weekLabel = `${weekStart.toLocaleDateString('en-US', fmtOpts)} – ${weekEnd.toLocaleDateString('en-US', { ...fmtOpts, year: 'numeric' })}`;
+        if (_tsEditingId && !entries.some(e => String(e.id) === String(_tsEditingId))) _tsEditingId = null;
+        if (!_tsForm.date || _tsForm.date < weekStartIso || _tsForm.date > todayIso) _tsForm.date = todayIso;
 
-        let entriesHtml = '';
-        ts.entries.forEach((entry, idx) => {
-            entriesHtml += `
-            <div class="ts-entry-row">
-                <textarea class="ts-entry-desc" rows="1" placeholder="What did you work on?"
-                    oninput="tsUpdateEntry('${weekStartIso}',${idx},'description',this.value)">${_escHtml(entry.description || '')}</textarea>
-                <input class="ts-entry-hours" type="number" min="0" max="168" step="0.5" placeholder="hrs"
-                    value="${entry.hours !== '' && entry.hours !== undefined ? entry.hours : ''}"
-                    oninput="tsUpdateEntry('${weekStartIso}',${idx},'hours',this.value)">
-                <button class="ts-del-btn" onclick="tsDeleteEntry('${weekStartIso}',${idx})" title="Remove">✕</button>
+        const total = _tsCalcTotal(entries);
+        const goal = _tsWeeklyGoal();
+        const totals = _tsUserWeekTotals(currentUserEmail);
+        const streak = _tsWeekStreak(totals, goal, weekStartIso);
+        const yearStart = _tsSchoolYearStartIso();
+        const yearTotal = Object.keys(totals).filter(w => w >= yearStart).reduce((s, w) => s + totals[w], 0);
+        _tsRecentTasks = _tsBuildRecentTasks(currentUserEmail);
+
+        const firstName = (currentUserName || '').split(' ')[0] || 'there';
+        const totalCls = goal > 0 ? (total >= goal ? 'met' : total > 0 ? 'partial' : '') : '';
+
+        let progressHtml = '';
+        if (goal > 0) {
+            const met = total + 1e-9 >= goal;
+            const day = new Date().getDay();
+            const daysLeft = day === 0 ? 1 : 8 - day; // days left in the Mon–Sun week, counting today
+            const toGo = goal - total;
+            progressHtml = `
+            <div class="ts-progress">
+                <div class="ts-progress-track"><div class="ts-progress-fill ${met ? 'met' : ''}" style="width:${Math.min(100, (total / goal) * 100)}%"></div></div>
+                <div class="ts-progress-text">${met
+                    ? `<span class="ts-green">Minimum met for this week — nice work!</span>`
+                    : `<span class="ts-amber">${_tsFmtHours(toGo)} ${toGo === 1 ? 'hr' : 'hrs'} to go</span> · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left this week`}</div>
             </div>`;
-        });
+        }
 
-        const total = _tsCalcTotal(ts.entries);
+        const entriesHtml = entries.length ? entries.map(entry => `
+            <div class="ts-log-item${String(entry.id) === String(_tsEditingId) ? ' editing' : ''}">
+                <div class="ts-log-hours">${_escHtml(_tsFmtHours(entry.hours))}</div>
+                <div class="ts-log-body">
+                    <div class="ts-log-task">${_escHtml(entry.description || '(no description)')}</div>
+                    <div class="ts-log-date">${entry.date ? _tsFmtDay(entry.date) : 'This week'}</div>
+                </div>
+                <div class="ts-log-actions">
+                    <button class="ts-icon-btn edit" onclick="tsEditEntry('${_escHtml(String(entry.id))}')" title="Edit">${_tsIcon('edit')}</button>
+                    <button class="ts-icon-btn del" onclick="tsRemoveEntry('${_escHtml(String(entry.id))}')" title="Remove">${_tsIcon('trash')}</button>
+                </div>
+            </div>`).join('')
+            : `<div class="ts-log-empty">No hours logged yet this week.</div>`;
+
+        const editing = !!_tsEditingId;
+        const recentHtml = _tsRecentTasks.length ? `
+            <div class="ts-recent">
+                <div class="ts-mini-label">Recent tasks — tap to reuse</div>
+                <div class="ts-recent-list">${_tsRecentTasks.map((t, i) =>
+                    `<button type="button" class="ts-chip" onclick="tsUseRecentTask(${i})">${_escHtml(t.task)}</button>`).join('')}</div>
+            </div>` : '';
 
         container.innerHTML = `
-        <div class="ts-week-nav">
-            <h2>My Timesheet — ${weekLabel}</h2>
-            <button class="btn-outline" onclick="tsExportPdf('${currentUserEmail}','${weekStartIso}')" style="font-size:0.8rem; padding:6px 14px;" title="Print / Save PDF">🖨 Export PDF</button>
-        </div>
-        <div class="ts-card">
-            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;display:grid;grid-template-columns:1fr 90px 32px;gap:10px;margin-bottom:10px;">
-                <span>Description</span><span style="text-align:center;">Hours</span><span></span>
+        <div class="ts-card ts-user-card">
+            <div class="ts-user-head">
+                <div>
+                    <h2 class="ts-greeting">Hello ${_escHtml(firstName)},</h2>
+                    <div class="ts-subtle">${_escHtml(_tsWeekLabel(weekStart))}</div>
+                </div>
+                <div class="ts-week-total">
+                    <div class="ts-mini-label">This Week</div>
+                    <div class="ts-week-total-num"><span id="ts-total-display" class="${totalCls}">${total.toFixed(1)}</span>
+                        <span class="ts-week-total-req">${goal > 0 ? `/ ${_tsFmtHours(goal)} required` : 'hrs'}</span></div>
+                </div>
             </div>
-            ${entriesHtml || `<div style="color:var(--text-muted);font-size:0.88rem;padding:8px 0 14px;">No activities yet — add what you worked on this week.</div>`}
-            <button class="ts-add-entry-btn" onclick="tsAddEntry('${weekStartIso}')">+ Add Activity</button>
-            <div class="ts-total-row">
-                <span class="ts-total-label">Total Hours</span>
-                <span class="ts-total-value" id="ts-total-display">${total % 1 === 0 ? total : total.toFixed(1)}</span>
+            ${progressHtml}
+            <div class="ts-stat-grid">
+                <div class="ts-stat">
+                    <div class="ts-mini-label">This Year</div>
+                    <div class="ts-stat-val">${yearTotal.toFixed(1)} <span class="ts-stat-unit">hrs</span></div>
+                </div>
+                <div class="ts-stat">
+                    <div class="ts-mini-label">${goal > 0 ? 'Weeks On Target' : 'Weeks Logged'}</div>
+                    <div class="ts-stat-val">${_tsIcon('flame', 'ts-flame')}${streak} <span class="ts-stat-unit">in a row</span></div>
+                </div>
             </div>
-        </div>
-        <div style="color:var(--text-muted);font-size:0.75rem;text-align:center;margin-top:10px;">Changes save automatically · auto-submits at midnight every Monday</div>`;
+
+            <div class="ts-section-head">
+                <span>Logged Hours</span>
+                <span class="ts-section-tags">
+                    <span id="ts-saved" class="ts-saved" style="display:none;">${_tsIcon('check')} Saved</span>
+                    <span class="ts-tag">Current Week</span>
+                </span>
+            </div>
+            <div class="ts-log-list">${entriesHtml}</div>
+
+            <div class="ts-form${editing ? ' editing' : ''}" id="ts-form-box">
+                <div class="ts-form-head">
+                    <h4>${editing ? _tsIcon('edit') + ' Edit Logged Hours' : _tsIcon('clock') + ' Log New Hours'}</h4>
+                    ${editing ? `<button class="ts-cancel-btn" onclick="tsCancelEdit()">${_tsIcon('x')} Cancel</button>` : ''}
+                </div>
+                <div class="ts-form-row">
+                    <label class="ts-field ts-field-date">
+                        <span class="ts-form-label">Date</span>
+                        <input type="date" id="ts-entry-date" class="ts-input" min="${weekStartIso}" max="${todayIso}" value="${_tsForm.date}" oninput="_tsForm.date=this.value">
+                    </label>
+                    <label class="ts-field ts-field-hours">
+                        <span class="ts-form-label">Hours</span>
+                        <input type="number" id="ts-entry-hours" class="ts-input" step="0.25" min="0" max="24" inputmode="decimal" placeholder="e.g. 2.5" value="${_escHtml(_tsForm.hours)}" oninput="_tsForm.hours=this.value">
+                    </label>
+                </div>
+                <label class="ts-field">
+                    <span class="ts-form-label">Task Description</span>
+                    <input type="text" id="ts-entry-task" class="ts-input" placeholder="What did you work on?" value="${_escHtml(_tsForm.task)}" oninput="_tsForm.task=this.value" onkeydown="if(event.key==='Enter') tsSaveEntry()">
+                </label>
+                ${recentHtml}
+                <button class="ts-save-entry-btn${editing ? ' editing' : ''}" onclick="tsSaveEntry()">
+                    ${editing ? _tsIcon('save') + ' Update Entry' : _tsIcon('plus') + ' Add to Week'}
+                </button>
+            </div>
+
+            <p class="ts-footnote"><span class="ts-green">Hours are recorded as soon as you add them</span> — there's nothing else to submit. Each week runs Monday–Sunday and a fresh week starts automatically every Monday at 12:00 AM.</p>
+
+            <div class="ts-user-actions">
+                <button class="ts-pill-btn" onclick="tsExportPdf('${_escHtml(currentUserEmail)}','${weekStartIso}')">${_tsIcon('printer')} Export PDF</button>
+                <button class="ts-pill-btn" onclick="tsShowHistory()">${_tsIcon('history')} My History</button>
+            </div>
+        </div>`;
+    }
+
+    function _tsRenderUserHistory(container) {
+        const sheets = (appData.timesheets || []).filter(t => t.userEmail === currentUserEmail);
+        const grouped = {};
+        let allTime = 0;
+        sheets.forEach(t => {
+            (t.entries || []).filter(e => !_tsIsBlankEntry(e)).forEach(e => {
+                const h = parseFloat(e.hours) || 0;
+                allTime += h;
+                if (!grouped[t.weekStart]) grouped[t.weekStart] = { hours: 0, logs: [] };
+                grouped[t.weekStart].hours += h;
+                grouped[t.weekStart].logs.push(e);
+            });
+        });
+
+        const weeks = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+        const listHtml = weeks.length ? weeks.map(w => {
+            const [y, m, d] = w.split('-').map(Number);
+            const logs = grouped[w].logs.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            return `
+            <div class="ts-hist-week">
+                <div class="ts-hist-week-head">
+                    <span>${_tsIcon('calendar')} ${_escHtml(_tsWeekLabel(new Date(y, m - 1, d)))}</span>
+                    <span class="ts-hist-week-hrs">${grouped[w].hours.toFixed(1)} hrs</span>
+                </div>
+                <div class="ts-hist-week-body">${logs.map(e => `
+                    <div class="ts-hist-log">
+                        <div class="ts-log-hours sm">${_escHtml(_tsFmtHours(e.hours))}</div>
+                        <div class="ts-log-body">
+                            <div class="ts-log-task sm">${_escHtml(e.description || '(no description)')}</div>
+                            <div class="ts-log-date">${e.date ? _tsFmtDay(e.date) : 'Week of ' + _escHtml(_tsFmtDay(w))}</div>
+                        </div>
+                    </div>`).join('')}
+                </div>
+            </div>`;
+        }).join('') : `<div class="ts-log-empty">No hours logged yet.</div>`;
+
+        container.innerHTML = `
+        <div class="ts-card ts-user-card">
+            <div class="ts-user-head">
+                <div>
+                    <h2 class="ts-greeting">My Hours History</h2>
+                    <div class="ts-subtle">${_escHtml(currentUserName || currentUserEmail)}</div>
+                </div>
+                <button class="ts-pill-btn" onclick="tsShowWeek()">${_tsIcon('back')} Back</button>
+            </div>
+            <div class="ts-alltime">
+                <span class="ts-mini-label" style="margin:0;">All-Time Total</span>
+                <span class="ts-alltime-num">${allTime.toFixed(1)}</span>
+            </div>
+            ${listHtml}
+        </div>`;
     }
 
     // ── Admin overview (all members, week navigation) ─────────────────────────
@@ -16970,6 +17309,8 @@
                 <button class="ts-view-btn active" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
                 <button class="ts-view-btn" onclick="tsSetAdminViewMode('alltime')">All Time</button>
             </div>
+            <label class="ts-goal-ctl" title="Minimum hours each member should log per week. Drives their progress bar and 'Weeks On Target' streak. 0 = no minimum.">Weekly min
+                <input type="number" min="0" max="168" step="0.5" value="${_tsWeeklyGoal() || ''}" placeholder="0" onchange="tsSetWeeklyGoal(this.value)"> hrs</label>
             <button class="btn-outline" onclick="tsExportAllCsv()" style="font-size:0.8rem; padding:6px 14px;" title="Export all timesheet data as CSV">⬇ Export All (CSV)</button>
         </div>`;
 
@@ -17023,6 +17364,8 @@
                 <button class="ts-view-btn" onclick="tsSetAdminViewMode('weekly')">Weekly</button>
                 <button class="ts-view-btn active" onclick="tsSetAdminViewMode('alltime')">All Time</button>
             </div>
+            <label class="ts-goal-ctl" title="Minimum hours each member should log per week. Drives their progress bar and 'Weeks On Target' streak. 0 = no minimum.">Weekly min
+                <input type="number" min="0" max="168" step="0.5" value="${_tsWeeklyGoal() || ''}" placeholder="0" onchange="tsSetWeeklyGoal(this.value)"> hrs</label>
             <button class="btn-outline" onclick="tsExportAllCsv()" style="font-size:0.8rem; padding:6px 14px;" title="Export all timesheet data as CSV">⬇ Export All (CSV)</button>
         </div>`;
 
@@ -17103,6 +17446,14 @@
                 </tfoot>
             </table>
         </div>`;
+    }
+
+    function tsSetWeeklyGoal(val) {
+        const n = Math.max(0, parseFloat(val) || 0);
+        if (!appData.settings) appData.settings = {};
+        appData.settings.tsWeeklyMinHours = n;
+        saveData();
+        showToast(n > 0 ? `Weekly minimum set to ${_tsFmtHours(n)} hrs` : 'Weekly minimum cleared');
     }
 
     function tsSetAdminViewMode(mode) {
@@ -17205,7 +17556,8 @@
         const weekLabel = `${weekStart.toLocaleDateString('en-US', fmtOpts)} – ${weekEnd.toLocaleDateString('en-US', { ...fmtOpts, year: 'numeric' })}`;
 
         const total = _tsCalcTotal(ts.entries);
-        const rows = (ts.entries || []).map(entry => `<tr>
+        const rows = (ts.entries || []).filter(entry => !_tsIsBlankEntry(entry)).map(entry => `<tr>
+            <td style="white-space:nowrap;">${entry.date ? _tsFmtDay(entry.date) : ''}</td>
             <td>${escapeHtml(entry.description || '')}</td>
             <td style="text-align:right;">${entry.hours !== '' && entry.hours !== undefined ? entry.hours : '0'}</td>
         </tr>`).join('');
@@ -17225,9 +17577,9 @@
         </style></head><body>
         <h1>${escapeHtml(name)}</h1>
         <div class="sub">Week of ${weekLabel} · Status: ${ts.status}</div>
-        <table><thead><tr><th>Description</th><th style="text-align:right;">Hours</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="2" style="color:#888;">No entries</td></tr>'}</tbody>
-        <tfoot><tr><td>Total</td><td style="text-align:right;">${total % 1 === 0 ? total : total.toFixed(1)}</td></tr></tfoot>
+        <table><thead><tr><th>Date</th><th>Description</th><th style="text-align:right;">Hours</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="3" style="color:#888;">No entries</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="2">Total</td><td style="text-align:right;">${total % 1 === 0 ? total : total.toFixed(1)}</td></tr></tfoot>
         </table>
         <script>window.onload=()=>window.print();<\/script>
         </body></html>`);
@@ -17242,18 +17594,18 @@
         const nameFor = email => { const u = users.find(u => u.email === email); return u ? (u.name || u.email) : email; };
         const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
 
-        let csv = 'Member,Email,Week Start,Status,Description,Hours\n';
+        let csv = 'Member,Email,Week Start,Date,Status,Description,Hours\n';
         timesheets.slice()
             .sort((a, b) => a.weekStart === b.weekStart ? nameFor(a.userEmail).localeCompare(nameFor(b.userEmail)) : a.weekStart.localeCompare(b.weekStart))
             .forEach(ts => {
                 const entries = ts.entries || [];
                 if (!entries.length) {
-                    csv += [esc(nameFor(ts.userEmail)), esc(ts.userEmail), esc(ts.weekStart), esc(ts.status), esc(''), esc(0)].join(',') + '\n';
+                    csv += [esc(nameFor(ts.userEmail)), esc(ts.userEmail), esc(ts.weekStart), esc(''), esc(ts.status), esc(''), esc(0)].join(',') + '\n';
                     return;
                 }
                 entries.forEach(entry => {
                     const hours = entry.hours !== '' && entry.hours !== undefined ? entry.hours : 0;
-                    csv += [esc(nameFor(ts.userEmail)), esc(ts.userEmail), esc(ts.weekStart), esc(ts.status), esc(entry.description), esc(hours)].join(',') + '\n';
+                    csv += [esc(nameFor(ts.userEmail)), esc(ts.userEmail), esc(ts.weekStart), esc(entry.date || ''), esc(ts.status), esc(entry.description), esc(hours)].join(',') + '\n';
                 });
             });
 
@@ -17276,36 +17628,128 @@
 
     // ── User mutations ────────────────────────────────────────────────────────
 
-    function tsAddEntry(weekStartIso) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts) return;
-        ts.entries.push({ id: 'tse_' + Date.now(), description: '', hours: '' });
-        renderTimesheet();
-        _tsAutoSave();
-        // focus the new textarea after render
-        setTimeout(() => {
-            const rows = document.querySelectorAll('.ts-entry-desc');
-            if (rows.length) rows[rows.length - 1].focus();
-        }, 50);
+    function tsShowHistory() { _tsUserMode = 'history'; renderTimesheet(); }
+    function tsShowWeek() { _tsUserMode = 'week'; renderTimesheet(); }
+
+    function _tsFlashSaved() {
+        const el = document.getElementById('ts-saved');
+        if (!el) return;
+        el.style.display = 'inline-flex';
+        el.classList.remove('ts-saved-flash');
+        void el.offsetWidth; // restart the animation
+        el.classList.add('ts-saved-flash');
     }
 
-    function tsDeleteEntry(weekStartIso, idx) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts) return;
-        ts.entries.splice(idx, 1);
-        ts.totalHours = _tsCalcTotal(ts.entries);
-        renderTimesheet();
-        _tsAutoSave();
+    function _tsResetForm() {
+        _tsEditingId = null;
+        _tsForm = { date: _tsIsoDate(new Date()), hours: '', task: '' };
     }
 
-    function tsUpdateEntry(weekStartIso, idx, field, value) {
-        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
-        if (!ts) return;
-        if (ts.entries[idx]) ts.entries[idx][field] = value;
+    // No single entry, and no single day, can go over 24 hours. Returns an error message or ''.
+    function _tsCheckDayLimit(entries, date, hours, ignoreId) {
+        if (hours <= 0) return 'Hours must be more than 0.';
+        if (hours > 24) return 'One entry can\'t be more than 24 hours.';
+        const already = entries
+            .filter(e => e.date === date && String(e.id) !== String(ignoreId))
+            .reduce((s, e) => s + (parseFloat(e.hours) || 0), 0);
+        if (already + hours > 24) return `That would put ${_tsFmtDay(date)} over 24 hours (${_tsFmtHours(already)} already logged that day).`;
+        return '';
+    }
+
+    // dupOk: user already confirmed a same-day, same-task entry.
+    async function tsSaveEntry(dupOk) {
+        const date = (document.getElementById('ts-entry-date') || {}).value || _tsForm.date;
+        const hours = parseFloat((document.getElementById('ts-entry-hours') || {}).value);
+        const task = ((document.getElementById('ts-entry-task') || {}).value || '').trim();
+        _tsForm = { date, hours: isNaN(hours) ? '' : String(hours), task };
+
+        if (!date || !hours || !task) { showToast('Please fill out Date, Hours, and Task.'); return; }
+        const weekStartIso = _tsIsoDate(_tsGetWeekStart(0));
+        if (date < weekStartIso || date > _tsIsoDate(new Date())) { showToast('Selected date is outside the allowed logging window.'); return; }
+
+        const existing = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
+        const entries = existing ? existing.entries : [];
+        const dayError = _tsCheckDayLimit(entries, date, hours, _tsEditingId);
+        if (dayError) { showToast(dayError); return; }
+
+        // Same task on the same day is usually a double-tap or a copy mistake.
+        if (!dupOk) {
+            const dup = entries.find(e => e.date === date && String(e.id) !== String(_tsEditingId)
+                && (e.description || '').trim().toLowerCase() === task.toLowerCase());
+            if (dup) {
+                const ok = await showConfirm('Log this again?',
+                    `You already logged "${dup.description}" (${_tsFmtHours(dup.hours)} hrs) on ${_tsFmtDay(date)}. Add another entry anyway?`,
+                    'Add Anyway');
+                if (ok) tsSaveEntry(true);
+                return;
+            }
+        }
+
+        const ts = _tsGetOrCreate(currentUserEmail, currentUserName, weekStartIso);
+        const current = _tsEditingId ? ts.entries.find(e => String(e.id) === String(_tsEditingId)) : null;
+        if (current) {
+            current.date = date;
+            current.hours = hours;
+            current.description = task;
+            showToast('Entry updated successfully!');
+        } else {
+            ts.entries.push({ id: 'tse_' + Date.now(), date, hours, description: task });
+            showToast('Hours added to current week!');
+        }
         ts.totalHours = _tsCalcTotal(ts.entries);
-        const el = document.getElementById('ts-total-display');
-        if (el) { const v = ts.totalHours; el.textContent = v % 1 === 0 ? v : v.toFixed(1); }
-        _tsAutoSave();
+        _tsResetForm();
+        renderTimesheet();
+        clearTimeout(_tsAutoSaveTimer); _tsAutoSaveTimer = null;
+        saveData().then(_tsFlashSaved);
+    }
+
+    function tsEditEntry(id) {
+        const weekStartIso = _tsIsoDate(_tsGetWeekStart(0));
+        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
+        const entry = ts && ts.entries.find(e => String(e.id) === String(id));
+        if (!entry) return;
+        _tsEditingId = entry.id;
+        _tsForm = { date: entry.date || _tsIsoDate(new Date()), hours: entry.hours === '' || entry.hours == null ? '' : String(entry.hours), task: entry.description || '' };
+        renderTimesheet();
+        const box = document.getElementById('ts-form-box');
+        if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function tsCancelEdit() {
+        _tsResetForm();
+        renderTimesheet();
+    }
+
+    async function tsRemoveEntry(id) {
+        const weekStartIso = _tsIsoDate(_tsGetWeekStart(0));
+        const ts = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
+        const idx = ts ? ts.entries.findIndex(e => String(e.id) === String(id)) : -1;
+        if (idx === -1) return;
+        const entry = ts.entries[idx];
+        const ok = await showConfirm('Remove entry?', `Remove "${entry.description || 'this entry'}" (${_tsFmtHours(entry.hours)} hrs)?`, 'Remove', true);
+        if (!ok) return;
+        // Re-find in case the data was refreshed while the dialog was open
+        const live = (appData.timesheets || []).find(t => t.userEmail === currentUserEmail && t.weekStart === weekStartIso);
+        const liveIdx = live ? live.entries.findIndex(e => String(e.id) === String(id)) : -1;
+        if (liveIdx === -1) return;
+        live.entries.splice(liveIdx, 1);
+        live.totalHours = _tsCalcTotal(live.entries);
+        if (String(_tsEditingId) === String(id)) _tsResetForm();
+        renderTimesheet();
+        clearTimeout(_tsAutoSaveTimer); _tsAutoSaveTimer = null;
+        saveData().then(_tsFlashSaved);
+    }
+
+    function tsUseRecentTask(i) {
+        const t = _tsRecentTasks[i];
+        if (!t) return;
+        const taskEl = document.getElementById('ts-entry-task');
+        const hoursEl = document.getElementById('ts-entry-hours');
+        if (taskEl) { taskEl.value = t.task; _tsForm.task = t.task; }
+        if (hoursEl) {
+            if (!hoursEl.value && t.hours !== '' && t.hours != null) { hoursEl.value = t.hours; _tsForm.hours = String(t.hours); }
+            hoursEl.focus();
+        }
     }
 
     // ── Admin mutations ───────────────────────────────────────────────────────
