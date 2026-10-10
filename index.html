@@ -2735,6 +2735,13 @@
         .ts-hist-week-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
         .ts-hist-log { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
         .ts-position { color: #d4d4d8; font-weight: 600; }
+        .ts-email-box { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+        .ts-email-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 14px; cursor: pointer; }
+        .ts-email-toggle input { width: 16px; height: 16px; accent-color: #3b82f6; }
+        .ts-email-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+        .ts-behind-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; font-size: 0.8rem; padding: 8px 12px; background: var(--inset-bg); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; }
+        .ts-behind-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ts-behind-status { color: var(--text-muted); font-size: 0.72rem; text-align: right; }
         .ts-pos-panel { max-width: 560px; }
         .ts-pos-help { font-size: 0.78rem; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
         .ts-pos-row { display: grid; grid-template-columns: 1fr 120px 32px; gap: 10px; align-items: center; margin-bottom: 8px; }
@@ -2752,6 +2759,7 @@
             .ts-form-row { flex-direction: column; gap: 0; }
             .ts-field-hours { flex: 1; }
             .ts-pos-row { grid-template-columns: 1fr 84px 28px; }
+            .ts-email-grid { grid-template-columns: 1fr; gap: 0; }
         }
         @media (min-width: 900px) {
             .ts-user-card { padding: 36px 40px; }
@@ -17502,7 +17510,91 @@
                 <input class="ts-input ts-pos-min" type="number" id="ts-new-pos-min" min="0" max="168" step="0.5" placeholder="0" onkeydown="if(event.key==='Enter') tsAddPosition()">
                 <button class="ts-pos-add" onclick="tsAddPosition()" title="Add position">+</button>
             </div>
+            ${_tsEmailPanelHtml()}
         </div>`;
+    }
+
+    // ── Minimum-hours emails (sent by the timesheet-reminders edge function via Brevo) ──
+
+    function _tsEmailSettings() {
+        if (!appData.settings) appData.settings = {};
+        if (!appData.settings.tsEmailSettings) appData.settings.tsEmailSettings = {};
+        return appData.settings.tsEmailSettings;
+    }
+
+    function _tsEmailPanelHtml() {
+        const s = _tsEmailSettings();
+        const enabled = s.enabled !== false;
+        const threshold = s.breakThreshold ?? 7;
+        const lastWeek = _tsShiftWeekIso(_tsIsoDate(_tsGetWeekStart(0)), -1);
+        const [y, m, d] = lastWeek.split('-').map(Number);
+        const users = (appData.settings.users || []).filter(u => u.email && u.email !== 'admin');
+        const hoursFor = email => (appData.timesheets || [])
+            .filter(t => t.userEmail === email && t.weekStart === lastWeek)
+            .reduce((sum, t) => sum + _tsCalcTotal(t.entries || []), 0);
+        const active = users.filter(u => hoursFor(u.email) > 0).length;
+        const sent = ((appData.timesheetEmailLog || {})[lastWeek]) || {};
+        const behind = users
+            .map(u => ({ u, req: _tsWeeklyGoal(u.email), logged: hoursFor(u.email) }))
+            .filter(x => x.req > 0 && x.logged + 1e-9 < x.req);
+        const isBreak = active < threshold;
+
+        const rows = behind.map(({ u, req, logged }) => {
+            const at = sent[u.email.toLowerCase()];
+            return `<div class="ts-behind-row">
+                <span class="ts-behind-name">${_escHtml(u.name || u.email)}</span>
+                <span class="ts-amber">${_tsFmtHours(logged)} / ${_tsFmtHours(req)} hrs</span>
+                <span class="ts-behind-status">${at ? `<span class="ts-green">Emailed ${new Date(at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>` : (isBreak || !enabled ? 'Not sent' : 'Pending')}</span>
+            </div>`;
+        }).join('');
+
+        return `
+            <div class="ts-email-box">
+                <div class="ts-mini-label" style="margin-bottom:4px;">Minimum-Hours Emails</div>
+                <p class="ts-pos-help">Every Monday at 8:00 AM, anyone who logged less than their position's minimum the week before gets an email (sent through Brevo, once per person per week). Like the timesheet app, emails pause on break weeks, when fewer than the threshold of members logged any hours.</p>
+                <label class="ts-email-toggle"><input type="checkbox" ${enabled ? 'checked' : ''} onchange="tsSetEmailSetting('enabled', this.checked)"> Send minimum-hours emails</label>
+                <div class="ts-email-grid">
+                    <label class="ts-field"><span class="ts-form-label">Break-week threshold (members)</span>
+                        <input class="ts-input" type="number" min="0" step="1" value="${_escHtml(String(threshold))}" onchange="tsSetEmailSetting('breakThreshold', Math.max(0, parseInt(this.value) || 0))"></label>
+                    <label class="ts-field"><span class="ts-form-label">CC on every email (optional)</span>
+                        <input class="ts-input" type="text" value="${_escHtml(s.cc || '')}" placeholder="staff@gcu.edu, director@gcu.edu" onchange="tsSetEmailSetting('cc', this.value.trim())"></label>
+                </div>
+                <div class="ts-mini-label" style="margin-top:4px;">Last week · ${_escHtml(_tsWeekLabel(new Date(y, m - 1, d)))}</div>
+                <p class="ts-pos-help" style="margin-bottom:8px;">${active} member${active === 1 ? '' : 's'} logged hours${isBreak ? ` — <span class="ts-amber">below the threshold of ${threshold}, so this counts as a break week and no emails go out</span>` : ''}.</p>
+                ${rows || '<p class="ts-pos-help ts-green" style="margin-bottom:8px;">Everyone with a minimum met it.</p>'}
+                ${behind.length && enabled && !isBreak ? `<button class="ts-pill-btn" style="margin-top:10px;" id="ts-send-now" onclick="tsSendReminderEmails()">Send pending emails now</button>` : ''}
+            </div>`;
+    }
+
+    function tsSetEmailSetting(key, value) {
+        _tsEmailSettings()[key] = value;
+        saveData();
+        renderTimesheet();
+    }
+
+    // The function only emails people not already emailed for that week, so this is
+    // safe to press more than once.
+    async function tsSendReminderEmails() {
+        const btn = document.getElementById('ts-send-now');
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+        // Make sure the latest positions/settings are on the server before it reads them
+        clearTimeout(_tsAutoSaveTimer); _tsAutoSaveTimer = null;
+        await saveData();
+        try {
+            const resp = await fetch(SUPABASE_URL + '/functions/v1/timesheet-reminders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+                body: '{}'
+            });
+            const out = await resp.json().catch(() => ({}));
+            if (!resp.ok) showToast(out.error || 'Couldn\'t send emails.');
+            else if (out.skipped) showToast(out.skipped);
+            else showToast(`Sent ${out.sent || 0} email${out.sent === 1 ? '' : 's'}${out.failed ? ` · ${out.failed} failed` : ''}.`);
+            if (typeof _refreshAppStateFromServer === 'function') await _refreshAppStateFromServer();
+        } catch (e) {
+            showToast('Couldn\'t reach the email service.');
+        }
+        renderTimesheet();
     }
 
     function _tsPositionSelectHtml(u) {
