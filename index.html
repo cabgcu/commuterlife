@@ -898,9 +898,9 @@
         .close-modal:hover { background: rgba(0,0,0,0.8); transform: scale(1.05); }
         .stat-label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; font-weight: 700; display: block; margin-bottom: 10px; margin-top: 15px;}
 
-        .modal-grid { display: grid; grid-template-columns: 1fr 240px; gap: 30px; margin-top: 20px; }
-        .modal-main { display: flex; flex-direction: column; gap: 20px; }
-        .modal-sidebar { display: flex; flex-direction: column; gap: 10px; }
+        .modal-grid { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 30px; margin-top: 20px; }
+        .modal-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        .modal-sidebar { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
         
         .sidebar-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(63, 63, 70, 0.25); color: #fff; padding: 10px 15px; border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
         .sidebar-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(63, 63, 70, 0.75); }
@@ -1488,7 +1488,7 @@
             .attachment-details { flex-basis: calc(100% - 60px); }
             .attachment-actions { width: 100%; justify-content: flex-end; margin-top: 4px; border-top: 1px solid rgba(63, 63, 70, 0.12); padding-top: 8px; }
 
-            .modal-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 5px; min-width: 0; }
+            .modal-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 5px; min-width: 0; }
             .form-row { grid-template-columns: 1fr; gap: 8px; min-width: 0; }
             .stat-label { margin-top: 8px !important; margin-bottom: 4px; }
             .section-title { margin-top: 15px !important; margin-bottom: 8px; font-size: 1.05rem; }
@@ -11529,7 +11529,7 @@
             return `
             <div class="activity-item" style="margin-bottom:12px; align-items:flex-start;">
                 <div class="avatar" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;">${getAvatarContent(c.user || 'Me')}</div>
-                <div style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(63, 63, 70, 0.2); border-radius:12px; padding:10px 14px;">
+                <div style="flex:1; min-width:0; background:rgba(255,255,255,0.04); border:1px solid rgba(63, 63, 70, 0.2); border-radius:12px; padding:10px 14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="font-weight:700; font-size:0.85rem;">${c.user || 'Me'}</span>
                         <div style="display:flex; align-items:center; gap:10px;">
@@ -11537,7 +11537,7 @@
                             <button type="button" onclick="deleteComment('${c.id}')" style="background:none; border:none; color:#FF3B30; font-size:1.2rem; cursor:pointer; padding:0; line-height:0.8; transition:0.2s;" title="Delete Comment" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">&times;</button>
                         </div>
                     </div>
-                    <div style="font-size:0.9rem; line-height:1.5; color:#e0e0e0; white-space: pre-wrap;">${highlightMentions(c.text.replace(/</g, '&lt;').replace(/>/g, '&gt;'))}</div>
+                    <div style="font-size:0.9rem; line-height:1.5; color:#e0e0e0; white-space: pre-wrap; overflow-wrap: anywhere;">${highlightMentions(c.text.replace(/</g, '&lt;').replace(/>/g, '&gt;'))}</div>
                 </div>
             </div>`;
         }).join('');
@@ -13813,7 +13813,7 @@
                             <span style="font-weight:700; font-size:0.85rem;">${escapeHtml(c.user || 'Me')}</span>
                             <span style="color:var(--text-muted); font-size:0.75rem;">${c.time || ''}</span>
                         </div>
-                        <div style="font-size:0.88rem; line-height:1.5; color:#e0e0e0; white-space:pre-wrap;">${escapeHtml(c.text)}</div>
+                        <div style="font-size:0.88rem; line-height:1.5; color:#e0e0e0; white-space:pre-wrap; overflow-wrap:anywhere;">${escapeHtml(c.text)}</div>
                     </div>
                 </div>`;
             });
