@@ -898,7 +898,9 @@
 
             .settings-content-area {
                 padding-right: 0;
-                max-height: calc(100vh - 320px);
+                /* The whole settings page scrolls (#view-settings), so don't cap
+                   this panel — capping it let cards spill under the tab bar. */
+                max-height: none;
             }
 
             .settings-card {
@@ -4328,8 +4330,8 @@
         <button class="btn-outline" style="padding:8px 14px; font-size:0.85rem;" data-action="clear-bulk-selection">✕ Clear</button>
     </div>
 
-    <div class="app-view" id="view-settings">
-        <div style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+    <div class="app-view" id="view-settings" style="overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;">
+        <div style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px 120px;">
             <h2 style="margin-top:0; font-weight: 600;" id="settingsTitle">Settings</h2>
             <div class="settings-container">
                 <!-- Sidebar Navigation -->
