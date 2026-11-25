@@ -4419,12 +4419,13 @@
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://jkcfpiuhbtbrgtrususe.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_wDyZ8w_AJv7Fvv1hjxWkSQ_biX3jRbB';
+    const SUPABASE_URL = 'https://csutspaxezmjbqynpprt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_i76vLYFHz3RJXDsV_HwBzA_5db5M9bG';
+    const SUPABASE_SCHEMA = 'commuter';
     // VAPID public key for Web Push — generate a key pair and put the public key here
     // Generate keys by running: npx web-push generate-vapid-keys
     // Store the private key as VAPID_PRIVATE_KEY secret in your Supabase Edge Function
-    const VAPID_PUBLIC_KEY = 'BAqdVFHnd9HMVCWPCP-mRhT2jgP5bdagqdQW_gLGqrb3yVFV_uERnLdSTMAd_HkRFRJuaSt_5bUxfQOYyayDPNM';
+    const VAPID_PUBLIC_KEY = 'BDaUJm8FL1VFlYYBJgn4DhfBImYRDqkhDd_Uai4cfay8u_KTKFmthCD9_EmLfGWGRb3dYSNvGq95CN_f9cl7dcM';
     let _supabase;
     const _realtimeClientId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     // The app_state.version this client last confirmed as loaded/saved (see
@@ -12825,7 +12826,7 @@
         }
         _realtimeChannel = _supabase
             .channel('app_state_realtime')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.1' }, (payload) => {
+            .on('postgres_changes', { event: 'UPDATE', schema: 'commuter', table: 'app_state', filter: 'id=eq.1' }, (payload) => {
                 _applyFreshAppState(payload.new && payload.new.data, payload.new && payload.new.version);
             })
             .subscribe((status) => {
@@ -12862,7 +12863,7 @@
     window.addEventListener('beforeunload', _flushPendingSaves);
 
     window.onload = async () => {
-        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { db: { schema: SUPABASE_SCHEMA } });
         await initData();
         _initRealtimeSync();
 
